@@ -1,4 +1,4 @@
-// HAMShield library collection
+// HamShield library collection
 // Based on Programming Manual rev. 2.0, 5/19/2011 (RM-MPU-6000A-00)
 // 11/22/2013 by Morgan Redfield <redfieldm@gmail.com>
 // 04/26/2015 various changes Casey Halverson <spaceneedle@gmail.com>
@@ -11,13 +11,13 @@
 #include "I2Cdev_rda.h"
 #include <avr/pgmspace.h>
 
-// HAMShield constants
+// HamShield constants
 
 #define HAMSHIELD_MORSE_DOT             100    // Morse code dot length (smaller is faster WPM)
 #define HAMSHIELD_MORSE_BUFFER_SIZE      80    // Char buffer size for morse code text
 #define HAMSHIELD_AUX_BUTTON              5    // Pin assignment for AUX button
 #define HAMSHIELD_PWM_PIN                 11    // Pin assignment for PWM output
-#define HAMSHIELD_EMPTY_CHANNEL_RSSI   -110    // Threshold where channel is considered "clear"
+#define HAMSHIELD_EMPTY_CHANNEL_RSSI   -110    // Default threshold where channel is considered "clear"
 
 // button modes
 #define PTT_MODE 1
@@ -247,10 +247,10 @@
 
 
 
-class HAMShield {
+class HamShield {
     public:
-        HAMShield();
-        HAMShield(uint8_t address);
+        HamShield();
+        HamShield(uint8_t address);
 
         void initialize();
         bool testConnection();
@@ -523,7 +523,7 @@ class HAMShield {
         void isr_reset();
 	void morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]);
 	char morseLookup(char letter);
-        bool waitForChannel(long timeout, long breakwindow);
+        bool waitForChannel(long timeout, long breakwindow, int setRSSI);
         void SSTVVISCode(int code);
         void SSTVTestPattern(int code);
         void toneWait(uint16_t freq, long timer);

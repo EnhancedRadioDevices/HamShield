@@ -1,10 +1,10 @@
-// HAMShield library collection
+// HamShield library collection
 // Based on Programming Manual rev. 2.0, 5/19/2011 (RM-MPU-6000A-00)
 // 11/22/2013 by Morgan Redfield <redfieldm@gmail.com>
 // 04/26/2015 various changes Casey Halverson <spaceneedle@gmail.com>
 
-
-#include "HAMShield.h"
+#include "Arduino.h"
+#include "HamShield.h"
 #include <avr/wdt.h>
 // #include <PCM.h>
 
@@ -45,7 +45,7 @@ volatile long bouncer = 0;
 /** Default constructor, uses default I2C address.
  * @see A1846S_DEFAULT_ADDRESS
  */
-HAMShield::HAMShield() {
+HamShield::HamShield() {
     devAddr = A1846S_DEV_ADDR_SENLOW;
 }
 
@@ -55,14 +55,14 @@ HAMShield::HAMShield() {
  * @see A1846S_ADDRESS_AD0_LOW
  * @see A1846S_ADDRESS_AD0_HIGH
  */
-HAMShield::HAMShield(uint8_t address) {
+HamShield::HamShield(uint8_t address) {
     devAddr = address;
 }
 
 /** Power on and prepare for general usage.
  * 
  */
-void HAMShield::initialize() {
+void HamShield::initialize() {
    // set up PWM output for RF power control - commenting out to get rid of terrible buzzing noise
    // pwr_control_pin = 9;  
   
@@ -210,7 +210,7 @@ void HAMShield::initialize() {
  * Make sure the device is connected and responds as expected.
  * @return True if connection is valid, false otherwise
  */
-bool HAMShield::testConnection() {
+bool HamShield::testConnection() {
     I2Cdev::readWord(devAddr, 0x09, radio_i2c_buf);
 // 03ac or 032c
     return radio_i2c_buf[0] == 0x03AC; // TODO: find a device ID reg I can use
@@ -238,12 +238,12 @@ bool HAMShield::testConnection() {
 }
  */
 
-uint16_t HAMShield::readCtlReg() {
+uint16_t HamShield::readCtlReg() {
   I2Cdev::readWord(devAddr, A1846S_CTL_REG, radio_i2c_buf);
   return radio_i2c_buf[0];
 }
 
-void HAMShield::softReset() {
+void HamShield::softReset() {
    uint16_t tx_data = 0x1;
    I2Cdev::writeWord(devAddr, A1846S_CTL_REG, tx_data);
    delay(100); // Note: see A1846S setup info for timing guidelines
@@ -252,7 +252,7 @@ void HAMShield::softReset() {
 }
 
  
-void HAMShield::setFrequency(uint32_t freq_khz) {
+void HamShield::setFrequency(uint32_t freq_khz) {
     radio_frequency = freq_khz;
     uint32_t freq_raw = freq_khz << 3; // shift by 3 to multiply by 8
 
@@ -264,21 +264,21 @@ void HAMShield::setFrequency(uint32_t freq_khz) {
     I2Cdev::writeWord(devAddr, A1846S_FREQ_LO_REG, freq_half);
 }
 
-uint32_t HAMShield::getFrequency() {
+uint32_t HamShield::getFrequency() {
   return radio_frequency;
 }
 
-void HAMShield::setUHF() {
+void HamShield::setUHF() {
   setGpioHi(2); // turn off VHF
   setGpioLow(3); // turn on UHF
 }
 
-void HAMShield::setVHF() {
+void HamShield::setVHF() {
   setGpioHi(3); // turn off UHF
   setGpioLow(2); // turn on VHF
 }
 
-void HAMShield::setNoFilters() {
+void HamShield::setNoFilters() {
   setGpioHi(3); // turn off UHF
   setGpioHi(2); // turn off VHF
 }
@@ -288,7 +288,7 @@ void HAMShield::setNoFilters() {
 // 10 - 200-260MHz
 // 11 - 134-174MHz
 // TODO: add write to 0x32 based on band selection
-void HAMShield::setBand(uint16_t band){
+void HamShield::setBand(uint16_t band){
     if (band == 0) {
       setUHF();
     } else if (band == 2) {
@@ -304,7 +304,7 @@ void HAMShield::setBand(uint16_t band){
     }
     I2Cdev::writeBitsW(devAddr, A1846S_BAND_SEL_REG, A1846S_BAND_SEL_BIT, A1846S_BAND_SEL_LENGTH, band);
 }
-uint16_t HAMShield::getBand(){
+uint16_t HamShield::getBand(){
     I2Cdev::readBitsW(devAddr, A1846S_BAND_SEL_REG, A1846S_BAND_SEL_BIT, A1846S_BAND_SEL_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
@@ -312,10 +312,10 @@ uint16_t HAMShield::getBand(){
 // xtal frequency (kHz)
 // 12-14MHz crystal: this reg is set to crystal freq_khz
 // 24-28MHz crystal: this reg is set to crystal freq_khz / 2
-void HAMShield::setXtalFreq(uint16_t freq_kHz){
+void HamShield::setXtalFreq(uint16_t freq_kHz){
 	I2Cdev::writeWord(devAddr, A1846S_XTAL_FREQ_REG, freq_kHz);	
 }
-uint16_t HAMShield::getXtalFreq(){
+uint16_t HamShield::getXtalFreq(){
 	I2Cdev::readWord(devAddr, A1846S_FREQ_HI_REG, radio_i2c_buf);
 	
 	return radio_i2c_buf[0];
@@ -324,11 +324,11 @@ uint16_t HAMShield::getXtalFreq(){
 // adclk frequency (kHz)
 // 12-14MHz crystal: this reg is set to crystal freq_khz / 2
 // 24-28MHz crystal: this reg is set to crystal freq_khz / 4
-void HAMShield::setAdcClkFreq(uint16_t freq_kHz){
+void HamShield::setAdcClkFreq(uint16_t freq_kHz){
 	I2Cdev::writeWord(devAddr, A1846S_ADCLK_FREQ_REG, freq_kHz);	
 }
 
-uint16_t HAMShield::getAdcClkFreq(){
+uint16_t HamShield::getAdcClkFreq(){
 	I2Cdev::readWord(devAddr, A1846S_ADCLK_FREQ_REG, radio_i2c_buf);
 	return radio_i2c_buf[0];
 }
@@ -336,7 +336,7 @@ uint16_t HAMShield::getAdcClkFreq(){
 // clk mode
 // 12-14MHz: set to 1
 // 24-28MHz: set to 0
-void HAMShield::setClkMode(bool LFClk){
+void HamShield::setClkMode(bool LFClk){
     // include upper bits as default values
     uint16_t tx_data = 0x0F11; // NOTE: should this be 0fd1 or 0f11? Programming guide and setup guide disagree
     if (!LFClk) {
@@ -345,7 +345,7 @@ void HAMShield::setClkMode(bool LFClk){
   
     I2Cdev::writeWord(devAddr, A1846S_CLK_MODE_REG, tx_data);
 }
-bool HAMShield::getClkMode(){
+bool HamShield::getClkMode(){
     I2Cdev::readBitW(devAddr, A1846S_CLK_MODE_REG, A1846S_CLK_MODE_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
@@ -362,16 +362,16 @@ bool HAMShield::getClkMode(){
 // 11 - 25kHz channel
 // 00 - 12.5kHz channel
 // 10,01 - reserved
-void HAMShield::setChanMode(uint16_t mode){
+void HamShield::setChanMode(uint16_t mode){
     I2Cdev::writeBitsW(devAddr, A1846S_CTL_REG, A1846S_CHAN_MODE_BIT, A1846S_CHAN_MODE_LENGTH, mode);
 }
-uint16_t HAMShield::getChanMode(){
+uint16_t HamShield::getChanMode(){
     I2Cdev::readBitsW(devAddr, A1846S_CTL_REG, A1846S_CHAN_MODE_BIT, A1846S_CHAN_MODE_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
 
 // choose tx or rx
-void HAMShield::setTX(bool on_noff){
+void HamShield::setTX(bool on_noff){
     // make sure RX is off
     if (on_noff) {
       setRX(false);
@@ -392,12 +392,12 @@ void HAMShield::setTX(bool on_noff){
     
     
 }
-bool HAMShield::getTX(){
+bool HamShield::getTX(){
     I2Cdev::readBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
 
-void HAMShield::setRX(bool on_noff){
+void HamShield::setRX(bool on_noff){
    // make sure TX is off
    if (on_noff) {
      setTX(false);
@@ -410,12 +410,12 @@ void HAMShield::setRX(bool on_noff){
    
    I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, on_noff);
 }
-bool HAMShield::getRX(){
+bool HamShield::getRX(){
     I2Cdev::readBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
 
-void HAMShield::setModeTransmit(){
+void HamShield::setModeTransmit(){
         // check to see if we should allow them to do this
         if(restrictions == true) { 
            if((radio_frequency > 139999) & (radio_frequency < 148001)) { setRX(false); setTX(true); } 
@@ -426,12 +426,12 @@ void HAMShield::setModeTransmit(){
 	setRX(false); // break before make
 	setTX(true); }
 } 
-void HAMShield::setModeReceive(){
+void HamShield::setModeReceive(){
 	// turn on rx, turn off tx
 	setTX(false); // break before make
 	setRX(true);
 } 
-void HAMShield::setModeOff(){
+void HamShield::setModeOff(){
 	// turn off rx, turn off tx, set pwr_dwn bit
 	setTX(false);
 	setRX(false);
@@ -442,25 +442,25 @@ void HAMShield::setModeOff(){
 // 01 - sine source from tone2
 // 10 - tx code from GPIO1 code_in (gpio1<1:0> must be set to 01)
 // 11 - no tx source
-void HAMShield::setTxSource(uint16_t tx_source){
+void HamShield::setTxSource(uint16_t tx_source){
     I2Cdev::writeBitsW(devAddr, A1846S_TX_VOICE_REG, A1846S_VOICE_SEL_BIT, A1846S_VOICE_SEL_LENGTH, tx_source);
 }
-void HAMShield::setTxSourceMic(){
+void HamShield::setTxSourceMic(){
 	setTxSource(0);
 }
-void HAMShield::setTxSourceSine(){
+void HamShield::setTxSourceSine(){
 	setTxSource(1);
 }
-void HAMShield::setTxSourceCode(){
+void HamShield::setTxSourceCode(){
 	// note, also set GPIO1 to 01
 	setGpioMode(1, 1);
 	
 	setTxSource(2);
 }
-void HAMShield::setTxSourceNone(){
+void HamShield::setTxSourceNone(){
 	setTxSource(3);
 }
-uint16_t HAMShield::getTxSource(){
+uint16_t HamShield::getTxSource(){
     I2Cdev::readBitsW(devAddr, A1846S_TX_VOICE_REG, A1846S_VOICE_SEL_BIT, A1846S_VOICE_SEL_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
@@ -474,10 +474,10 @@ uint16_t HAMShield::getTxSource(){
 //    010000: 1.68V
 //    100000: 2.45V
 //    1111111:3.13V
-void HAMShield::setPABiasVoltage(uint16_t voltage){
+void HamShield::setPABiasVoltage(uint16_t voltage){
     I2Cdev::writeBitsW(devAddr, A1846S_PABIAS_REG, A1846S_PABIAS_BIT, A1846S_PABIAS_LENGTH, voltage);
 }
-uint16_t HAMShield::getPABiasVoltage(){
+uint16_t HamShield::getPABiasVoltage(){
     I2Cdev::readBitsW(devAddr, A1846S_PABIAS_REG, A1846S_PABIAS_BIT, A1846S_PABIAS_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
@@ -506,36 +506,36 @@ uint16_t HAMShield::getPABiasVoltage(){
 //      101= outer ctcss en,
 //      110=outer cdcss en
 //      others =disable
-void HAMShield::setCtcssCdcssMode(uint16_t mode){
+void HamShield::setCtcssCdcssMode(uint16_t mode){
     I2Cdev::writeBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_C_MODE_BIT, A1846S_C_MODE_LENGTH, mode);
 }
-uint16_t HAMShield::getCtcssCdcssMode(){
+uint16_t HamShield::getCtcssCdcssMode(){
     I2Cdev::readBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_C_MODE_BIT, A1846S_C_MODE_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HAMShield::setInnerCtcssMode(){
+void HamShield::setInnerCtcssMode(){
 	setCtcssCdcssMode(1);
 }
-void HAMShield::setInnerCdcssMode(){
+void HamShield::setInnerCdcssMode(){
 	setCtcssCdcssMode(2);
 }
-void HAMShield::setOuterCtcssMode(){
+void HamShield::setOuterCtcssMode(){
 	setCtcssCdcssMode(5);
 }
-void HAMShield::setOuterCdcssMode(){
+void HamShield::setOuterCdcssMode(){
 	setCtcssCdcssMode(6);
 }
-void HAMShield::disableCtcssCdcss(){
+void HamShield::disableCtcssCdcss(){
 	setCtcssCdcssMode(0);
 }
 
 //   Ctcss_sel
 //      1 = ctcss_cmp/cdcss_cmp out via gpio
 //      0 = ctcss/cdcss sdo out vio gpio
-void HAMShield::setCtcssSel(bool cmp_nsdo){
+void HamShield::setCtcssSel(bool cmp_nsdo){
     I2Cdev::writeBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CTCSS_SEL_BIT, cmp_nsdo);
 }
-bool HAMShield::getCtcssSel(){
+bool HamShield::getCtcssSel(){
     I2Cdev::readBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CTCSS_SEL_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
@@ -543,72 +543,72 @@ bool HAMShield::getCtcssSel(){
 //   Cdcss_sel
 //      1 = long (24 bit) code
 //      0 = short(23 bit) code
-void HAMShield::setCdcssSel(bool long_nshort){
+void HamShield::setCdcssSel(bool long_nshort){
     I2Cdev::writeBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CDCSS_SEL_BIT, long_nshort);
 }
-bool HAMShield::getCdcssSel(){
+bool HamShield::getCdcssSel(){
     I2Cdev::readBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CDCSS_SEL_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
 
 // Cdcss neg_det_en
-void HAMShield::enableCdcssNegDet(){
+void HamShield::enableCdcssNegDet(){
     I2Cdev::writeBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_NEG_DET_EN_BIT, 1);
 }
-void HAMShield::disableCdcssNegDet(){
+void HamShield::disableCdcssNegDet(){
     I2Cdev::writeBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_NEG_DET_EN_BIT, 0);
 }
-bool HAMShield::getCdcssNegDetEnabled(){
+bool HamShield::getCdcssNegDetEnabled(){
     I2Cdev::readBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_NEG_DET_EN_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
 
 // Cdcss pos_det_en
-void HAMShield::enableCdcssPosDet(){
+void HamShield::enableCdcssPosDet(){
     I2Cdev::writeBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_POS_DET_EN_BIT, 1);
 }
-void HAMShield::disableCdcssPosDet(){
+void HamShield::disableCdcssPosDet(){
     I2Cdev::writeBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_POS_DET_EN_BIT, 0);
 }
-bool HAMShield::getCdcssPosDetEnabled(){
+bool HamShield::getCdcssPosDetEnabled(){
     I2Cdev::readBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_POS_DET_EN_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
 
 // css_det_en
-void HAMShield::enableCssDet(){
+void HamShield::enableCssDet(){
     I2Cdev::writeBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CSS_DET_EN_BIT, 1);
 }
-void HAMShield::disableCssDet(){
+void HamShield::disableCssDet(){
     I2Cdev::writeBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CSS_DET_EN_BIT, 0);
 }
-bool HAMShield::getCssDetEnabled(){
+bool HamShield::getCssDetEnabled(){
     I2Cdev::readBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CSS_DET_EN_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
 
 // ctcss freq
-void HAMShield::setCtcss(float freq) {
+void HamShield::setCtcss(float freq) {
         int dfreq = freq / 10000;
         dfreq = dfreq * 65536;
         setCtcssFreq(dfreq);
 }
 
-void HAMShield::setCtcssFreq(uint16_t freq){
+void HamShield::setCtcssFreq(uint16_t freq){
 	I2Cdev::writeWord(devAddr, A1846S_CTCSS_FREQ_REG, freq);
 }
-uint16_t HAMShield::getCtcssFreq(){
+uint16_t HamShield::getCtcssFreq(){
 	I2Cdev::readWord(devAddr, A1846S_CTCSS_FREQ_REG, radio_i2c_buf);
 	
 	return radio_i2c_buf[0];
 }
-void HAMShield::setCtcssFreqToStandard(){
+void HamShield::setCtcssFreqToStandard(){
 	// freq must be 134.4Hz for standard cdcss mode
 	setCtcssFreq(0x2268);
 } 
 
 // cdcss codes
-void HAMShield::setCdcssCode(uint16_t code) {
+void HamShield::setCdcssCode(uint16_t code) {
 	// note: assuming a well formed code (xyz, where x, y, and z are all 0-7)
 
 	// Set both code registers at once (23 or 24 bit code)
@@ -633,7 +633,7 @@ void HAMShield::setCdcssCode(uint16_t code) {
         temp_code = (uint16_t) (cdcss_code >> 16);	
 	I2Cdev::writeWord(devAddr, A1846S_CDCSS_CODE_LO_REG, temp_code);	
 }
-uint16_t HAMShield::getCdcssCode() {
+uint16_t HamShield::getCdcssCode() {
 	uint32_t oct_code;
 	I2Cdev::readWord(devAddr, A1846S_CDCSS_CODE_HI_REG, radio_i2c_buf);
 	oct_code = (radio_i2c_buf[0] << 16);
@@ -651,89 +651,89 @@ uint16_t HAMShield::getCdcssCode() {
 }
 
 // SQ
-void HAMShield::setSQOn(){
+void HamShield::setSQOn(){
     I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_SQ_ON_BIT, 1);
 }
-void HAMShield::setSQOff(){
+void HamShield::setSQOff(){
     I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_SQ_ON_BIT, 0);
 }
-bool HAMShield::getSQState(){
+bool HamShield::getSQState(){
     I2Cdev::readBitW(devAddr, A1846S_CTL_REG, A1846S_SQ_ON_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
 
 // SQ threshold
-void HAMShield::setSQHiThresh(uint16_t sq_hi_threshold){
+void HamShield::setSQHiThresh(uint16_t sq_hi_threshold){
 	// Sq detect high th, rssi_cmp will be 1 when rssi>th_h_sq, unit 1/8dB
 	I2Cdev::writeWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, sq_hi_threshold);
 } 
-uint16_t HAMShield::getSQHiThresh(){
+uint16_t HamShield::getSQHiThresh(){
 	I2Cdev::readWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, radio_i2c_buf);
 	
 	return radio_i2c_buf[0];
 }
-void HAMShield::setSQLoThresh(uint16_t sq_lo_threshold){
+void HamShield::setSQLoThresh(uint16_t sq_lo_threshold){
 	// Sq detect low th, rssi_cmp will be 0 when rssi<th_l_sq && time delay meet, unit 1/8 dB
 	I2Cdev::writeWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, sq_lo_threshold);
 }
-uint16_t HAMShield::getSQLoThresh(){
+uint16_t HamShield::getSQLoThresh(){
 	I2Cdev::readWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, radio_i2c_buf);
 	
 	return radio_i2c_buf[0];
 }
 
 // SQ out select
-void HAMShield::setSQOutSel(){
+void HamShield::setSQOutSel(){
     I2Cdev::writeBitW(devAddr, A1846S_SQ_OUT_SEL_REG, A1846S_SQ_OUT_SEL_BIT, 1);
 }
-void HAMShield::clearSQOutSel(){
+void HamShield::clearSQOutSel(){
     I2Cdev::writeBitW(devAddr, A1846S_SQ_OUT_SEL_REG, A1846S_SQ_OUT_SEL_BIT, 0);
 }
-bool HAMShield::getSQOutSel(){
+bool HamShield::getSQOutSel(){
     I2Cdev::readBitW(devAddr, A1846S_SQ_OUT_SEL_REG, A1846S_SQ_OUT_SEL_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
 
 // VOX
-void HAMShield::setVoxOn(){
+void HamShield::setVoxOn(){
     I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_VOX_ON_BIT, 1);
 }
-void HAMShield::setVoxOff(){
+void HamShield::setVoxOff(){
     I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_VOX_ON_BIT, 0);
 }
-bool HAMShield::getVoxOn(){
+bool HamShield::getVoxOn(){
     I2Cdev::readBitW(devAddr, A1846S_CTL_REG, A1846S_VOX_ON_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
 
 // Vox Threshold
-void HAMShield::setVoxOpenThresh(uint16_t vox_open_thresh){
+void HamShield::setVoxOpenThresh(uint16_t vox_open_thresh){
 	// When vssi > th_h_vox, then vox will be 1(unit mV )
 	I2Cdev::writeWord(devAddr, A1846S_TH_H_VOX_REG, vox_open_thresh);	
 } 
-uint16_t HAMShield::getVoxOpenThresh(){
+uint16_t HamShield::getVoxOpenThresh(){
 	I2Cdev::readWord(devAddr, A1846S_TH_H_VOX_REG, radio_i2c_buf);
 	
 	return radio_i2c_buf[0];
 }
-void HAMShield::setVoxShutThresh(uint16_t vox_shut_thresh){
+void HamShield::setVoxShutThresh(uint16_t vox_shut_thresh){
 	// When vssi < th_l_vox && time delay meet, then vox will be 0 (unit mV )
 	I2Cdev::writeWord(devAddr, A1846S_TH_L_VOX_REG, vox_shut_thresh);	
 } 
-uint16_t HAMShield::getVoxShutThresh(){
+uint16_t HamShield::getVoxShutThresh(){
 	I2Cdev::readWord(devAddr, A1846S_TH_L_VOX_REG, radio_i2c_buf);
 	
 	return radio_i2c_buf[0];
 }
 
 // Tail Noise
-void HAMShield::enableTailNoiseElim(){
+void HamShield::enableTailNoiseElim(){
     I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_TAIL_ELIM_EN_BIT, 1);
 }
-void HAMShield::disableTailNoiseElim(){
+void HamShield::disableTailNoiseElim(){
     I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_TAIL_ELIM_EN_BIT, 1);
 }
-bool HAMShield::getTailNoiseElimEnabled(){
+bool HamShield::getTailNoiseElimEnabled(){
     I2Cdev::readBitW(devAddr, A1846S_CTL_REG, A1846S_TAIL_ELIM_EN_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
@@ -744,124 +744,124 @@ bool HAMShield::getTailNoiseElimEnabled(){
 //     01 = 180 degree shift
 //     10 = 240 degree shift
 //     11 = reserved
-void HAMShield::setShiftSelect(uint16_t shift_sel){
+void HamShield::setShiftSelect(uint16_t shift_sel){
     I2Cdev::writeBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LENGTH, shift_sel);
 }
-uint16_t HAMShield::getShiftSelect(){
+uint16_t HamShield::getShiftSelect(){
     I2Cdev::readBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
 
 // DTMF
-void HAMShield::setDTMFC0(uint16_t freq) {
+void HamShield::setDTMFC0(uint16_t freq) {
     I2Cdev::writeBitsW(devAddr, A1846S_DTMF_C01_REG, A1846S_DTMF_C0_BIT, A1846S_DTMF_C0_LENGTH, freq);
 }
-uint16_t HAMShield::getDTMFC0() {
+uint16_t HamShield::getDTMFC0() {
     I2Cdev::readBitsW(devAddr, A1846S_DTMF_C01_REG, A1846S_DTMF_C0_BIT, A1846S_DTMF_C0_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HAMShield::setDTMFC1(uint16_t freq) {
+void HamShield::setDTMFC1(uint16_t freq) {
     I2Cdev::writeBitsW(devAddr, A1846S_DTMF_C01_REG, A1846S_DTMF_C1_BIT, A1846S_DTMF_C1_LENGTH, freq);
 }
-uint16_t HAMShield::getDTMFC1()	 {
+uint16_t HamShield::getDTMFC1()	 {
     I2Cdev::readBitsW(devAddr, A1846S_DTMF_C01_REG, A1846S_DTMF_C1_BIT, A1846S_DTMF_C1_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HAMShield::setDTMFC2(uint16_t freq) {
+void HamShield::setDTMFC2(uint16_t freq) {
     I2Cdev::writeBitsW(devAddr, A1846S_DTMF_C23_REG, A1846S_DTMF_C2_BIT, A1846S_DTMF_C2_LENGTH, freq);
 }
-uint16_t HAMShield::getDTMFC2() {
+uint16_t HamShield::getDTMFC2() {
     I2Cdev::readBitsW(devAddr, A1846S_DTMF_C23_REG, A1846S_DTMF_C2_BIT, A1846S_DTMF_C2_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HAMShield::setDTMFC3(uint16_t freq) {
+void HamShield::setDTMFC3(uint16_t freq) {
     I2Cdev::writeBitsW(devAddr, A1846S_DTMF_C23_REG, A1846S_DTMF_C3_BIT, A1846S_DTMF_C3_LENGTH, freq);
 }
-uint16_t HAMShield::getDTMFC3() {
+uint16_t HamShield::getDTMFC3() {
     I2Cdev::readBitsW(devAddr, A1846S_DTMF_C23_REG, A1846S_DTMF_C3_BIT, A1846S_DTMF_C3_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HAMShield::setDTMFC4(uint16_t freq) {
+void HamShield::setDTMFC4(uint16_t freq) {
     I2Cdev::writeBitsW(devAddr, A1846S_DTMF_C45_REG, A1846S_DTMF_C4_BIT, A1846S_DTMF_C4_LENGTH, freq);
 }
-uint16_t HAMShield::getDTMFC4() {
+uint16_t HamShield::getDTMFC4() {
     I2Cdev::readBitsW(devAddr, A1846S_DTMF_C45_REG, A1846S_DTMF_C4_BIT, A1846S_DTMF_C4_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HAMShield::setDTMFC5(uint16_t freq) {
+void HamShield::setDTMFC5(uint16_t freq) {
     I2Cdev::writeBitsW(devAddr, A1846S_DTMF_C45_REG, A1846S_DTMF_C5_BIT, A1846S_DTMF_C5_LENGTH, freq);
 }
-uint16_t HAMShield::getDTMFC5() {
+uint16_t HamShield::getDTMFC5() {
     I2Cdev::readBitsW(devAddr, A1846S_DTMF_C45_REG, A1846S_DTMF_C5_BIT, A1846S_DTMF_C5_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HAMShield::setDTMFC6(uint16_t freq) {
+void HamShield::setDTMFC6(uint16_t freq) {
     I2Cdev::writeBitsW(devAddr, A1846S_DTMF_C67_REG, A1846S_DTMF_C6_BIT, A1846S_DTMF_C6_LENGTH, freq);
 }
-uint16_t HAMShield::getDTMFC6() {
+uint16_t HamShield::getDTMFC6() {
     I2Cdev::readBitsW(devAddr, A1846S_DTMF_C67_REG, A1846S_DTMF_C6_BIT, A1846S_DTMF_C6_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HAMShield::setDTMFC7(uint16_t freq) {
+void HamShield::setDTMFC7(uint16_t freq) {
     I2Cdev::writeBitsW(devAddr, A1846S_DTMF_C67_REG, A1846S_DTMF_C7_BIT, A1846S_DTMF_C7_LENGTH, freq);
 }
-uint16_t HAMShield::getDTMFC7() {
+uint16_t HamShield::getDTMFC7() {
     I2Cdev::readBitsW(devAddr, A1846S_DTMF_C67_REG, A1846S_DTMF_C7_BIT, A1846S_DTMF_C7_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
 
 // TX FM deviation
-void HAMShield::setFMVoiceCssDeviation(uint16_t deviation){
+void HamShield::setFMVoiceCssDeviation(uint16_t deviation){
     I2Cdev::writeBitsW(devAddr, A1846S_FM_DEV_REG, A1846S_FM_DEV_VOICE_BIT, A1846S_FM_DEV_VOICE_LENGTH, deviation);
 }
-uint16_t HAMShield::getFMVoiceCssDeviation(){
+uint16_t HamShield::getFMVoiceCssDeviation(){
     I2Cdev::readBitsW(devAddr, A1846S_FM_DEV_REG, A1846S_FM_DEV_VOICE_BIT, A1846S_FM_DEV_VOICE_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HAMShield::setFMCssDeviation(uint16_t deviation){
+void HamShield::setFMCssDeviation(uint16_t deviation){
     I2Cdev::writeBitsW(devAddr, A1846S_FM_DEV_REG, A1846S_FM_DEV_CSS_BIT, A1846S_FM_DEV_CSS_LENGTH, deviation);
 }
-uint16_t HAMShield::getFMCssDeviation(){
+uint16_t HamShield::getFMCssDeviation(){
     I2Cdev::readBitsW(devAddr, A1846S_FM_DEV_REG, A1846S_FM_DEV_CSS_BIT, A1846S_FM_DEV_CSS_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
 
 // RX voice range
-void HAMShield::setVolume1(uint16_t volume){
+void HamShield::setVolume1(uint16_t volume){
     I2Cdev::writeBitsW(devAddr, A1846S_RX_VOLUME_REG, A1846S_RX_VOL_1_BIT, A1846S_RX_VOL_1_LENGTH, volume);
 }
-uint16_t HAMShield::getVolume1(){
+uint16_t HamShield::getVolume1(){
     I2Cdev::readBitsW(devAddr, A1846S_RX_VOLUME_REG, A1846S_RX_VOL_1_BIT, A1846S_RX_VOL_1_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HAMShield::setVolume2(uint16_t volume){
+void HamShield::setVolume2(uint16_t volume){
     I2Cdev::writeBitsW(devAddr, A1846S_RX_VOLUME_REG, A1846S_RX_VOL_2_BIT, A1846S_RX_VOL_2_LENGTH, volume);
 }
-uint16_t HAMShield::getVolume2(){
+uint16_t HamShield::getVolume2(){
     I2Cdev::readBitsW(devAddr, A1846S_RX_VOLUME_REG, A1846S_RX_VOL_2_BIT, A1846S_RX_VOL_2_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
 
 // GPIO
-void HAMShield::setGpioMode(uint16_t gpio, uint16_t mode){
+void HamShield::setGpioMode(uint16_t gpio, uint16_t mode){
 	uint16_t mode_len = 2;
 	uint16_t bit = gpio*2 + 1;
 
     I2Cdev::writeBitsW(devAddr, A1846S_GPIO_MODE_REG, bit, mode_len, mode);
 }
-void HAMShield::setGpioHiZ(uint16_t gpio){
+void HamShield::setGpioHiZ(uint16_t gpio){
 	setGpioMode(gpio, 0);
 }
-void HAMShield::setGpioFcn(uint16_t gpio){
+void HamShield::setGpioFcn(uint16_t gpio){
 	setGpioMode(gpio, 1);
 }
-void HAMShield::setGpioLow(uint16_t gpio){
+void HamShield::setGpioLow(uint16_t gpio){
 	setGpioMode(gpio, 2);
 }
-void HAMShield::setGpioHi(uint16_t gpio){
+void HamShield::setGpioHi(uint16_t gpio){
 	setGpioMode(gpio, 3);
 }
-uint16_t HAMShield::getGpioMode(uint16_t gpio){
+uint16_t HamShield::getGpioMode(uint16_t gpio){
 	uint16_t mode_len = 2;
 	uint16_t bit = gpio*2 + 1;
 	
@@ -870,65 +870,65 @@ uint16_t HAMShield::getGpioMode(uint16_t gpio){
 }
 
 // Int
-void HAMShield::enableInterrupt(uint16_t interrupt){
+void HamShield::enableInterrupt(uint16_t interrupt){
     I2Cdev::writeBitW(devAddr, A1846S_INT_MODE_REG, interrupt, 1);
 }
-void HAMShield::disableInterrupt(uint16_t interrupt){
+void HamShield::disableInterrupt(uint16_t interrupt){
     I2Cdev::writeBitW(devAddr, A1846S_INT_MODE_REG, interrupt, 0);
 }
-bool HAMShield::getInterruptEnabled(uint16_t interrupt){
+bool HamShield::getInterruptEnabled(uint16_t interrupt){
     I2Cdev::readBitW(devAddr, A1846S_INT_MODE_REG, interrupt, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
 
 // ST mode
-void HAMShield::setStMode(uint16_t mode){
+void HamShield::setStMode(uint16_t mode){
     I2Cdev::writeBitsW(devAddr, A1846S_CTL_REG, A1846S_ST_MODE_BIT, A1846S_ST_MODE_LENGTH, mode);
 }
-uint16_t HAMShield::getStMode(){
+uint16_t HamShield::getStMode(){
     I2Cdev::readBitsW(devAddr, A1846S_CTL_REG, A1846S_ST_MODE_BIT, A1846S_ST_MODE_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HAMShield::setStFullAuto(){
+void HamShield::setStFullAuto(){
 setStMode(2);
 }
-void HAMShield::setStRxAutoTxManu(){
+void HamShield::setStRxAutoTxManu(){
 setStMode(1);
 }
-void HAMShield::setStFullManu(){
+void HamShield::setStFullManu(){
 setStMode(0);
 }
 
 // Pre-emphasis, De-emphasis filter
-void HAMShield::bypassPreDeEmph(){
+void HamShield::bypassPreDeEmph(){
     I2Cdev::writeBitW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_EMPH_FILTER_EN, 1);
 }
-void HAMShield::usePreDeEmph(){
+void HamShield::usePreDeEmph(){
     I2Cdev::writeBitW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_EMPH_FILTER_EN, 0);
 }
-bool HAMShield::getPreDeEmphEnabled(){
+bool HamShield::getPreDeEmphEnabled(){
     I2Cdev::readBitW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_EMPH_FILTER_EN, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
 
 // Read Only Status Registers
-int16_t HAMShield::readRSSI(){
+int16_t HamShield::readRSSI(){
 	I2Cdev::readWord(devAddr, A1846S_RSSI_REG, radio_i2c_buf);
 	
         int16_t rssi = (radio_i2c_buf[0] & 0x3FF) / 8 - 135;
 	return rssi; // only need lowest 10 bits
 }
-uint16_t HAMShield::readVSSI(){
+uint16_t HamShield::readVSSI(){
 	I2Cdev::readWord(devAddr, A1846S_VSSI_REG, radio_i2c_buf);
 	
 	return radio_i2c_buf[0] & 0x7FF; // only need lowest 10 bits
 }
-uint16_t HAMShield::readDTMFIndex(){
+uint16_t HamShield::readDTMFIndex(){
 // TODO: may want to split this into two (index1 and index2)
     I2Cdev::readBitsW(devAddr, A1846S_DTMF_RX_REG, A1846S_DTMF_INDEX_BIT, A1846S_DTMF_INDEX_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
 } 
-uint16_t HAMShield::readDTMFCode(){
+uint16_t HamShield::readDTMFCode(){
 //  1:f0+f4, 2:f0+f5, 3:f0+f6, A:f0+f7,
 //  4:f1+f4, 5:f1+f5, 6:f1+f6, B:f1+f7,
 //  7:f2+f4, 8:f2+f5, 9:f2+f6, C:f2+f7,
@@ -937,7 +937,7 @@ uint16_t HAMShield::readDTMFCode(){
     return radio_i2c_buf[0];
 }
 
-void HAMShield::setRfPower(uint8_t pwr) {
+void HamShield::setRfPower(uint8_t pwr) {
   
    // using loop reference voltage input to op-amp
    // (see RF6886 datasheet)
@@ -959,7 +959,7 @@ void HAMShield::setRfPower(uint8_t pwr) {
 }
 
 
-bool HAMShield::frequency(uint32_t freq_khz) {  
+bool HamShield::frequency(uint32_t freq_khz) {  
   if((freq_khz >= 137000) && (freq_khz <= 174000)) { 
       setVHF();
       setBand(3); // 0b11 is 134-174MHz
@@ -985,7 +985,7 @@ bool HAMShield::frequency(uint32_t freq_khz) {
 
 /* FRS Lookup Table */
 
-bool HAMShield::setFRSChannel(uint8_t channel) { 
+bool HamShield::setFRSChannel(uint8_t channel) { 
   if(channel < 15) { 
     setFrequency(FRS[channel]);
     return true;
@@ -995,7 +995,7 @@ bool HAMShield::setFRSChannel(uint8_t channel) {
 
 /* GMRS Lookup Table (borrows from FRS table since channels overlap) */
 
-bool HAMShield::setGMRSChannel(uint8_t channel) { 
+bool HamShield::setGMRSChannel(uint8_t channel) { 
   if((channel > 8) & (channel < 16)) { 
      channel = channel - 7;           // we start with 0, to try to avoid channel 8 being nothing
      setFrequency(FRS[channel]);
@@ -1010,7 +1010,7 @@ bool HAMShield::setGMRSChannel(uint8_t channel) {
 
 /* MURS band is 11.25KHz (2.5KHz dev) in channel 1-3, 20KHz (5KHz dev) in channel 4-5. Should we set this? */
 
-bool HAMShield::setMURSChannel(uint8_t channel) { 
+bool HamShield::setMURSChannel(uint8_t channel) { 
   if(channel < 6) { 
      setFrequency(MURS[channel]); 
      return true;
@@ -1019,7 +1019,7 @@ bool HAMShield::setMURSChannel(uint8_t channel) {
 
 /* Weather radio channels */
 
-bool HAMShield::setWXChannel(uint8_t channel) { 
+bool HamShield::setWXChannel(uint8_t channel) { 
   if(channel < 8) { 
      setFrequency(WX[channel]);
      setModeReceive();
@@ -1032,7 +1032,7 @@ bool HAMShield::setWXChannel(uint8_t channel) {
 
 /* Scan channels for strongest signal. returns channel number. You could do radio.setWXChannel(radio.scanWXChannel()) */
 
-uint8_t HAMShield::scanWXChannel() { 
+uint8_t HamShield::scanWXChannel() { 
   uint8_t channel = 0;
   int16_t toprssi = 0;
   for(int x = 0; x < 8; x++) { 
@@ -1047,21 +1047,21 @@ uint8_t HAMShield::scanWXChannel() {
 
 /* removes the out of band transmit restrictions for those who hold special licenses */
 
-void HAMShield::dangerMode() { 
+void HamShield::dangerMode() { 
   restrictions = false;
   return;
 } 
 
 /* enable restrictions on out of band transmissions */
 
-void HAMShield::safeMode() { 
+void HamShield::safeMode() { 
   restrictions = true;
   return;
 }
 
 /* scanner mode. Scans a range and returns the active frequency when it detects a signal. If none is detected, returns 0. */
 
-uint32_t HAMShield::scanMode(uint32_t start,uint32_t stop, uint8_t speed, uint16_t step, uint16_t threshold) { 
+uint32_t HamShield::scanMode(uint32_t start,uint32_t stop, uint8_t speed, uint16_t step, uint16_t threshold) { 
     setModeReceive();
     int16_t rssi = -150;
     for(uint32_t freq = start; freq < stop; freq = freq + step) { 
@@ -1076,7 +1076,7 @@ uint32_t HAMShield::scanMode(uint32_t start,uint32_t stop, uint8_t speed, uint16
 
 /* white space finder. (inverted scanner) Scans a range for a white space, and if no signal exists, stop there. */
 
-uint32_t HAMShield::findWhitespace(uint32_t start,uint32_t stop, uint8_t dwell, uint16_t step, uint16_t threshold) { 
+uint32_t HamShield::findWhitespace(uint32_t start,uint32_t stop, uint8_t dwell, uint16_t step, uint16_t threshold) { 
     setModeReceive();
     int16_t rssi = -150;
     for(uint32_t freq = start; freq < stop; freq = freq + step) { 
@@ -1095,7 +1095,7 @@ channel scanner. Scans an array of channels for activity. returns channel number
 0  
 */
 
-uint32_t HAMShield::scanChannels(uint32_t buffer[],uint8_t buffsize, uint8_t speed, uint16_t threshold) { 
+uint32_t HamShield::scanChannels(uint32_t buffer[],uint8_t buffsize, uint8_t speed, uint16_t threshold) { 
         setModeReceive();
         int16_t rssi = 0;
         for(int x = 1; x < buffsize; x++) { 
@@ -1114,7 +1114,7 @@ white space channel finder. Scans an array of channels for white space. returns 
 0  
 */
 
-uint32_t HAMShield::findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, uint8_t dwell, uint16_t threshold) { 
+uint32_t HamShield::findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, uint8_t dwell, uint16_t threshold) { 
         setModeReceive();
         int16_t rssi = 0;
         for(int x = 1; x < buffsize; x++) { 
@@ -1132,14 +1132,14 @@ uint32_t HAMShield::findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, u
 /* 
 BUG: I cannot figure out how to attach these interrupt handlers without the error: 
 
-/Users/casey/Documents/Arduino/libraries/HAMShield/HAMShield.cpp: In member function 'void HAMShield::buttonMode(uint8_t)':
-/Users/casey/Documents/Arduino/libraries/HAMShield/HAMShield.cpp:1125: error: argument of type 'void (HAMShield::)()' does not match 'void (*)()'
-/Users/casey/Documents/Arduino/libraries/HAMShield/HAMShield.cpp:1126: error: argument of type 'void (HAMShield::)()' does not match 'void (*)()'
+/Users/casey/Documents/Arduino/libraries/HamShield/HamShield.cpp: In member function 'void HamShield::buttonMode(uint8_t)':
+/Users/casey/Documents/Arduino/libraries/HamShield/HamShield.cpp:1125: error: argument of type 'void (HamShield::)()' does not match 'void (*)()'
+/Users/casey/Documents/Arduino/libraries/HamShield/HamShield.cpp:1126: error: argument of type 'void (HamShield::)()' does not match 'void (*)()'
 */
 
 
 /*
-void HAMShield::buttonMode(uint8_t mode) { 
+void HamShield::buttonMode(uint8_t mode) { 
    pinMode(HAMSHIELD_AUX_BUTTON,INPUT);       // set the pin mode to input
    digitalWrite(HAMSHIELD_AUX_BUTTON,HIGH);   // turn on internal pull up 
    if(mode == PTT_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, isr_ptt, CHANGE); } 
@@ -1151,23 +1151,23 @@ void HAMShield::buttonMode(uint8_t mode) {
 
 /* handle aux button to reset condition */
 
-void HAMShield::isr_reset() { 
+void HamShield::isr_reset() { 
   wdt_enable(WDTO_15MS);
   while(1) { } 
 }
 
 /* Transmit on press, receive on release. We need debouncing !! */
 
-void HAMShield::isr_ptt() { 
+void HamShield::isr_ptt() { 
    if((bouncer + 200) > millis()) { 
    if(ptt == false) { 
       ptt = true;
-      HAMShield::setModeTransmit();
+      HamShield::setModeTransmit();
       bouncer = millis();
    }
    if(ptt == true) { 
       ptt = false;
-      HAMShield::setModeReceive();
+      HamShield::setModeReceive();
       bouncer = millis();
    } }
 }
@@ -1183,18 +1183,18 @@ Does not take in account the millis() overflow
    
 */
 
-bool HAMShield::waitForChannel(long timeout = 0, long breakwindow = 0) { 
+bool HamShield::waitForChannel(long timeout = 0, long breakwindow = 0, int setRSSI = HAMSHIELD_EMPTY_CHANNEL_RSSI) { 
     int16_t rssi = 0;                                                              // Set RSSI to max received signal
     for(int x = 0; x < 20; x++) { rssi = readRSSI(); }                            // "warm up" to get past RSSI hysteresis 
     long timer = millis() + timeout;                                              // Setup the timeout value
     if(timeout == 0) { timer = 4294967295; }                                      // If we want to wait forever, set it to the max millis()
     while(timer > millis()) {                                                     // while our timer is not timed out.
         rssi = readRSSI();                                                        // Read signal strength
-        if(rssi < HAMSHIELD_EMPTY_CHANNEL_RSSI) {                                 // If the channel is empty, lets see if anyone breaks in.
+        if(rssi < setRSSI) {                                 // If the channel is empty, lets see if anyone breaks in.
              timer = millis() + breakwindow;
              while(timer > millis()) {
                  rssi = readRSSI();
-                 if(rssi > HAMSHIELD_EMPTY_CHANNEL_RSSI) { return false; }        // Someone broke into the channel, abort.
+                 if(rssi > setRSSI) { return false; }        // Someone broke into the channel, abort.
              } return true;                                                       // It passed the test...channel is open.
         }
     }
@@ -1204,7 +1204,7 @@ bool HAMShield::waitForChannel(long timeout = 0, long breakwindow = 0) {
 
 /* Morse code out, blocking */
 
-void HAMShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) { 
+void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) { 
 
  for(int x = 0; x < strlen(buffer); x++) {
   char output = morseLookup(buffer[x]); 
@@ -1222,7 +1222,7 @@ void HAMShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
 
 /* Morse code lookup table */
 
-char HAMShield::morseLookup(char letter) { 
+char HamShield::morseLookup(char letter) { 
  for(int x = 0; x < 54; x++) { 
   if(letter == ascii[x]) { 
     return x; 
@@ -1255,7 +1255,7 @@ Millis	Freq	Description
 
 */
 
-void HAMShield::SSTVVISCode(int code) { 
+void HamShield::SSTVVISCode(int code) { 
 	toneWait(1900,300);
 	toneWait(1200,10);
 	toneWait(1900,300);
@@ -1277,7 +1277,7 @@ Reference: http://www.barberdsp.com/files/Dayton%20Paper.pdf
 
 */
 
-void HAMShield::SSTVTestPattern(int code) { 
+void HamShield::SSTVTestPattern(int code) { 
        SSTVVISCode(code);
        if(code == MARTIN1) { 
             for(int x = 0; x < 257; x++){ 
@@ -1323,14 +1323,14 @@ void HAMShield::SSTVTestPattern(int code) {
 
 /* wait for tone to complete */
 
-void HAMShield::toneWait(uint16_t freq, long timer) { 
+void HamShield::toneWait(uint16_t freq, long timer) { 
     tone(HAMSHIELD_PWM_PIN,freq,timer);
     delay(timer);
 }
 
 /* wait microseconds for tone to complete */
 
-void HAMShield::toneWaitU(uint16_t freq, long timer) { 
+void HamShield::toneWaitU(uint16_t freq, long timer) { 
     if(freq < 16383) { 
     tone(HAMSHIELD_PWM_PIN,freq);
     delayMicroseconds(timer); noTone(HAMSHIELD_PWM_PIN); return;
@@ -1340,7 +1340,7 @@ void HAMShield::toneWaitU(uint16_t freq, long timer) {
 }
 
 
-bool HAMShield::parityCalc(int code) {  
+bool HamShield::parityCalc(int code) {  
      unsigned int v;       // word value to compute the parity of
      bool parity = false;  // parity will be the parity of v
 
@@ -1353,7 +1353,7 @@ bool HAMShield::parityCalc(int code) {
     return parity;
 }
 /*
-void HAMShield::AFSKOut(char buffer[80]) { 
+void HamShield::AFSKOut(char buffer[80]) { 
   for(int x = 0; x < 65536; x++) { 
   startPlayback(AFSK_mark, sizeof(AFSK_mark));  delay(8); 
   startPlayback(AFSK_space, sizeof(AFSK_space));  delay(8); }

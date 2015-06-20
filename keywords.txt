@@ -1,13 +1,13 @@
 #######################################
-# Syntax Coloring Map HAMShield
+# Syntax Coloring Map HamShield
 #######################################
 
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
 
-#SD	KEYWORD1
-#File	KEYWORD1
+HamShield	KEYWORD1
+HAMShield	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)

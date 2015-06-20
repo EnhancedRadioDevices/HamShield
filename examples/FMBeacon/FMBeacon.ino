@@ -11,7 +11,7 @@ Beacon will check to see if the channel is clear before it will transmit.
 #include <HamShield.h>
 #include <Wire.h>
 
-HAMShield radio;
+HamShield radio;
 
 void setup() { 
   Serial.begin(9600);
@@ -27,7 +27,7 @@ void setup() {
 }
 
 void loop() {
-  if(radio.waitForChannel(30000,2000)) {     // wait up to 30 seconds for a clear channel, and then 2 seconds of empty channel
+  if(radio.waitForChannel(30000,2000,-50)) {     // wait up to 30 seconds for a clear channel, and then 2 seconds of empty channel
     Serial.println("Signal is clear -- Transmitting");
     radio.setModeTransmit();                // turn on the transmitter
     radio.morseOut("1ZZ9ZZ/B CN87 ARDUINO HAMSHIELD");
@@ -35,7 +35,8 @@ void loop() {
     Serial.print("TX Off");
     delay(30000);    
   } else { 
-    Serial.println("The channel was busy. Waiting 10 seconds.");
+    Serial.print("The channel was busy. Waiting 10 seconds. RSSI: ");
+    Serial.println(radio.readRSSI());
     delay(10000);
   } 
 }

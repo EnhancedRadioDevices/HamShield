@@ -16,7 +16,7 @@
 #define HAMSHIELD_MORSE_DOT             100    // Morse code dot length (smaller is faster WPM)
 #define HAMSHIELD_MORSE_BUFFER_SIZE      80    // Char buffer size for morse code text
 #define HAMSHIELD_AUX_BUTTON              5    // Pin assignment for AUX button
-#define HAMSHIELD_PWM_PIN                 9    // Pin assignment for PWM output
+#define HAMSHIELD_PWM_PIN                 11    // Pin assignment for PWM output
 #define HAMSHIELD_EMPTY_CHANNEL_RSSI   -110    // Threshold where channel is considered "clear"
 
 // button modes

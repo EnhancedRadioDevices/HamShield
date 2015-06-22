@@ -22,7 +22,7 @@ void setup() {
   int result = radio.testConnection();
   Serial.println(result,DEC);
   radio.initialize();                         // setup radio
-  radio.setFrequency(446000);                 // set to 70 cm call frequency
+  radio.frequency(446000);                 // set to 70 cm call frequency
   Serial.println("Done with radio beacon setup.");
 }
 

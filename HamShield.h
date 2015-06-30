@@ -541,6 +541,8 @@ class HamShield {
         uint32_t GMRS[];
         uint32_t MURS[];
         uint32_t WX[];
+        
+    public:
         static HamShield *sHamShield; // HamShield singleton, used for ISRs mostly
          
 //          int8_t A1846S::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16_t timeout);

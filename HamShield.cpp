@@ -11,6 +11,7 @@
 /* don't change this regulatory value, use dangerMode() and safeMode() instead */
 
 bool restrictions = true; 
+HamShield *HamShield::sHamShield = NULL;
 
 /* channel lookup tables */
 
@@ -47,6 +48,7 @@ volatile long bouncer = 0;
  */
 HamShield::HamShield() {
     devAddr = A1846S_DEV_ADDR_SENLOW;
+    sHamShield = this;
 }
 
 /** Specific address constructor.
@@ -1133,7 +1135,6 @@ uint32_t HamShield::findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, u
 void HamShield::buttonMode(uint8_t mode) { 
    pinMode(HAMSHIELD_AUX_BUTTON,INPUT);       // set the pin mode to input
    digitalWrite(HAMSHIELD_AUX_BUTTON,HIGH);   // turn on internal pull up
-   sHamShield = this; 
    if(mode == PTT_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, HamShield::isr_ptt, CHANGE); } 
    if(mode == RESET_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, HamShield::isr_reset, CHANGE); }
 }

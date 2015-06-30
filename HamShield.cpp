@@ -1268,12 +1268,13 @@ bool HamShield::waitForChannel(long timeout = 0, long breakwindow = 0, int setRS
 /* Morse code out, blocking */
 
 void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) { 
-  int i = 0;
+  int i;
   char prev = 0;
-  while(buffer[i] != '\0' && i < HAMSHIELD_MORSE_BUFFER_SIZE) {
+  for(i = 0; buffer[i] != '\0' && i < HAMSHIELD_MORSE_BUFFER_SIZE; prev = buffer[i], i++) {
     // On a space, delay 7 dots
     if(buffer[i] == ' ') {
       // We delay by 4 here, if we previously sent a symbol. Otherwise 7.
+      // This could probably just be always 7 and go relatively unnoticed.
       if(prev == 0 || prev == ' ')
         delay(HAMSHIELD_MORSE_DOT*7);
       else
@@ -1284,15 +1285,16 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
     uint8_t bits = morseLookup(buffer[i]);
     if(bits) { // If it is a valid character...
       do {
-        tone(HAMSHIELD_PWM_PIN, 600, HAMSHIELD_MORSE_DOT * (bits & 1 ? 3 : 1));
+        if(bits & 1)
+          tone(HAMSHIELD_PWM_PIN, 1000, HAMSHIELD_MORSE_DOT * 3);
+        else
+          tone(HAMSHIELD_PWM_PIN, 1000, HAMSHIELD_MORSE_DOT);
         delay(HAMSHIELD_MORSE_DOT);
         bits >>= 1; // Shift into the next symbol
       } while(bits != 1); // Wait for 1 termination to be all we have left
     }
     // End of character
     delay(HAMSHIELD_MORSE_DOT * 3);
-    prev = buffer[i];
-    i++;
   }
   return;
 }

@@ -519,8 +519,8 @@ class HamShield {
         uint32_t scanChannels(uint32_t buffer[],uint8_t buffsize, uint8_t speed, uint16_t threshold);
         uint32_t findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, uint8_t dwell, uint16_t threshold);
         void buttonMode(uint8_t mode);
-        void isr_ptt();
-        void isr_reset();
+        static void isr_ptt();
+        static void isr_reset();
 	void morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]);
 	char morseLookup(char letter);
         bool waitForChannel(long timeout, long breakwindow, int setRSSI);
@@ -541,7 +541,7 @@ class HamShield {
         uint32_t GMRS[];
         uint32_t MURS[];
         uint32_t WX[];
-
+        static HamShield *sHamShield; // HamShield singleton, used for ISRs mostly
          
 //          int8_t A1846S::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16_t timeout);
 //          int8_t A1846S::readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t *data, uint16_t timeout);

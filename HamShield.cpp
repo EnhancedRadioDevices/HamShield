@@ -1129,23 +1129,14 @@ uint32_t HamShield::findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, u
 }
 
 
-/* 
-BUG: I cannot figure out how to attach these interrupt handlers without the error: 
-
-/Users/casey/Documents/Arduino/libraries/HamShield/HamShield.cpp: In member function 'void HamShield::buttonMode(uint8_t)':
-/Users/casey/Documents/Arduino/libraries/HamShield/HamShield.cpp:1125: error: argument of type 'void (HamShield::)()' does not match 'void (*)()'
-/Users/casey/Documents/Arduino/libraries/HamShield/HamShield.cpp:1126: error: argument of type 'void (HamShield::)()' does not match 'void (*)()'
-*/
-
-
-/*
+/* Setup the auxiliary button input mode and register the ISR */
 void HamShield::buttonMode(uint8_t mode) { 
    pinMode(HAMSHIELD_AUX_BUTTON,INPUT);       // set the pin mode to input
-   digitalWrite(HAMSHIELD_AUX_BUTTON,HIGH);   // turn on internal pull up 
-   if(mode == PTT_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, isr_ptt, CHANGE); } 
-   if(mode == RESET_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, isr_reset, CHANGE); }
+   digitalWrite(HAMSHIELD_AUX_BUTTON,HIGH);   // turn on internal pull up
+   sHamShield = this; 
+   if(mode == PTT_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, HamShield::isr_ptt, CHANGE); } 
+   if(mode == RESET_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, HamShield::isr_reset, CHANGE); }
 }
-*/
 
 /* Interrupt routines */
 
@@ -1162,12 +1153,12 @@ void HamShield::isr_ptt() {
    if((bouncer + 200) > millis()) { 
    if(ptt == false) { 
       ptt = true;
-      HamShield::setModeTransmit();
+      sHamShield->setModeTransmit();
       bouncer = millis();
    }
    if(ptt == true) { 
       ptt = false;
-      HamShield::setModeReceive();
+      sHamShield->setModeReceive();
       bouncer = millis();
    } }
 }

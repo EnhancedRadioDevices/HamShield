@@ -1285,10 +1285,13 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
     uint8_t bits = morseLookup(buffer[i]);
     if(bits) { // If it is a valid character...
       do {
-        if(bits & 1)
+        if(bits & 1) {
           tone(HAMSHIELD_PWM_PIN, 1000, HAMSHIELD_MORSE_DOT * 3);
-        else
+          delay(HAMSHIELD_MORSE_DOT*3);
+        } else {
           tone(HAMSHIELD_PWM_PIN, 1000, HAMSHIELD_MORSE_DOT);
+          delay(HAMSHIELD_MORSE_DOT);
+        }
         delay(HAMSHIELD_MORSE_DOT);
         bits >>= 1; // Shift into the next symbol
       } while(bits != 1); // Wait for 1 termination to be all we have left

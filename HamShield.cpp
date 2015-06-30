@@ -10,7 +10,7 @@
 
 /* don't change this regulatory value, use dangerMode() and safeMode() instead */
 
-bool restrictions = true; 
+bool restrictions = true;
 
 /* channel lookup tables */
 
@@ -23,10 +23,82 @@ uint32_t MURS[] = {0,151820,151880,151940,154570,154600};
 uint32_t WX[] = {0,162550,162400,162475,162425,162450,162500,162525};
 
 /* morse code lookup table */
-
-const char *ascii = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,?'!/()&:;=+-_\"$@",
-  *itu[] = { ".-","-...","-.-.","-..",".","..-.","--.","....","..",".---","-.-",".-..","--","-.","---",".--.","--.-",".-.","...","-","..-","...-",".--","-..-","-.--","--..","-----",".----","..---","...--","....-",".....","-....","--...","---..","----.",".-.-.-","--..--","..--..",".----.","-.-.--","-..-.","-.--.","-.--.-",".-...","---...","-.-.-.","-...-",".-.-.","-....-","..--.-",".-..-.","...-..-",".--.-."
-  };
+// This is the Morse table in reverse binary format.
+// It will occupy 108 bytes of memory (or program memory if defined)
+#define MORSE_TABLE_LENGTH 54
+#define MORSE_TABLE_PROGMEM
+#ifndef MORSE_TABLE_PROGMEM
+const struct asciiMorse {
+    char ascii;
+    uint8_t itu;
+} asciiMorse[MORSE_TABLE_LENGTH] = {
+    { 'E', 0b00000010 }, // .
+    { 'T', 0b00000011 }, // -
+    { 'I', 0b00000100 }, // ..
+    { 'N', 0b00000101 }, // -.
+    { 'A', 0b00000110 }, // .-
+    { 'M', 0b00000111 }, // --
+    { 'S', 0b00001000 }, // ...
+    { 'D', 0b00001001 }, // -..
+    { 'R', 0b00001010 }, // .-.
+    { 'G', 0b00001011 }, // --.
+    { 'U', 0b00001100 }, // ..-
+    { 'K', 0b00001101 }, // -.-
+    { 'W', 0b00001110 }, // .--
+    { 'O', 0b00001111 }, // ---
+    { 'H', 0b00010000 }, // ....
+    { 'B', 0b00010001 }, // -...
+    { 'L', 0b00010010 }, // .-..
+    { 'Z', 0b00010011 }, // --..
+    { 'F', 0b00010100 }, // ..-.
+    { 'C', 0b00010101 }, // -.-.
+    { 'P', 0b00010110 }, // .--.
+    { 'V', 0b00011000 }, // ...-
+    { 'X', 0b00011001 }, // -..-
+    { 'Q', 0b00011011 }, // --.-
+    { 'Y', 0b00011101 }, // -.--
+    { 'J', 0b00011110 }, // .---
+    { '5', 0b00100000 }, // .....
+    { '6', 0b00100001 }, // -....
+    { '&', 0b00100010 }, // .-...
+    { '7', 0b00100011 }, // --...
+    { '8', 0b00100111 }, // ---..
+    { '/', 0b00101001 }, // -..-.
+    { '+', 0b00101010 }, // .-.-.
+    { '(', 0b00101101 }, // -.--.
+    { '9', 0b00101111 }, // ----.
+    { '4', 0b00110000 }, // ....-
+    { '=', 0b00110001 }, // -...-
+    { '3', 0b00111000 }, // ...--
+    { '2', 0b00111100 }, // ..---
+    { '1', 0b00111110 }, // .----
+    { '0', 0b00111111 }, // -----
+    { ':', 0b01000111 }, // ---...
+    { '?', 0b01001100 }, // ..--..
+    { '"', 0b01010010 }, // .-..-.
+    { ';', 0b01010101 }, // -.-.-.
+    { '@', 0b01010110 }, // .--.-.
+    { '\047', 0b01011110 }, // (') .----.
+    { '-', 0b01100001 }, // -....-
+    { '.', 0b01101010 }, // .-.-.-
+    { '_', 0b01101100 }, // ..--.-
+    { ')', 0b01101101 }, // -.--.-
+    { ',', 0b01110011 }, // --..--
+    { '!', 0b01110101 }, // -.-.--
+    { '$', 0b11001000 } // ...-..-
+};
+#else
+#include <avr/pgmspace.h>
+// This is a program memory variant, using 16 bit words for storage instead.
+const uint16_t asciiMorseProgmem[] PROGMEM = {
+  0x4502, 0x5403, 0x4904, 0x4E05, 0x4106, 0x4D07, 0x5308, 0x4409, 0x520A,
+  0x470B, 0x550C, 0x4B0D, 0x570E, 0x4F0F, 0x4810, 0x4211, 0x4C12, 0x5A13,
+  0x4614, 0x4315, 0x5016, 0x5618, 0x5819, 0x511B, 0x591D, 0x4A1E, 0x3520,
+  0x3621, 0x2622, 0x3723, 0x3827, 0x2F29, 0x2B2A, 0x282D, 0x392F, 0x3430,
+  0x3D31, 0x3338, 0x323C, 0x313E, 0x303F, 0x3A47, 0x3F4C, 0x2252, 0x3B55,
+  0x4056, 0x275E, 0x2D61, 0x2E6A, 0x5F6C, 0x296D, 0x2C73, 0x2175, 0x24C8
+};
+#endif // MORSE_TABLE_PROGMEM
 
 /* 2200 Hz */
 
@@ -34,7 +106,7 @@ const unsigned char AFSK_mark[] PROGMEM = { 154, 249, 91, 11, 205, 216, 25, 68, 
 
 /* 1200 Hz */
 
-const unsigned char AFSK_space[] PROGMEM = { 140, 228, 250, 166, 53, 0, 53, 166, 249, 230, 128, 24, 7, 88, 203, 255, 203, 88, 7, 24, 128, 230, 249, 167, 53, 0, 53, 167, 249, 230, 128, 24, 6, 88, 202, 255, 202, 88, 6, 24, 127, 231, 249, 167, 52, 0, 52, 167, 248, 231, 127, 25, 6, 89, 202, 255, 202, 89, 6, 25, 127, 231, 248, 167, 53, 0, 54, 165, 251, 227, 133, 14}; 
+const unsigned char AFSK_space[] PROGMEM = { 140, 228, 250, 166, 53, 0, 53, 166, 249, 230, 128, 24, 7, 88, 203, 255, 203, 88, 7, 24, 128, 230, 249, 167, 53, 0, 53, 167, 249, 230, 128, 24, 6, 88, 202, 255, 202, 88, 6, 24, 127, 231, 249, 167, 52, 0, 52, 167, 248, 231, 127, 25, 6, 89, 202, 255, 202, 89, 6, 25, 127, 231, 248, 167, 53, 0, 54, 165, 251, 227, 133, 14};
 
 
 /* Aux button variables */
@@ -60,19 +132,19 @@ HamShield::HamShield(uint8_t address) {
 }
 
 /** Power on and prepare for general usage.
- * 
+ *
  */
 void HamShield::initialize() {
    // set up PWM output for RF power control - commenting out to get rid of terrible buzzing noise
-   // pwr_control_pin = 9;  
-  
-  
+   // pwr_control_pin = 9;
+
+
    // Note: these initial settings are for UHF 12.5kHz channel
    // see the A1846S register table and initial settings for more info
-   
+
    // TODO: update code to make it easier to change from VHF to UHF and 12.5kHz channel to 25kHz channel
     uint16_t tx_data;
-  
+
     // reset all registers in A1846S
     softReset();
     // set pdn_reg bit in control register (0 or 1?) (now done in softReset)
@@ -82,29 +154,29 @@ void HamShield::initialize() {
 
     //set up clock to ues 12-14MHz
     setClkMode(1);
-        
+
     // set up clock to use 12.8MHz crystal
     setXtalFreq(12800);
     // set up ADClk frequency to 6.4MHz
     setAdcClkFreq(6400);
-    
+
     tx_data = 0xE000;
-    I2Cdev::writeWord(devAddr, 0x24, tx_data);  // why is this here? See A1846S register init word doc    
+    I2Cdev::writeWord(devAddr, 0x24, tx_data);  // why is this here? See A1846S register init word doc
 
     //could change GPIO voltage levels with writes to 0x08 and 0x09
-    // see A1846S register init table 
+    // see A1846S register init table
     tx_data = 0x03AC;
-    I2Cdev::writeWord(devAddr, 0x09, tx_data);  // why is this here? See A1846S register init word doc    
+    I2Cdev::writeWord(devAddr, 0x09, tx_data);  // why is this here? See A1846S register init word doc
 
     // set PA_bias voltage to 1.68V (and do something else too? what's the 3 for?)
     tx_data = 0x0320;
     I2Cdev::writeWord(devAddr, 0x0A, tx_data);
-       
+
     tx_data = 0x1A10;
-    I2Cdev::writeWord(devAddr, 0x0B, tx_data);  // why is this here? See A1846S register init table    
+    I2Cdev::writeWord(devAddr, 0x0B, tx_data);  // why is this here? See A1846S register init table
 
     tx_data = 0x3E37;
-    I2Cdev::writeWord(devAddr, 0x11, tx_data);  // why is this here? See A1846S register init table    
+    I2Cdev::writeWord(devAddr, 0x11, tx_data);  // why is this here? See A1846S register init table
 
     // Automatic Gain Control stuff
     // AGC when band is UHF,0x32 = 0x627C;when band is VHF,0x32 = 0x62BC//
@@ -130,7 +202,7 @@ void HamShield::initialize() {
     // subaudio decode setting,sq_out_sel,noise threshold value db
     tx_data = 0x114A; // A1846S_SQ_OUT_SEL_REG is 0x54
     I2Cdev::writeWord(devAddr, A1846S_SQ_OUT_SEL_REG, tx_data);  // why is this here? See A1846S register init table
-    
+
     // bandwide setting of filter when RSSI is high or low
     tx_data = 0x0652;
     I2Cdev::writeWord(devAddr, 0x56, tx_data);  // why is this here? See A1846S register init table
@@ -159,25 +231,25 @@ void HamShield::initialize() {
     I2Cdev::writeWord(devAddr, 0x5, tx_data);  // set output power, reg 0x85 - 0x80
     tx_data = 0x0;
     I2Cdev::writeWord(devAddr, 0x7F, tx_data);  // finish writing to a reg > 0x7F
-    
+
     // set control reg for pdn_reg, rx, and mute when rxno
     tx_data = 0xA4;
     I2Cdev::writeWord(devAddr, A1846S_CTL_REG, tx_data);  // finish writing to a reg > 0x7F
-    
+
     delay(100);
-    
+
     // set control reg for chip_cal_en, pdn_reg, rx, and mute when rxno
     tx_data = 0xA6;
     I2Cdev::writeWord(devAddr, A1846S_CTL_REG, tx_data);  // finish writing to a reg > 0x7F
-    
+
     delay(100);
 
     // set control reg for chip_cal_en, pdn_reg
     tx_data = 0x6;
     I2Cdev::writeWord(devAddr, A1846S_CTL_REG, tx_data);  // finish writing to a reg > 0x7F
-    
+
     delay(100);
-    
+
     // and then I have no idea about this nonsense
     // some of these settings seem to be for 12.5kHz channels
     // TODO: get A1846S to give us a full register table
@@ -191,7 +263,7 @@ void HamShield::initialize() {
     I2Cdev::writeWord(devAddr, 0x71, tx_data);
     tx_data = 0x0006;
     I2Cdev::writeWord(devAddr, 0x30, tx_data);
-    
+
     delay(100);
 
     // setup default values
@@ -217,15 +289,15 @@ bool HamShield::testConnection() {
 }
 
 
-/** A1846S each register write is 24-bit long, including a 
- * r/nw bit, 7-bit register address , and 16-bit data (MSB 
+/** A1846S each register write is 24-bit long, including a
+ * r/nw bit, 7-bit register address , and 16-bit data (MSB
  * is the first bit).
  *   R/W, A[6:0], D[15:0]
  *
  * Note (this shouldn't be necessary, since all ctl registers are below 0x7F)
- * If register address is more than 7FH, first write 0x0001 
- * to 7FH, and then write value to the address subtracted by 
- * 80H. Finally write 0x0000 to 7FH 
+ * If register address is more than 7FH, first write 0x0001
+ * to 7FH, and then write value to the address subtracted by
+ * 80H. Finally write 0x0000 to 7FH
  * Example: writing 85H register address is 0x001F .
  *   Move 7FH 0x0001{
 
@@ -251,12 +323,12 @@ void HamShield::softReset() {
    I2Cdev::writeWord(devAddr, A1846S_CTL_REG, tx_data);
 }
 
- 
+
 void HamShield::setFrequency(uint32_t freq_khz) {
     radio_frequency = freq_khz;
     uint32_t freq_raw = freq_khz << 3; // shift by 3 to multiply by 8
 
-    // send top 16 bits to A1846S_FREQ_HI_REG	
+    // send top 16 bits to A1846S_FREQ_HI_REG
     uint16_t freq_half = (uint16_t) (0x3FFF & (freq_raw >> 16));
     I2Cdev::writeWord(devAddr, A1846S_FREQ_HI_REG, freq_half);
     //  send bottom 16 bits to A1846S_FREQ_LO_REG
@@ -284,7 +356,7 @@ void HamShield::setNoFilters() {
 }
 
 // band
-// 00 - 400-520MHz 
+// 00 - 400-520MHz
 // 10 - 200-260MHz
 // 11 - 134-174MHz
 // TODO: add write to 0x32 based on band selection
@@ -313,11 +385,11 @@ uint16_t HamShield::getBand(){
 // 12-14MHz crystal: this reg is set to crystal freq_khz
 // 24-28MHz crystal: this reg is set to crystal freq_khz / 2
 void HamShield::setXtalFreq(uint16_t freq_kHz){
-	I2Cdev::writeWord(devAddr, A1846S_XTAL_FREQ_REG, freq_kHz);	
+	I2Cdev::writeWord(devAddr, A1846S_XTAL_FREQ_REG, freq_kHz);
 }
 uint16_t HamShield::getXtalFreq(){
 	I2Cdev::readWord(devAddr, A1846S_FREQ_HI_REG, radio_i2c_buf);
-	
+
 	return radio_i2c_buf[0];
 }
 
@@ -325,7 +397,7 @@ uint16_t HamShield::getXtalFreq(){
 // 12-14MHz crystal: this reg is set to crystal freq_khz / 2
 // 24-28MHz crystal: this reg is set to crystal freq_khz / 4
 void HamShield::setAdcClkFreq(uint16_t freq_kHz){
-	I2Cdev::writeWord(devAddr, A1846S_ADCLK_FREQ_REG, freq_kHz);	
+	I2Cdev::writeWord(devAddr, A1846S_ADCLK_FREQ_REG, freq_kHz);
 }
 
 uint16_t HamShield::getAdcClkFreq(){
@@ -340,9 +412,9 @@ void HamShield::setClkMode(bool LFClk){
     // include upper bits as default values
     uint16_t tx_data = 0x0F11; // NOTE: should this be 0fd1 or 0f11? Programming guide and setup guide disagree
     if (!LFClk) {
-      tx_data = 0x0F10;  
+      tx_data = 0x0F10;
     }
-  
+
     I2Cdev::writeWord(devAddr, A1846S_CLK_MODE_REG, tx_data);
 }
 bool HamShield::getClkMode(){
@@ -375,7 +447,7 @@ void HamShield::setTX(bool on_noff){
     // make sure RX is off
     if (on_noff) {
       setRX(false);
-      
+
       // For RF6886:
       // first turn on power
         // set RX output on
@@ -389,8 +461,8 @@ void HamShield::setTX(bool on_noff){
 
     // todo: make sure gpio are set correctly after this
     I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, on_noff);
-    
-    
+
+
 }
 bool HamShield::getTX(){
     I2Cdev::readBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, radio_i2c_buf);
@@ -401,13 +473,13 @@ void HamShield::setRX(bool on_noff){
    // make sure TX is off
    if (on_noff) {
      setTX(false);
-     
+
     // set TX output off
     setGpioHi(5); // remember that RX and TX are active low
     // set RX output on
     setGpioLow(4); // remember that RX and TX are active low
    }
-   
+
    I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, on_noff);
 }
 bool HamShield::getRX(){
@@ -417,25 +489,25 @@ bool HamShield::getRX(){
 
 void HamShield::setModeTransmit(){
         // check to see if we should allow them to do this
-        if(restrictions == true) { 
-           if((radio_frequency > 139999) & (radio_frequency < 148001)) { setRX(false); setTX(true); } 
-           if((radio_frequency > 218999) & (radio_frequency < 225001)) { setRX(false); setTX(true); } 
-           if((radio_frequency > 419999) & (radio_frequency < 450001)) { setRX(false); setTX(true); }                     
-        } else { 
+        if(restrictions == true) {
+           if((radio_frequency > 139999) & (radio_frequency < 148001)) { setRX(false); setTX(true); }
+           if((radio_frequency > 218999) & (radio_frequency < 225001)) { setRX(false); setTX(true); }
+           if((radio_frequency > 419999) & (radio_frequency < 450001)) { setRX(false); setTX(true); }
+        } else {
 	// turn off rx, turn on tx
 	setRX(false); // break before make
 	setTX(true); }
-} 
+}
 void HamShield::setModeReceive(){
 	// turn on rx, turn off tx
 	setTX(false); // break before make
 	setRX(true);
-} 
+}
 void HamShield::setModeOff(){
 	// turn off rx, turn off tx, set pwr_dwn bit
 	setTX(false);
 	setRX(false);
-} 
+}
 
 // set tx source
 // 00 - Mic source
@@ -454,7 +526,7 @@ void HamShield::setTxSourceSine(){
 void HamShield::setTxSourceCode(){
 	// note, also set GPIO1 to 01
 	setGpioMode(1, 1);
-	
+
 	setTxSource(2);
 }
 void HamShield::setTxSourceNone(){
@@ -493,7 +565,7 @@ uint16_t HamShield::getPABiasVoltage(){
 
 	TX code mode:
 	Step1: 45H[2:0]=010
-	
+
 	RX code mode:
 	Step1: set 45H[2:0]=001
 	Step2: set 4dH[15:10]=000001
@@ -599,13 +671,13 @@ void HamShield::setCtcssFreq(uint16_t freq){
 }
 uint16_t HamShield::getCtcssFreq(){
 	I2Cdev::readWord(devAddr, A1846S_CTCSS_FREQ_REG, radio_i2c_buf);
-	
+
 	return radio_i2c_buf[0];
 }
 void HamShield::setCtcssFreqToStandard(){
 	// freq must be 134.4Hz for standard cdcss mode
 	setCtcssFreq(0x2268);
-} 
+}
 
 // cdcss codes
 void HamShield::setCdcssCode(uint16_t code) {
@@ -613,9 +685,9 @@ void HamShield::setCdcssCode(uint16_t code) {
 
 	// Set both code registers at once (23 or 24 bit code)
 	// sends 100, c1, c2, c3, 11 bits of crc
-	
+
 	// TODO: figure out what to do about 24 or 23 bit codes
-	
+
 	uint32_t cdcss_code = 0x800000; // top three bits are 100
 	uint32_t oct_code = code%10;
 	code = code / 10;
@@ -624,14 +696,14 @@ void HamShield::setCdcssCode(uint16_t code) {
 	code = code / 10;
 	cdcss_code += oct_code << 17;
 	cdcss_code += (code % 10) << 14;
-	
+
 	// TODO: CRC
-	
+
 	// set registers
         uint16_t temp_code = (uint16_t) cdcss_code;
 	I2Cdev::writeWord(devAddr, A1846S_CDCSS_CODE_HI_REG, temp_code);
-        temp_code = (uint16_t) (cdcss_code >> 16);	
-	I2Cdev::writeWord(devAddr, A1846S_CDCSS_CODE_LO_REG, temp_code);	
+        temp_code = (uint16_t) (cdcss_code >> 16);
+	I2Cdev::writeWord(devAddr, A1846S_CDCSS_CODE_LO_REG, temp_code);
 }
 uint16_t HamShield::getCdcssCode() {
 	uint32_t oct_code;
@@ -639,14 +711,14 @@ uint16_t HamShield::getCdcssCode() {
 	oct_code = (radio_i2c_buf[0] << 16);
 	I2Cdev::readWord(devAddr, A1846S_CDCSS_CODE_LO_REG, radio_i2c_buf);
 	oct_code += radio_i2c_buf[0];
-	
+
 	oct_code = oct_code >> 12;
 	uint16_t code = (oct_code & 0x3);
 	oct_code = oct_code >> 3;
 	code += (oct_code & 0x3)*10;
 	oct_code = oct_code >> 3;
 	code += (oct_code & 0x3)*100;
-	
+
 	return code;
 }
 
@@ -666,10 +738,10 @@ bool HamShield::getSQState(){
 void HamShield::setSQHiThresh(uint16_t sq_hi_threshold){
 	// Sq detect high th, rssi_cmp will be 1 when rssi>th_h_sq, unit 1/8dB
 	I2Cdev::writeWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, sq_hi_threshold);
-} 
+}
 uint16_t HamShield::getSQHiThresh(){
 	I2Cdev::readWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, radio_i2c_buf);
-	
+
 	return radio_i2c_buf[0];
 }
 void HamShield::setSQLoThresh(uint16_t sq_lo_threshold){
@@ -678,7 +750,7 @@ void HamShield::setSQLoThresh(uint16_t sq_lo_threshold){
 }
 uint16_t HamShield::getSQLoThresh(){
 	I2Cdev::readWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, radio_i2c_buf);
-	
+
 	return radio_i2c_buf[0];
 }
 
@@ -709,20 +781,20 @@ bool HamShield::getVoxOn(){
 // Vox Threshold
 void HamShield::setVoxOpenThresh(uint16_t vox_open_thresh){
 	// When vssi > th_h_vox, then vox will be 1(unit mV )
-	I2Cdev::writeWord(devAddr, A1846S_TH_H_VOX_REG, vox_open_thresh);	
-} 
+	I2Cdev::writeWord(devAddr, A1846S_TH_H_VOX_REG, vox_open_thresh);
+}
 uint16_t HamShield::getVoxOpenThresh(){
 	I2Cdev::readWord(devAddr, A1846S_TH_H_VOX_REG, radio_i2c_buf);
-	
+
 	return radio_i2c_buf[0];
 }
 void HamShield::setVoxShutThresh(uint16_t vox_shut_thresh){
 	// When vssi < th_l_vox && time delay meet, then vox will be 0 (unit mV )
-	I2Cdev::writeWord(devAddr, A1846S_TH_L_VOX_REG, vox_shut_thresh);	
-} 
+	I2Cdev::writeWord(devAddr, A1846S_TH_L_VOX_REG, vox_shut_thresh);
+}
 uint16_t HamShield::getVoxShutThresh(){
 	I2Cdev::readWord(devAddr, A1846S_TH_L_VOX_REG, radio_i2c_buf);
-	
+
 	return radio_i2c_buf[0];
 }
 
@@ -864,7 +936,7 @@ void HamShield::setGpioHi(uint16_t gpio){
 uint16_t HamShield::getGpioMode(uint16_t gpio){
 	uint16_t mode_len = 2;
 	uint16_t bit = gpio*2 + 1;
-	
+
     I2Cdev::readBitsW(devAddr, A1846S_GPIO_MODE_REG, bit, mode_len, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
@@ -914,20 +986,20 @@ bool HamShield::getPreDeEmphEnabled(){
 // Read Only Status Registers
 int16_t HamShield::readRSSI(){
 	I2Cdev::readWord(devAddr, A1846S_RSSI_REG, radio_i2c_buf);
-	
+
         int16_t rssi = (radio_i2c_buf[0] & 0x3FF) / 8 - 135;
 	return rssi; // only need lowest 10 bits
 }
 uint16_t HamShield::readVSSI(){
 	I2Cdev::readWord(devAddr, A1846S_VSSI_REG, radio_i2c_buf);
-	
+
 	return radio_i2c_buf[0] & 0x7FF; // only need lowest 10 bits
 }
 uint16_t HamShield::readDTMFIndex(){
 // TODO: may want to split this into two (index1 and index2)
     I2Cdev::readBitsW(devAddr, A1846S_DTMF_RX_REG, A1846S_DTMF_INDEX_BIT, A1846S_DTMF_INDEX_LENGTH, radio_i2c_buf);
     return radio_i2c_buf[0];
-} 
+}
 uint16_t HamShield::readDTMFCode(){
 //  1:f0+f4, 2:f0+f5, 3:f0+f6, A:f0+f7,
 //  4:f1+f4, 5:f1+f5, 6:f1+f6, B:f1+f7,
@@ -938,46 +1010,46 @@ uint16_t HamShield::readDTMFCode(){
 }
 
 void HamShield::setRfPower(uint8_t pwr) {
-  
+
    // using loop reference voltage input to op-amp
    // (see RF6886 datasheet)
    // 30 is 0.5V, which is ~min loop reference voltage
    // 127 is 2.5V, which is ~max loop ref voltage
    int max_pwr = 255; //167; // 167 is 3.3*255/5 - 1;
    if (pwr > max_pwr) {
-     pwr = max_pwr; 
+     pwr = max_pwr;
    }
-  
-  
+
+
    // using open loop reference voltage into Vreg1/2
    /*int max_pwr = 78; // 78 = 1.58*255/5 - 1
    if (pwr > max_pwr) {
-     pwr = max_pwr; 
+     pwr = max_pwr;
    }*/
    // using loop ref voltage as specified in RF6886 datasheet
    // analogWrite(pwr_control_pin, pwr);
 }
 
 
-bool HamShield::frequency(uint32_t freq_khz) {  
-  if((freq_khz >= 137000) && (freq_khz <= 174000)) { 
+bool HamShield::frequency(uint32_t freq_khz) {
+  if((freq_khz >= 137000) && (freq_khz <= 174000)) {
       setVHF();
       setBand(3); // 0b11 is 134-174MHz
       setFrequency(freq_khz);
       return true;
   }
-  
-  if((freq_khz >= 200000) && (freq_khz <= 260000)) { 
+
+  if((freq_khz >= 200000) && (freq_khz <= 260000)) {
       setVHF();
       setBand(2); // 10 is 200-260MHz
       setFrequency(freq_khz);
       return true;
   }
-  
-  if((freq_khz >= 400000) && (freq_khz <= 520000)) { 
+
+  if((freq_khz >= 400000) && (freq_khz <= 520000)) {
       setUHF();
       setBand(00); // 00 is 400-520MHz
-      setFrequency(freq_khz); 
+      setFrequency(freq_khz);
       return true;
   }
   return false;
@@ -985,23 +1057,23 @@ bool HamShield::frequency(uint32_t freq_khz) {
 
 /* FRS Lookup Table */
 
-bool HamShield::setFRSChannel(uint8_t channel) { 
-  if(channel < 15) { 
+bool HamShield::setFRSChannel(uint8_t channel) {
+  if(channel < 15) {
     setFrequency(FRS[channel]);
     return true;
   }
   return false;
-} 
+}
 
 /* GMRS Lookup Table (borrows from FRS table since channels overlap) */
 
-bool HamShield::setGMRSChannel(uint8_t channel) { 
-  if((channel > 8) & (channel < 16)) { 
+bool HamShield::setGMRSChannel(uint8_t channel) {
+  if((channel > 8) & (channel < 16)) {
      channel = channel - 7;           // we start with 0, to try to avoid channel 8 being nothing
      setFrequency(FRS[channel]);
-     return true; 
+     return true;
   }
-  if(channel < 9) { 
+  if(channel < 9) {
      setFrequency(GMRS[channel]);
      return true;
   }
@@ -1010,21 +1082,21 @@ bool HamShield::setGMRSChannel(uint8_t channel) {
 
 /* MURS band is 11.25KHz (2.5KHz dev) in channel 1-3, 20KHz (5KHz dev) in channel 4-5. Should we set this? */
 
-bool HamShield::setMURSChannel(uint8_t channel) { 
-  if(channel < 6) { 
-     setFrequency(MURS[channel]); 
+bool HamShield::setMURSChannel(uint8_t channel) {
+  if(channel < 6) {
+     setFrequency(MURS[channel]);
      return true;
   }
 }
 
 /* Weather radio channels */
 
-bool HamShield::setWXChannel(uint8_t channel) { 
-  if(channel < 8) { 
+bool HamShield::setWXChannel(uint8_t channel) {
+  if(channel < 8) {
      setFrequency(WX[channel]);
      setModeReceive();
      // turn off squelch?
-     // channel bandwidth? 
+     // channel bandwidth?
      return true;
   }
   return false;
@@ -1032,10 +1104,10 @@ bool HamShield::setWXChannel(uint8_t channel) {
 
 /* Scan channels for strongest signal. returns channel number. You could do radio.setWXChannel(radio.scanWXChannel()) */
 
-uint8_t HamShield::scanWXChannel() { 
+uint8_t HamShield::scanWXChannel() {
   uint8_t channel = 0;
   int16_t toprssi = 0;
-  for(int x = 0; x < 8; x++) { 
+  for(int x = 0; x < 8; x++) {
      setWXChannel(x);
      delay(100);
      int16_t rssi = readRSSI();
@@ -1047,28 +1119,28 @@ uint8_t HamShield::scanWXChannel() {
 
 /* removes the out of band transmit restrictions for those who hold special licenses */
 
-void HamShield::dangerMode() { 
+void HamShield::dangerMode() {
   restrictions = false;
   return;
-} 
+}
 
 /* enable restrictions on out of band transmissions */
 
-void HamShield::safeMode() { 
+void HamShield::safeMode() {
   restrictions = true;
   return;
 }
 
 /* scanner mode. Scans a range and returns the active frequency when it detects a signal. If none is detected, returns 0. */
 
-uint32_t HamShield::scanMode(uint32_t start,uint32_t stop, uint8_t speed, uint16_t step, uint16_t threshold) { 
+uint32_t HamShield::scanMode(uint32_t start,uint32_t stop, uint8_t speed, uint16_t step, uint16_t threshold) {
     setModeReceive();
     int16_t rssi = -150;
-    for(uint32_t freq = start; freq < stop; freq = freq + step) { 
+    for(uint32_t freq = start; freq < stop; freq = freq + step) {
         setFrequency(freq);
-        for(int x = 0; x < speed; x++) { 
+        for(int x = 0; x < speed; x++) {
             rssi = readRSSI();
-            if(rssi > threshold) { return freq; } 
+            if(rssi > threshold) { return freq; }
         }
     }
     return 0;  // found nothing
@@ -1076,52 +1148,52 @@ uint32_t HamShield::scanMode(uint32_t start,uint32_t stop, uint8_t speed, uint16
 
 /* white space finder. (inverted scanner) Scans a range for a white space, and if no signal exists, stop there. */
 
-uint32_t HamShield::findWhitespace(uint32_t start,uint32_t stop, uint8_t dwell, uint16_t step, uint16_t threshold) { 
+uint32_t HamShield::findWhitespace(uint32_t start,uint32_t stop, uint8_t dwell, uint16_t step, uint16_t threshold) {
     setModeReceive();
     int16_t rssi = -150;
-    for(uint32_t freq = start; freq < stop; freq = freq + step) { 
+    for(uint32_t freq = start; freq < stop; freq = freq + step) {
         setFrequency(freq);
-        for(int x = 0; x < dwell; x++) { 
+        for(int x = 0; x < dwell; x++) {
             rssi = readRSSI();
-            if(rssi > threshold) { break; } 
+            if(rssi > threshold) { break; }
         }
         if(rssi < threshold) { return freq; }  /* found a blank channel */
     }
     return 0;  // everything is busy
 }
 
-/* 
+/*
 channel scanner. Scans an array of channels for activity. returns channel number if found. Otherwise, returns 0. ignores whatever is in array position
-0  
+0
 */
 
-uint32_t HamShield::scanChannels(uint32_t buffer[],uint8_t buffsize, uint8_t speed, uint16_t threshold) { 
+uint32_t HamShield::scanChannels(uint32_t buffer[],uint8_t buffsize, uint8_t speed, uint16_t threshold) {
         setModeReceive();
         int16_t rssi = 0;
-        for(int x = 1; x < buffsize; x++) { 
+        for(int x = 1; x < buffsize; x++) {
                setFrequency(buffer[x]);
-               for(int y = 0; y < speed; y++) { 
+               for(int y = 0; y < speed; y++) {
                   rssi = readRSSI();
-                  if(rssi > threshold) { return x; } 
+                  if(rssi > threshold) { return x; }
                }
-        }               
+        }
         return 0;
 
 }
 
-/* 
+/*
 white space channel finder. Scans an array of channels for white space. returns channel number if empty found. Otherwise, returns 0. ignores whatever is in array position
-0  
+0
 */
 
-uint32_t HamShield::findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, uint8_t dwell, uint16_t threshold) { 
+uint32_t HamShield::findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, uint8_t dwell, uint16_t threshold) {
         setModeReceive();
         int16_t rssi = 0;
-        for(int x = 1; x < buffsize; x++) { 
+        for(int x = 1; x < buffsize; x++) {
                setFrequency(buffer[x]);
-        for(int y = 0; y < dwell; y++) { 
+        for(int y = 0; y < dwell; y++) {
             rssi = readRSSI();
-            if(rssi > threshold) { break; } 
+            if(rssi > threshold) { break; }
         }
         if(rssi < threshold) { return x; }  /* found a blank channel */
     }
@@ -1130,11 +1202,11 @@ uint32_t HamShield::findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, u
 
 
 /* Setup the auxiliary button input mode and register the ISR */
-void HamShield::buttonMode(uint8_t mode) { 
+void HamShield::buttonMode(uint8_t mode) {
    pinMode(HAMSHIELD_AUX_BUTTON,INPUT);       // set the pin mode to input
    digitalWrite(HAMSHIELD_AUX_BUTTON,HIGH);   // turn on internal pull up
-   sHamShield = this; 
-   if(mode == PTT_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, HamShield::isr_ptt, CHANGE); } 
+   sHamShield = this;
+   if(mode == PTT_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, HamShield::isr_ptt, CHANGE); }
    if(mode == RESET_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, HamShield::isr_reset, CHANGE); }
 }
 
@@ -1142,41 +1214,41 @@ void HamShield::buttonMode(uint8_t mode) {
 
 /* handle aux button to reset condition */
 
-void HamShield::isr_reset() { 
+void HamShield::isr_reset() {
   wdt_enable(WDTO_15MS);
-  while(1) { } 
+  while(1) { }
 }
 
 /* Transmit on press, receive on release. We need debouncing !! */
 
-void HamShield::isr_ptt() { 
-   if((bouncer + 200) > millis()) { 
-   if(ptt == false) { 
+void HamShield::isr_ptt() {
+   if((bouncer + 200) > millis()) {
+   if(ptt == false) {
       ptt = true;
       sHamShield->setModeTransmit();
       bouncer = millis();
    }
-   if(ptt == true) { 
+   if(ptt == true) {
       ptt = false;
       sHamShield->setModeReceive();
       bouncer = millis();
    } }
 }
 
-/* 
+/*
 
  Radio etiquette function: Wait for empty channel.
 
  Optional timeout (0 waits forever)
  Optional break window (how much dead air to wait for after a transmission completes)
 
-Does not take in account the millis() overflow 
-   
+Does not take in account the millis() overflow
+
 */
 
-bool HamShield::waitForChannel(long timeout = 0, long breakwindow = 0, int setRSSI = HAMSHIELD_EMPTY_CHANNEL_RSSI) { 
+bool HamShield::waitForChannel(long timeout = 0, long breakwindow = 0, int setRSSI = HAMSHIELD_EMPTY_CHANNEL_RSSI) {
     int16_t rssi = 0;                                                              // Set RSSI to max received signal
-    for(int x = 0; x < 20; x++) { rssi = readRSSI(); }                            // "warm up" to get past RSSI hysteresis 
+    for(int x = 0; x < 20; x++) { rssi = readRSSI(); }                            // "warm up" to get past RSSI hysteresis
     long timer = millis() + timeout;                                              // Setup the timeout value
     if(timeout == 0) { timer = 4294967295; }                                      // If we want to wait forever, set it to the max millis()
     while(timer > millis()) {                                                     // while our timer is not timed out.
@@ -1195,36 +1267,56 @@ bool HamShield::waitForChannel(long timeout = 0, long breakwindow = 0, int setRS
 
 /* Morse code out, blocking */
 
-void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) { 
-
- for(int x = 0; x < strlen(buffer); x++) {
-  char output = morseLookup(buffer[x]); 
-  if(buffer[x] != ' ') { 
-  for(int m = 0; m < strlen(itu[output]); m++) {
-     if(itu[output][m] == '-') { tone(HAMSHIELD_PWM_PIN,1000,HAMSHIELD_MORSE_DOT*3); delay(HAMSHIELD_MORSE_DOT*3); }
-     else { tone(HAMSHIELD_PWM_PIN,1000,HAMSHIELD_MORSE_DOT); delay(HAMSHIELD_MORSE_DOT); }
-     delay(HAMSHIELD_MORSE_DOT);
-     }
-     delay(HAMSHIELD_MORSE_DOT*3);
-  } else { delay(HAMSHIELD_MORSE_DOT*7); } 
- }
- return;
+void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
+  int i = 0;
+  char prev = 0;
+  while(buffer[i] != '\0' && i < HAMSHIELD_MORSE_BUFFER_SIZE) {
+    // On a space, delay 7 dots
+    if(buffer[i] == ' ') {
+      // We delay by 4 here, if we previously sent a symbol. Otherwise 7.
+      if(prev == 0 || prev == ' ')
+        delay(HAMSHIELD_MORSE_DOT*7);
+      else
+        delay(HAMSHIELD_MORSE_DOT*4);
+      continue;
+    }
+    // Otherwise, lookup our character symbol
+    uint8_t bits = morseLookup(buffer[i]);
+    if(bits) { // If it is a valid character...
+      do {
+        tone(HAMSHIELD_PWM_PIN, 600, HAMSHIELD_MORSE_DOT * (bits & 1 ? 3 : 1));
+        delay(HAMSHIELD_MORSE_DOT);
+        bits >>= 1; // Shift into the next symbol
+      } while(bits != 1); // Wait for 1 termination to be all we have left
+    }
+    // End of character
+    delay(HAMSHIELD_MORSE_DOT * 3);
+    prev = buffer[i];
+    i++;
+  }
+  return;
 }
 
 /* Morse code lookup table */
 
-char HamShield::morseLookup(char letter) { 
- for(int x = 0; x < 54; x++) { 
-  if(letter == ascii[x]) { 
-    return x; 
-   // return itu[x];
-  } 
- }
+uint8_t HamShield::morseLookup(char letter) {
+  uint8_t i;
+  for(i = 0; i < MORSE_TABLE_LENGTH; i++) {
+#ifndef MORSE_TABLE_PROGMEM
+    if(asciiMorse[i].ascii == letter)
+      return asciiMorse[i].itu;
+#else
+    uint16_t w = pgm_read_word_near(asciiMorseProgmem + i);
+    if( (char)((w>>8) & 0xff) == letter )
+      return (uint8_t)(w & 0xff);
+#endif // MORSE_TABLE_PROGMEM
+  }
+  return 0;
 }
 
-/* 
+/*
 
-SSTV VIS Digital Header 
+SSTV VIS Digital Header
 
 Reference: http://www.barberdsp.com/files/Dayton%20Paper.pdf
 
@@ -1246,55 +1338,55 @@ Millis	Freq	Description
 
 */
 
-void HamShield::SSTVVISCode(int code) { 
+void HamShield::SSTVVISCode(int code) {
 	toneWait(1900,300);
 	toneWait(1200,10);
 	toneWait(1900,300);
 	toneWait(1200,30);
-        for(int x = 0; x < 7; x++) { 
-           if(bitRead(code,x)) { toneWait(1100,30); } else { toneWait(1300,30); } 
-        } 
-        if(parityCalc(code)) { toneWait(1300,30); } else { toneWait(1100,30); } 
+        for(int x = 0; x < 7; x++) {
+           if(bitRead(code,x)) { toneWait(1100,30); } else { toneWait(1300,30); }
+        }
+        if(parityCalc(code)) { toneWait(1300,30); } else { toneWait(1100,30); }
         toneWait(1200,30);
         return;
 }
 
-/* 
+/*
 
-SSTV Test Pattern 
+SSTV Test Pattern
 Print 6 color bars
 MARTIN1 is only supported for this
 Reference: http://www.barberdsp.com/files/Dayton%20Paper.pdf
 
 */
 
-void HamShield::SSTVTestPattern(int code) { 
+void HamShield::SSTVTestPattern(int code) {
        SSTVVISCode(code);
-       if(code == MARTIN1) { 
-            for(int x = 0; x < 257; x++){ 
+       if(code == MARTIN1) {
+            for(int x = 0; x < 257; x++){
 
                 toneWaitU(1200,4862);              // sync pulse (4862 uS)
                 toneWaitU(1500,572);               // sync porch (572 uS)
 
                 /* Green Channel - 146.432ms a line (we are doing 144ms) */
- 
+
                 toneWait(2400,24);
                 toneWait(2400,24);
                 toneWait(2400,24);
                 toneWait(2400,24);
                 toneWait(1500,24);
-                toneWait(1500,24); 
+                toneWait(1500,24);
 
                 toneWaitU(1500,572);               // color separator pulse (572 uS)
 
                 /* Blue Channel - 146.432ms a line (we are doing 144ms) */
- 
+
                 toneWait(2400,24);
                 toneWait(1500,24);
                 toneWait(2400,24);
                 toneWait(1500,24);
                 toneWait(1500,24);
-                toneWait(2400,24);  
+                toneWait(2400,24);
 
                 toneWaitU(1500,572);               // color separator pulse (572 uS)
 
@@ -1305,8 +1397,8 @@ void HamShield::SSTVTestPattern(int code) {
                 toneWait(1500,24);
                 toneWait(1500,24);
                 toneWait(2400,24);
-                toneWait(1500,24); 
- 
+                toneWait(1500,24);
+
                 toneWaitU(1500,572);               // color separator pulse (572 uS)
              }
      }
@@ -1314,15 +1406,15 @@ void HamShield::SSTVTestPattern(int code) {
 
 /* wait for tone to complete */
 
-void HamShield::toneWait(uint16_t freq, long timer) { 
+void HamShield::toneWait(uint16_t freq, long timer) {
     tone(HAMSHIELD_PWM_PIN,freq,timer);
     delay(timer);
 }
 
 /* wait microseconds for tone to complete */
 
-void HamShield::toneWaitU(uint16_t freq, long timer) { 
-    if(freq < 16383) { 
+void HamShield::toneWaitU(uint16_t freq, long timer) {
+    if(freq < 16383) {
     tone(HAMSHIELD_PWM_PIN,freq);
     delayMicroseconds(timer); noTone(HAMSHIELD_PWM_PIN); return;
     }
@@ -1331,7 +1423,7 @@ void HamShield::toneWaitU(uint16_t freq, long timer) {
 }
 
 
-bool HamShield::parityCalc(int code) {  
+bool HamShield::parityCalc(int code) {
      unsigned int v;       // word value to compute the parity of
      bool parity = false;  // parity will be the parity of v
 
@@ -1344,9 +1436,9 @@ bool HamShield::parityCalc(int code) {
     return parity;
 }
 /*
-void HamShield::AFSKOut(char buffer[80]) { 
-  for(int x = 0; x < 65536; x++) { 
-  startPlayback(AFSK_mark, sizeof(AFSK_mark));  delay(8); 
+void HamShield::AFSKOut(char buffer[80]) {
+  for(int x = 0; x < 65536; x++) {
+  startPlayback(AFSK_mark, sizeof(AFSK_mark));  delay(8);
   startPlayback(AFSK_space, sizeof(AFSK_space));  delay(8); }
 
 }

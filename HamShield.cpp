@@ -1299,7 +1299,7 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
 
 /* Morse code lookup table */
 
-char HamShield::morseLookup(char letter) { 
+uint8_t HamShield::morseLookup(char letter) { 
   uint8_t i;
   for(i = 0; i < MORSE_TABLE_LENGTH; i++) {
 #ifndef MORSE_TABLE_PROGMEM

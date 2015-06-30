@@ -522,7 +522,7 @@ class HamShield {
         static void isr_ptt();
         static void isr_reset();
 	void morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]);
-	char morseLookup(char letter);
+	uint8_t morseLookup(char letter);
         bool waitForChannel(long timeout, long breakwindow, int setRSSI);
         void SSTVVISCode(int code);
         void SSTVTestPattern(int code);

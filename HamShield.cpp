@@ -1352,3 +1352,13 @@ void HamShield::AFSKOut(char buffer[80]) {
 
 }
 */
+
+// This is the ADC timer handler. When enabled, we'll see what we're supposed
+// to be reading/handling, and trigger those on the main object.
+ISR(ADC_vect) {
+  TIFR1 = _BV(ICF1); // Clear the timer flag
+
+  if(HamShield::sHamShield->afsk.enabled()) {
+    HamShield::sHamShield->afsk.timer();
+  }
+}

@@ -9,6 +9,8 @@
 #define _HAMSHIELD_H_
 
 #include "I2Cdev_rda.h"
+#include "SimpleFIFO.h"
+#include "AFSK.h"
 #include <avr/pgmspace.h>
 
 // HamShield constants
@@ -18,6 +20,8 @@
 #define HAMSHIELD_AUX_BUTTON              5    // Pin assignment for AUX button
 #define HAMSHIELD_PWM_PIN                 11    // Pin assignment for PWM output
 #define HAMSHIELD_EMPTY_CHANNEL_RSSI   -110    // Default threshold where channel is considered "clear"
+
+#define HAMSHIELD_AFSK_RX_FIFO_LEN 16
 
 // button modes
 #define PTT_MODE 1
@@ -531,7 +535,14 @@ class HamShield {
         bool parityCalc(int code);
        // void AFSKOut(char buffer[80]); 
 
-
+       // AFSK routines
+       bool AFSKStart();
+       bool AFSKEnabled() { return afsk.enabled(); }
+       bool AFSKStop();
+       bool AFSKOut(const char *);
+       
+       class AFSK afsk;
+       
     private:
         uint8_t devAddr;
         uint16_t radio_i2c_buf[4];
@@ -542,9 +553,10 @@ class HamShield {
         uint32_t MURS[];
         uint32_t WX[];
         
-    public:
+        // public singleton for ISRs to reference
+      public:
         static HamShield *sHamShield; // HamShield singleton, used for ISRs mostly
-         
+        
 //          int8_t A1846S::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16_t timeout);
 //          int8_t A1846S::readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t *data, uint16_t timeout);
 //          int8_t A1846S::readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t *data, uint16_t timeout);

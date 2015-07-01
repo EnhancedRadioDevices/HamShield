@@ -11,6 +11,10 @@
 #define ACCUMULATOR_BITS      32
 #endif
 
+// If defined, the timer will idle at 50% duty cycle
+// This leaves it floating in the centre of the PWM/DAC voltage range
+#define DDS_IDLE_HIGH
+
 #define COMPARATOR_BITS       6
 
 #define DDS_REFCLK_DEAULT     38400
@@ -123,7 +127,7 @@ public:
   void on(unsigned short duration) {
     // Duration in ticks from milliseconds is:
     // t = (1/refclk)
-    tickDuration = duration / (1000.0/refclk);
+    tickDuration = (duration * refclk) / 1000;
     running = true;
   }
   void off() {
@@ -137,8 +141,7 @@ public:
   }
   // Blocking version
   void playWait(unsigned short freq, unsigned short duration) {
-    setFrequency(freq);
-    on(duration);
+    play(freq, duration);
     delay(duration * 1000);
   }
   
@@ -149,20 +152,27 @@ public:
   // Adjustable reference clock
   void setReferenceClock(unsigned long ref);
 
-  uint8_t getPhaseAngle();
+  uint8_t getDutyCycle();
 
+  // Set a scaling factor. To keep things quick, this is a power of 2 value.
+  // Set it with 0 for lowest (which will be off), 8 is highest.
+  void setAmplitude(unsigned char amp) {
+    amplitude = 8 - amp;
+  }
+  
   void clockTick();
   
 private:
-  bool running;
-  unsigned long tickDuration;
+  volatile bool running;
+  volatile unsigned long tickDuration;
+  volatile unsigned char amplitude;
 #ifdef SHORT_ACCUMULATOR
-  unsigned short accumulator;
-  unsigned short stepRate;
+  volatile unsigned short accumulator;
+  volatile unsigned short stepRate;
   unsigned short refclk;
 #else
-  unsigned long accumulator;
-  unsigned long stepRate;
+  volatile unsigned long accumulator;
+  volatile unsigned long stepRate;
   unsigned long refclk;
 #endif
   static DDS *sDDS;

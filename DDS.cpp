@@ -61,22 +61,30 @@ void DDS::clockTick() {
   accumulator += stepRate;
   if(running) {
     if(tickDuration == 0) {
+#ifdef DDS_IDLE_HIGH
+      // Set the duty cycle to 50%
+      OCR2B = pow(2,COMPARATOR_BITS)/2;
+#else
+      // Set duty cycle to 0, effectively off
       OCR2B = 0;
+#endif
       running = false;
     } else {
-      OCR2B = getPhaseAngle();
+      OCR2B = getDutyCycle();
     }
     // Reduce our playback duration by one tick
     tickDuration--;
   }
 }
 
-uint8_t DDS::getPhaseAngle() {
+uint8_t DDS::getDutyCycle() {
 #if ACCUMULATOR_BIT_SHIFT >= 24
   uint16_t phAng;
 #else
   uint8_t phAng;
 #endif
   phAng = (accumulator >> ACCUMULATOR_BIT_SHIFT);
-  return pgm_read_byte_near(ddsSineTable + phAng)>>(8-COMPARATOR_BITS);
+  uint8_t position = pgm_read_byte_near(ddsSineTable + phAng)>>(8-COMPARATOR_BITS);
+  // Apply scaling and return
+  return position >> amplitude;
 }

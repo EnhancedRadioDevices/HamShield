@@ -15,13 +15,26 @@
 // This leaves it floating in the centre of the PWM/DAC voltage range
 #define DDS_IDLE_HIGH
 
+// Select how fast the PWM is, at the expense of level accuracy.
+// A faster PWM rate will make for easier filtering of the output wave,
+// while a slower one will allow for more accurate voltage level outputs,
+// but will increase the filtering requirements on the output.
+// 8 = 62.5kHz PWM
+// 7 = 125kHz PWM
+// 6 = 250kHz PWM
 #define COMPARATOR_BITS       6
 
+// This is how often we'll perform a phase advance, as well as ADC sampling
+// rate. The higher this value, the smoother the output wave will be, at the
+// expense of CPU time. It maxes out around 62000 (TBD)
 #define DDS_REFCLK_DEAULT     38400
 
+// When defined, use the 1024 element sine lookup table. This improves phase
+// accuracy, at the cost of more flash and CPU requirements.
 #define DDS_TABLE_LARGE
 
 #ifdef DDS_TABLE_LARGE
+// How many bits to keep from the accumulator to look up in this table
 #define ACCUMULATOR_BIT_SHIFT (ACCUMULATOR_BITS-10)
 static const uint8_t ddsSineTable[1024] PROGMEM = {
   128,128,129,130,131,131,132,133,134,135,135,136,137,138,138,139,
@@ -115,11 +128,14 @@ class DDS {
 public:
   DDS(): refclk(DDS_REFCLK_DEAULT), accumulator(0), running(false) {};
 
+  // Start all of the timers needed
   void start();
+  // Is the DDS presently producing a tone?
   const bool isRunning() { return running; };
+  // Stop the DDS timers
   void stop();
   
-  // Start the PWM output, or stop it
+  // Start and stop the PWM output
   void on() {
     timeLimited = false;
     running = true;
@@ -151,8 +167,13 @@ public:
   // frequency supported will fit in a short.
   void setFrequency(unsigned short freq);
   
-  // Adjustable reference clock
+  // Adjustable reference clock. This shoud be done before the timers are
+  // started, or they will need to be restarted. Frequencies will need to
+  // be set again to use the new clock.
   void setReferenceClock(unsigned long ref);
+  unsigned long getReferenceClock() {
+    return refclk;
+  }
 
   uint8_t getDutyCycle();
 
@@ -162,6 +183,7 @@ public:
     amplitude = 8 - amp;
   }
   
+  // This is the function called by the ADC_vect ISR to produce the tones
   void clockTick();
   
 private:

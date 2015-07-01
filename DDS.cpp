@@ -25,7 +25,7 @@ void DDS::start() {
   // clock as the DDS.
   TCCR1B = _BV(CS11) | _BV(WGM13) | _BV(WGM12);
   TCCR1A = 0;
-  ICR1 = ((F_CPU / 8) / DDS_REFCLK_DEAULT) - 1;
+  ICR1 = ((F_CPU / 8) / refclk) - 1;
 
   // Configure the ADC here to automatically run and be triggered off Timer1
   ADMUX = _BV(REFS0) | _BV(ADLAR) | 0; // Channel 0, shift result left (ADCH used)

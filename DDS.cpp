@@ -13,19 +13,30 @@ void DDS::start() {
 #ifdef DDS_PWM_PIN_3
   TCCR2A = (TCCR2A | _BV(COM2B1)) & ~(_BV(COM2B0) | _BV(COM2A1) | _BV(COM2A0)) |
          _BV(WGM21) | _BV(WGM20);
+  TCCR2B = (TCCR2B & ~(_BV(CS22) | _BV(CS21))) | _BV(CS20) | _BV(WGM22);
 #else
   // Alternatively, use pin 11
-  TCCR2A = (TCCR2A | _BV(COM2A1)) & ~(_BV(COM2A0) | _BV(COM2B1) | _BV(COM2B0)) |
-       _BV(WGM21) | _BV(WGM20);
+  // Enable output compare on OC2A, toggle mode
+  TCCR2A = _BV(COM2A1) | _BV(WGM21) | _BV(WGM20);
+  //TCCR2A = (TCCR2A | _BV(COM2A1)) & ~(_BV(COM2A0) | _BV(COM2B1) | _BV(COM2B0)) |
+  //     _BV(WGM21) | _BV(WGM20);
+  TCCR2B = _BV(CS20);
 #endif
-  TCCR2B = (TCCR2B & ~(_BV(CS22) | _BV(CS21))) | _BV(CS20) | _BV(WGM22);
 
   // Set the top limit, which will be our duty cycle accuracy.
   // Setting Comparator Bits smaller will allow for higher frequency PWM,
   // with the loss of resolution.
+#ifdef DDS_PWM_PIN_3
   OCR2A = pow(2,COMPARATOR_BITS)-1;
   OCR2B = 0;
+#else
+  OCR2A = 0;
+#endif
   
+#ifdef DDS_USE_ONLY_TIMER2
+  TIMSK2 |= _BV(TOIE2);
+#endif
+
   // Second, setup Timer1 to trigger the ADC interrupt
   // This lets us use decoding functions that run at the same reference
   // clock as the DDS.
@@ -50,16 +61,18 @@ void DDS::stop() {
 void DDS::setFrequency(unsigned short freq) {
   // Fo = (M*Fc)/2^N
   // M = (Fo/Fc)*2^N
-  if(refclk == DDS_REFCLK_DEAULT) {
+  if(refclk == DDS_REFCLK_DEFAULT) {
     // Try to use precalculated values if possible
     if(freq == 2200) {
-      stepRate = (2200.0 / DDS_REFCLK_DEAULT) * pow(2,ACCUMULATOR_BITS);
+      stepRate = (2200.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);
     } else if (freq == 1200) {
-      stepRate = (1200.0 / DDS_REFCLK_DEAULT) * pow(2,ACCUMULATOR_BITS);      
+      stepRate = (1200.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);      
+    } else if (freq == 600) {
+      stepRate = (600.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);      
     }
   } else {
-    // Do the actual math instead.
-    stepRate = (freq / refclk) * pow(2,ACCUMULATOR_BITS);    
+    // BUG: Step rate isn't properly calculated here, it gets the wrong frequency
+    stepRate = (freq/(refclk+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);
   }
 }
 
@@ -68,6 +81,9 @@ void DDS::clockTick() {
   if(running) {
     accumulator += stepRate;
     if(timeLimited && tickDuration == 0) {
+#ifndef DDS_PWM_PIN_3
+      OCR2A = 0;
+#else
 #ifdef DDS_IDLE_HIGH
       // Set the duty cycle to 50%
       OCR2B = pow(2,COMPARATOR_BITS)/2;
@@ -75,21 +91,30 @@ void DDS::clockTick() {
       // Set duty cycle to 0, effectively off
       OCR2B = 0;
 #endif
+#endif
       running = false;
       accumulator = 0;
     } else {
+#ifdef DDS_PWM_PIN_3
       OCR2B = getDutyCycle();
+#else
+      OCR2A = getDutyCycle();
+#endif
     }
     // Reduce our playback duration by one tick
     tickDuration--;
   } else {
     // Hold it low
+#ifndef DDS_PWM_PIN_3
+    OCR2A = 0;
+#else
 #ifdef DDS_IDLE_HIGH
     // Set the duty cycle to 50%
     OCR2B = pow(2,COMPARATOR_BITS)/2;
 #else
     // Set duty cycle to 0, effectively off
     OCR2B = 0;
+#endif
 #endif
   }
 }

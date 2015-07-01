@@ -4,7 +4,13 @@
 #include <avr/pgmspace.h>
 
 // Use pin 3 for PWM? If not defined, use pin 11
+// Quality on pin 3 is higher than on 11, as it can be clocked faster
+// when the COMPARATOR_BITS value is less than 8
 // #define DDS_PWM_PIN_3
+
+// Normally, we turn on timer2 and timer1, and have ADC sampling as our clock
+// Define this to only use Timer2, and not start the ADC clock
+// #define DDS_USE_ONLY_TIMER2
 
 // Use a short (16 bit) accumulator. Phase accuracy is reduced, but speed
 // is increased, along with a reduction in memory use.
@@ -27,16 +33,29 @@
 // 8 = 62.5kHz PWM
 // 7 = 125kHz PWM
 // 6 = 250kHz PWM
+#ifdef DDS_PWM_PIN_3
 #define COMPARATOR_BITS       6
+#else // When using pin 11, we always want 8 bits
+#define COMPARATOR_BITS       8
+#endif
 
 // This is how often we'll perform a phase advance, as well as ADC sampling
 // rate. The higher this value, the smoother the output wave will be, at the
 // expense of CPU time. It maxes out around 62000 (TBD)
-#define DDS_REFCLK_DEAULT     38400
+#define DDS_REFCLK_DEFAULT     38400
+// As each Arduino crystal is a little different, this can be fine tuned to
+// provide more accurate frequencies. Adjustments in the range of hundreds
+// is a good start.
+#define DDS_REFCLK_OFFSET     0
+
+#ifdef DDS_USE_ONLY_TIMER2
+// TODO: Figure out where this clock value is generated from
+#define DDS_REFCLK_DEFAULT     48800
+#endif
 
 // When defined, use the 1024 element sine lookup table. This improves phase
 // accuracy, at the cost of more flash and CPU requirements.
-#define DDS_TABLE_LARGE
+// #define DDS_TABLE_LARGE
 
 #ifdef DDS_TABLE_LARGE
 // How many bits to keep from the accumulator to look up in this table
@@ -131,7 +150,9 @@ static const uint8_t ddsSineTable[256] PROGMEM = {
 
 class DDS {
 public:
-  DDS(): refclk(DDS_REFCLK_DEAULT), accumulator(0), running(false) {};
+  DDS(): refclk(DDS_REFCLK_DEFAULT), accumulator(0), running(false),
+    timeLimited(false), tickDuration(0), amplitude(0)
+    {};
 
   // Start all of the timers needed
   void start();

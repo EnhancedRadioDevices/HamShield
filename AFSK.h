@@ -17,6 +17,7 @@
 // This is with all the digis, two addresses, framing and full payload
 // Two more bytes are added for HDLC_ESCAPEs
 #define PACKET_MAX_LEN 512
+#define AX25_PACKET_HEADER_MINLEN 22
 
 // HDLC framing bits
 #define HDLC_FRAME    0x7E
@@ -48,7 +49,7 @@ public:
     void init(unsigned short dlen);
     inline void free() {
       if(freeData)
-      ::free(dataPtr);
+        ::free(dataPtr);
     }
     inline const unsigned char getByte(void) {
       return *readPos++;
@@ -232,7 +233,7 @@ public:
   }
   inline bool txReady() volatile {
     if(encoder.isDone() && encoder.hasPackets())
-    return true;
+      return true;
     return false;
   }
   inline bool isDone() volatile { return encoder.isDone(); }
@@ -246,7 +247,7 @@ public:
   inline bool putTXPacket(Packet *packet) {
     bool ret = encoder.putPacket(packet);
     if(!ret) // No room?
-    PacketBuffer::freePacket(packet);
+      PacketBuffer::freePacket(packet);
     return ret;
   }
   inline Packet *getRXPacket() {

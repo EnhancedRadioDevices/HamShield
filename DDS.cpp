@@ -57,10 +57,11 @@ void DDS::setFrequency(unsigned short freq) {
   }
 }
 
+// TODO: Clean this up a bit..
 void DDS::clockTick() {
-  accumulator += stepRate;
   if(running) {
-    if(tickDuration == 0) {
+    accumulator += stepRate;
+    if(timeLimited && tickDuration == 0) {
 #ifdef DDS_IDLE_HIGH
       // Set the duty cycle to 50%
       OCR2B = pow(2,COMPARATOR_BITS)/2;
@@ -69,11 +70,21 @@ void DDS::clockTick() {
       OCR2B = 0;
 #endif
       running = false;
+      accumulator = 0;
     } else {
       OCR2B = getDutyCycle();
     }
     // Reduce our playback duration by one tick
     tickDuration--;
+  } else {
+    // Hold it low
+#ifdef DDS_IDLE_HIGH
+    // Set the duty cycle to 50%
+    OCR2B = pow(2,COMPARATOR_BITS)/2;
+#else
+    // Set duty cycle to 0, effectively off
+    OCR2B = 0;
+#endif
   }
 }
 

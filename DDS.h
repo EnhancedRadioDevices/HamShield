@@ -121,6 +121,7 @@ public:
   
   // Start the PWM output, or stop it
   void on() {
+    timeLimited = false;
     running = true;
   }
   // Provide a duration in ms for the tone
@@ -128,6 +129,7 @@ public:
     // Duration in ticks from milliseconds is:
     // t = (1/refclk)
     tickDuration = (duration * refclk) / 1000;
+    timeLimited = true;
     running = true;
   }
   void off() {
@@ -165,6 +167,7 @@ public:
 private:
   volatile bool running;
   volatile unsigned long tickDuration;
+  volatile bool timeLimited;
   volatile unsigned char amplitude;
 #ifdef SHORT_ACCUMULATOR
   volatile unsigned short accumulator;

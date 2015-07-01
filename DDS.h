@@ -3,6 +3,11 @@
 
 #include <avr/pgmspace.h>
 
+// Use pin 3 for PWM? If not defined, use pin 11
+// #define DDS_PWM_PIN_3
+
+// Use a short (16 bit) accumulator. Phase accuracy is reduced, but speed
+// is increased, along with a reduction in memory use.
 #define SHORT_ACCUMULATOR
 
 #ifdef SHORT_ACCUMULATOR

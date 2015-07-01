@@ -10,8 +10,14 @@ void DDS::start() {
   // First, the timer for the PWM output
   // Setup the timer to use OC2B (pin 3) in fast PWM mode with a configurable top
   // Run it without the prescaler
+#ifdef DDS_PWM_PIN_3
   TCCR2A = (TCCR2A | _BV(COM2B1)) & ~(_BV(COM2B0) | _BV(COM2A1) | _BV(COM2A0)) |
          _BV(WGM21) | _BV(WGM20);
+#else
+  // Alternatively, use pin 11
+  TCCR2A = (TCCR2A | _BV(COM2A1)) & ~(_BV(COM2A0) | _BV(COM2B1) | _BV(COM2B0)) |
+       _BV(WGM21) | _BV(WGM20);
+#endif
   TCCR2B = (TCCR2B & ~(_BV(CS22) | _BV(CS21))) | _BV(CS20) | _BV(WGM22);
 
   // Set the top limit, which will be our duty cycle accuracy.

@@ -14,6 +14,8 @@
 
 #define PPOOL_SIZE 2
 
+#define COMPARE_BITS     6
+#define ACCUMULATOR_SIZE 32
 #define ACCUMULATOR_BITS 24 // This is 2^10 bits used from accum
 //#undef PROGMEM
 //#define PROGMEM __attribute__((section(".progmem.data")))
@@ -44,15 +46,15 @@ volatile unsigned long lastTx = 0;
 volatile unsigned long lastTxEnd = 0;
 volatile unsigned long lastRx = 0;
 
-#define REFCLK 9600
+#define REFCLK 38400
 //#define REFCLK 31372.54902
 //#define REFCLK (16000000.0/510.0)
 //#define REFCLK 31200.0
 // 2200Hz = pow(2,32)*2200.0/refclk
 // 1200Hz = pow(2,32)*1200.0/refclk
 static const unsigned long toneStep[2] = {
-  pow(2,32)*2200.0/REFCLK,
-  pow(2,32)*1200.0/REFCLK
+  (2200.0/REFCLK)*pow(2,ACCUMULATOR_SIZE),
+  (1200.0/REFCLK)*pow(2,ACCUMULATOR_SIZE)
 };
 
 // Set to an arbitrary frequency
@@ -143,12 +145,7 @@ void AFSK::Encoder::process() {
 
   accumulator += toneStep[currentTone];
   uint8_t phAng = (accumulator >> ACCUMULATOR_BITS);
-  /*if(toneVolume[currentTone] != 255) {
-  OCR2B = pwm * toneVolume[currentTone] / 255;
-  } else {*/
-  // No volume scaling required
-  OCR2B = pgm_read_byte_near(sinetable + phAng);
-  /*}*/
+  OCR2B = pgm_read_byte_near(sinetable + phAng)>>(8-COMPARE_BITS);
 }
 
 bool AFSK::Encoder::start() {
@@ -368,6 +365,19 @@ bool AFSK::Decoder::read() {
 void AFSK::Decoder::start() {
   // Do this in start to allocate our first packet
   currentPacket = pBuf.makePacket(PACKET_MAX_LEN);
+  ASSR &= ~(_BV(EXCLK) | _BV(AS2));
+
+  // Do non-inverting PWM on pin OC2B (arduino pin 3) (p.159).
+  // OC2A (arduino pin 11) stays in normal port operation:
+  // COM2B1=1, COM2B0=0, COM2A1=0, COM2A0=0
+  // Mode 1 - Phase correct PWM
+  TCCR2A = (TCCR2A | _BV(COM2B1)) & ~(_BV(COM2B0) | _BV(COM2A1) | _BV(COM2A0)) |
+           _BV(WGM21) | _BV(WGM20);
+  // No prescaler (p.162)
+  TCCR2B = (TCCR2B & ~(_BV(CS22) | _BV(CS21))) | _BV(CS20) | _BV(WGM22);
+  
+  OCR2A = pow(2,COMPARE_BITS)-1;
+  OCR2B = 0;
   // Configure the ADC and Timer1 to trigger automatic interrupts
   TCCR1A = 0;
   TCCR1B = _BV(CS11) | _BV(WGM13) | _BV(WGM12);

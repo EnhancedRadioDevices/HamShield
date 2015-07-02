@@ -384,7 +384,7 @@ void HamShield::setTX(bool on_noff){
       setGpioLow(5); // remember that RX and TX are active low
       // then turn on VREG (PWM output)
       // then apply RF signal
-      setRfPower(100); // figure out a good default number (or don't set a default)
+      setRfPower(9); // figure out a good default number (or don't set a default)
     }
 
     // todo: make sure gpio are set correctly after this
@@ -943,19 +943,12 @@ void HamShield::setRfPower(uint8_t pwr) {
    // (see RF6886 datasheet)
    // 30 is 0.5V, which is ~min loop reference voltage
    // 127 is 2.5V, which is ~max loop ref voltage
-   int max_pwr = 255; //167; // 167 is 3.3*255/5 - 1;
+   int max_pwr = 15; //167; // 167 is 3.3*255/5 - 1;
    if (pwr > max_pwr) {
      pwr = max_pwr; 
    }
   
-  
-   // using open loop reference voltage into Vreg1/2
-   /*int max_pwr = 78; // 78 = 1.58*255/5 - 1
-   if (pwr > max_pwr) {
-     pwr = max_pwr; 
-   }*/
-   // using loop ref voltage as specified in RF6886 datasheet
-   // analogWrite(pwr_control_pin, pwr);
+   I2Cdev::writeBitsW(devAddr, A1846S_PABIAS_REG, A1846S_PADRV_BIT, A1846S_PADRV_LENGTH, pwr);
 }
 
 

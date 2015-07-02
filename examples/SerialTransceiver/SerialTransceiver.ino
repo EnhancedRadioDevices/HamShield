@@ -17,7 +17,7 @@ Frequency      F<freq>;    Set the receive frequency in KHz, if offset is disabl
 CDCSS In       G<code>;    <code> must be a valid CDCSS code                                                                                                            No
 CDCSS Out      H<code>;    <code> must be a valid CDCSS code                                                                                                            No
 Print tones    I           Prints out all configured tones and codes, coma delimited in format: CTCSS In, CTCSS Out, CDCSS In, CDCSS Out                                No
-Power level    P<level>;   Set the power amp level, 0 = lowest, 255 = highest                                                                                           No
+Power level    P<level>;   Set the power amp level, 0 = lowest, 15 = highest                                                                                           No
 Enable Offset  R<state>;   1 turns on repeater offset mode, 0 turns off repeater offset mode                                                                            No
 Squelch        S<level>;   Set the squelch level                                                                                                                        No
 TX Offset      T<freq>;    The absolute frequency of the repeater offset to transmit on in KHz                                                                          No
@@ -81,7 +81,7 @@ void setup() {
   radio.setVolume2(0xF);
   radio.setModeReceive();
   radio.setTxSourceMic();
-  radio.setRfPower(255); // 30 is 0.5V, which corresponds to 29 dBm out (see RF6886 datasheet)
+  radio.setRfPower(9);
   radio.setSQLoThresh(80);
   radio.setSQOn();
 }

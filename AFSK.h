@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <SimpleFIFO.h>
+#include <DDS.h>
 
 #define SAMPLERATE 9600
 #define BITRATE    1200
@@ -142,7 +143,7 @@ public:
       packet = 0x0;
       currentBytePos = 0;
     }
-    void setFreq(unsigned long, byte);
+    void setDDS(DDS *d) { dds = d; }
     volatile inline bool isSending() volatile { 
       return sending; 
     }
@@ -177,10 +178,7 @@ public:
     unsigned char currentBytePos;
     volatile unsigned long randomWait;
     volatile bool done;
-    // Phase accumulator, 32 bits, we'll use ACCUMULATOR_BITS of it
-    unsigned long accumulator;
-    // Current radian step for the accumulator
-    unsigned long rStep;
+    DDS *dds;
   };
   
   class HDLCDecode {
@@ -258,7 +256,7 @@ public:
   }
   //unsigned long lastTx;
   //unsigned long lastRx;
-  void start();
+  void start(DDS *);
   void timer();
   Encoder encoder;
   Decoder decoder;

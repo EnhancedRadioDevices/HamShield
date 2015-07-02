@@ -11,6 +11,7 @@
 #include "I2Cdev_rda.h"
 #include "SimpleFIFO.h"
 #include "AFSK.h"
+#include "DDS.h"
 #include <avr/pgmspace.h>
 
 // HamShield constants

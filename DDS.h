@@ -170,7 +170,7 @@ public:
   void on(unsigned short duration) {
     // Duration in ticks from milliseconds is:
     // t = (1/refclk)
-    tickDuration = (duration * refclk) / 1000;
+    tickDuration = (unsigned long)((unsigned long)duration * (unsigned long)refclk) / 1000;
     timeLimited = true;
     running = true;
   }
@@ -186,7 +186,7 @@ public:
   // Blocking version
   void playWait(unsigned short freq, unsigned short duration) {
     play(freq, duration);
-    delay(duration * 1000);
+    delay(duration);
   }
   
   // Our maximum clock isn't very high, so our highest

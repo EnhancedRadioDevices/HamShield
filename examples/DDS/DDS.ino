@@ -8,9 +8,8 @@ void setup() {
   pinMode(3, OUTPUT);
   pinMode(11, OUTPUT);
   dds.start();
-  dds.setFrequency(440);
+  dds.playWait(600, 3000);
   dds.on();
-  delay(5000);
 }
 
 void loop() {

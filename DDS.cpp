@@ -73,7 +73,7 @@ void DDS::setFrequency(unsigned short freq) {
     }
   } else {
     // BUG: Step rate isn't properly calculated here, it gets the wrong frequency
-    stepRate = (freq/(refclk+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);
+    stepRate = pow(2,ACCUMULATOR_BITS)*freq / (refclk+DDS_REFCLK_OFFSET);
   }
 }
 

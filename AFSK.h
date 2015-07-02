@@ -14,6 +14,7 @@
 
 #define PACKET_BUFFER_SIZE 2
 #define PACKET_STATIC 0
+//#define PACKET_PREALLOCATE
 
 // This is with all the digis, two addresses, framing and full payload
 // Two more bytes are added for HDLC_ESCAPEs
@@ -105,7 +106,12 @@ public:
       return (fcs == 0xF0B8);
     }
   private:
-    uint8_t *dataPtr, *dataPos, *readPos;
+#ifdef PACKET_PREALLOCATE
+    uint8_t dataPtr[128];
+#else
+    uint8_t *dataPtr;
+#endif
+    uint8_t *dataPos, *readPos;
     unsigned short fcs;
   };
   

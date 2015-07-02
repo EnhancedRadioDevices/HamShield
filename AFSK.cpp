@@ -24,6 +24,10 @@ volatile unsigned long lastRx = 0;
 
 #define T_BIT ((unsigned int)(9600/1200))
 
+#ifdef PACKET_PREALLOCATE
+SimpleFIFO<AFSK::Packet *,PPOOL_SIZE> preallocPool;
+#endif
+
 void AFSK::Encoder::process() {
   // Check what clock pulse we're on
   if(bitClock == 0) { // We are onto our next bit timing  
@@ -396,11 +400,16 @@ AFSK::Packet *AFSK::PacketBuffer::getPacket() volatile {
 void AFSK::Packet::init(unsigned short dlen) {
   //data = (unsigned char *)buf;
   ready = 0;
-  freeData = 1; //freeData;
+#ifdef PACKET_PREALLOCATE
+  freeData = 0;
+  maxLen = 128; // Put it here instead
+#else
+  freeData = 1;
+  dataPtr = (uint8_t *)malloc(dlen+16);
+  maxLen = dlen; // Put it here instead
+#endif
   type = PACKET_STATIC;
   len = 0; // We had a length, but don't put it here.
-  maxLen = dlen; // Put it here instead
-  dataPtr = (uint8_t *)malloc(dlen+16);
   dataPos = dataPtr;
   readPos = dataPtr;
   fcs = 0xffff;
@@ -411,7 +420,11 @@ AFSK::Packet *AFSK::PacketBuffer::makePacket(unsigned short dlen) {
   AFSK::Packet *p;
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     //Packet *p = findPooledPacket();
+#ifdef PACKET_PREALLOCATE
+    p = preallocPool.dequeue();
+#else
     p = new Packet(); //(Packet *)malloc(sizeof(Packet));
+#endif
     if(p) // If allocated
       p->init(dlen);
   }
@@ -421,8 +434,11 @@ AFSK::Packet *AFSK::PacketBuffer::makePacket(unsigned short dlen) {
 // Free a packet struct, mainly convenience
 void AFSK::PacketBuffer::freePacket(Packet *p) {
   if(!p)
-  return;
+    return;
   ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+#ifdef PACKET_PREALLOCATE
+    preallocPool.enqueue(p);
+#else
     p->free();
     /*unsigned char i;
     for(i = 0; i < PPOOL_SIZE; ++i)
@@ -431,6 +447,7 @@ void AFSK::PacketBuffer::freePacket(Packet *p) {
     if(i < PPOOL_SIZE)
     pStatus &= ~(1<<i);*/
     delete p;
+#endif
   }  
 }
   

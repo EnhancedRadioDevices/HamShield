@@ -254,7 +254,7 @@ void HamShield::softReset() {
  
 void HamShield::setFrequency(uint32_t freq_khz) {
     radio_frequency = freq_khz;
-    uint32_t freq_raw = freq_khz << 3; // shift by 3 to multiply by 8
+    uint32_t freq_raw = freq_khz << 4; // shift by 4 to multiply by 16 (was shift by 3 in old 1846 chip)
 
     // send top 16 bits to A1846S_FREQ_HI_REG	
     uint16_t freq_half = (uint16_t) (0x3FFF & (freq_raw >> 16));

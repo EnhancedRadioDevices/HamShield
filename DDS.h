@@ -42,7 +42,7 @@
 // This is how often we'll perform a phase advance, as well as ADC sampling
 // rate. The higher this value, the smoother the output wave will be, at the
 // expense of CPU time. It maxes out around 62000 (TBD)
-#define DDS_REFCLK_DEFAULT     38400
+#define DDS_REFCLK_DEFAULT     9600
 // As each Arduino crystal is a little different, this can be fine tuned to
 // provide more accurate frequencies. Adjustments in the range of hundreds
 // is a good start.
@@ -50,7 +50,7 @@
 
 #ifdef DDS_USE_ONLY_TIMER2
 // TODO: Figure out where this clock value is generated from
-#define DDS_REFCLK_DEFAULT     48800
+#define DDS_REFCLK_DEFAULT     (62500/4)
 #endif
 
 // When defined, use the 1024 element sine lookup table. This improves phase

@@ -58,6 +58,14 @@ void loop() {
       }
     // Wait 2 seconds before we send our beacon again.
     Serial.println("tick");
+    // Wait up to 2.5 seconds to finish sending, and stop transmitter.
+    // TODO: This is hackery.
+    for(int i = 0; i < 500; i++) {
+      if(!radio.afsk.isSending())
+         break;
+      delay(50);
+    }
+    radio.setModeReceive();
     delay(2000);
 }
 

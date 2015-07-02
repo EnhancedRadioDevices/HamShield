@@ -31,20 +31,8 @@ void loop() {
   // put your main code here, to run repeatedly:
     AFSK::Packet *packet = AFSK::PacketBuffer::makePacket(22 + 32);
     packet->start();
-    packet->appendFCS('V'<<1);
-    packet->appendFCS('E'<<1);
-    packet->appendFCS('6'<<1);
-    packet->appendFCS('S'<<1);
-    packet->appendFCS('L'<<1);
-    packet->appendFCS('P'<<1);
-    packet->appendFCS(0b11100000);
-    packet->appendFCS('V'<<1);
-    packet->appendFCS('A'<<1);
-    packet->appendFCS('6'<<1);
-    packet->appendFCS('G'<<1);
-    packet->appendFCS('A'<<1);
-    packet->appendFCS(' '<<1);
-    packet->appendFCS(0b01100001 | (15 & 0xf) << 1);
+    packet->appendCallsign("VE6SLP",0);
+    packet->appendCallsign("VA6GA",15,true);
     packet->appendFCS(0x03);
     packet->appendFCS(0xf0);
     packet->print("Hello ");
@@ -61,7 +49,7 @@ void loop() {
     // Wait up to 2.5 seconds to finish sending, and stop transmitter.
     // TODO: This is hackery.
     for(int i = 0; i < 500; i++) {
-      if(!radio.afsk.isSending())
+      if(!radio.afsk.encoder.isSending())
          break;
       delay(50);
     }

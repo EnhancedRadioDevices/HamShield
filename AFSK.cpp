@@ -476,7 +476,29 @@ size_t AFSK::Packet::write(const uint8_t *ptr, size_t len) {
       break;
   return i;
 }
-  
+
+// Add a callsign, flagged as source, destination, or digi
+// Also tell the routine the SSID to use and if this is the final callsign
+size_t AFSK::Packet::appendCallsign(const char *callsign, uint8_t ssid, bool final) {
+  uint8_t i;
+  for(i = 0; i < strlen(callsign) && i < 6; i++) {
+    appendFCS(callsign[i]<<1);
+  }
+  if(i < 6) {
+    for(;i<6;i++) {
+      appendFCS(' '<<1);
+    }
+  }
+  uint8_t ssidField = (ssid&0xf) << 1;
+  // TODO: Handle digis in the address C bit
+  if(final) {
+    ssidField |= 0b01100001;
+  } else {
+    ssidField |= 0b11100000;
+  }
+  appendFCS(ssidField);
+}
+
 // Determine what we want to do on this ADC tick.
 void AFSK::timer() {
   if(encoder.isSending())

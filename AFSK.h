@@ -14,6 +14,10 @@
 
 #define PACKET_BUFFER_SIZE 2
 #define PACKET_STATIC 0
+
+// If this is set, all the packet buffers will be pre-allocated at compile time
+// This will use more RAM, but can make it easier to do memory planning.
+// TODO: Make this actually work right and not crash.
 //#define PACKET_PREALLOCATE
 
 // This is with all the digis, two addresses, framing and full payload
@@ -86,6 +90,8 @@ public:
       }
       return false;
     }
+    
+    size_t appendCallsign(const char *callsign, uint8_t ssid, bool final = false);
     
     inline void finish() {
       append(~(fcs & 0xff));

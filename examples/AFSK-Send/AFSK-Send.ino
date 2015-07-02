@@ -14,9 +14,17 @@ void setup() {
   digitalWrite(2, LOW);
   digitalWrite(10, LOW);
 
+  Serial.println(F("Radio test connection"));
+  radio.testConnection();
+  Serial.println(F("Initialize"));
+  radio.initialize();
+  Serial.println(F("Frequency"));
+  radio.frequency(446000);
+  Serial.println(F("DDS Start"));
   dds.start();
+  Serial.println(F("AFSK start"));
   radio.afsk.start(&dds);
-  Serial.println("Starting...");
+  Serial.println(F("Starting..."));
 }
 
 void loop() {
@@ -46,7 +54,7 @@ void loop() {
     bool ret = radio.afsk.putTXPacket(packet);
     if(radio.afsk.txReady())
       if(radio.afsk.txStart()) {
-        Serial.println("PTT here.");
+        radio.setModeTransmit();
       }
     // Wait 2 seconds before we send our beacon again.
     Serial.println("tick");

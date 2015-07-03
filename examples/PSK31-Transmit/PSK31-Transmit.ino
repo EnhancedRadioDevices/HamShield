@@ -5,10 +5,10 @@ DDS dds;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(11, OUTPUT);
+  pinMode(3, OUTPUT);
   pinMode(2, OUTPUT);
   // put your setup code here, to run once:
-  dds.setReferenceClock(8000);
+  dds.setReferenceClock(32000);
   dds.start();
   dds.setFrequency(1000);
   dds.on();
@@ -41,7 +41,7 @@ void loop() {
   //  return;
   for(i = 0; i < strlen(string); i++) {
     sendChar(string[i]);
-    Serial.println(string[i]);
+    //Serial.println(string[i]);
   }
 }
 
@@ -51,19 +51,25 @@ const uint8_t amplitudeShape[41] = {
 
 // This will trigger at 8kHz
 ISR(ADC_vect) {
+  static uint8_t outer = 0;
   static uint8_t tcnt = 0;
   TIFR1 |= _BV(ICF1);
   // Wave shaping
-  PORTD |= _BV(2);
   // TODO: Improve how this would perform.
-  if(tcnt < 82)
-    dds.setAmplitude(amplitudeShape[(82-tcnt)/2]);
-  if(tcnt > (255-82))
-    dds.setAmplitude(amplitudeShape[(tcnt-173)/2]);
   //else if(tcnt > (255-64))
   //  dds.setAmplitude((255 - tcnt));
   //else dds.setAmplitude(255);
+  if(tcnt < 81)
+    dds.setAmplitude(amplitudeShape[(81-tcnt)/2]);
+  if(tcnt > (255-81))
+    dds.setAmplitude(amplitudeShape[(tcnt-174)/2]);
   dds.clockTick();
+  PORTD &= ~_BV(2);
+  if(outer++ == 3) {
+    outer = 0;
+  } else {
+    return;
+  }
   if(tcnt++ == 0) { // Next bit
     //PORTD ^= _BV(2); // Diagnostic pin (D2)
     if(!sent) {

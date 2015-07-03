@@ -140,9 +140,13 @@ uint8_t DDS::getDutyCycle() {
   uint8_t phAng;
 #endif
   phAng = (accumulator >> ACCUMULATOR_BIT_SHIFT);
-  uint8_t position = pgm_read_byte_near(ddsSineTable + phAng)>>(8-COMPARATOR_BITS);
+  int8_t position = pgm_read_byte_near(ddsSineTable + phAng)>>(8-COMPARATOR_BITS);
   // Apply scaling and return
-  uint16_t scaled = position;
+  int16_t scaled = position;
+  // output = ((duty * amplitude) / 256) + 128
+  // This keeps amplitudes centered around 50% duty
   scaled *= amplitude;
-  return scaled>>8;
+  scaled >>= 8;
+  scaled += 128;
+  return scaled;
 }

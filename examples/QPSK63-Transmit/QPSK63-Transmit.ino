@@ -51,43 +51,48 @@ const uint8_t amplitudeShape[41] = {
 };
 
 // This will trigger at 8kHz
+const uint16_t qpskConvolution[32] = {
+  180, 90, -90, 0, -90, 0, 180, 90,
+  0, -90, 90, 180, 90, 180, 0, -90,
+  90, 180, 0, -90, 0, -90, 90, 180,
+  -90, 0, 180, 90, 180, 90, -90, 0
+};
+uint8_t last5Bits = 0b00000;
 ISR(ADC_vect) {
   static uint8_t outer = 0;
   static uint8_t tcnt = 0;
   TIFR1 |= _BV(ICF1);
   // Wave shaping
   // TODO: Improve how this would perform.
-  //else if(tcnt > (255-64))
-  //  dds.setAmplitude((255 - tcnt));
-  //else dds.setAmplitude(255);
   if(tcnt < 81)
     dds.setAmplitude(amplitudeShape[(81-tcnt)/2]);
   if(tcnt > (255-81))
     dds.setAmplitude(amplitudeShape[(tcnt-174)/2]);
   dds.clockTick();
-  PORTD &= ~_BV(2);
-  if(outer++ == 3) {
+
+  if(outer++ == 1) {
     outer = 0;
   } else {
     return;
   }
+  
   if(tcnt++ == 0) { // Next bit
-    //PORTD ^= _BV(2); // Diagnostic pin (D2)
+    last5Bits <<= 1;
     if(!sent) {
       if((bitsToSend & 0x8000) == 0) {
         zeroCount++;
-        dds.changePhaseDeg(+180);
       } else {
         zeroCount = 0;
+        last5Bits |= 1;
       }
+      dds.changePhaseDeg(qpskConvolution[last5Bits&31]);
       bitsToSend<<=1;
       if(zeroCount == 2) {
         sent = true;
       }
     } else {
       // Idle on zeroes
-      dds.changePhaseDeg(+180);
+      dds.changePhaseDeg(qpskConvolution[last5Bits&31]);
     }
   }
-  PORTD &= ~_BV(2);
 }

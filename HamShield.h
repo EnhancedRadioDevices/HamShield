@@ -94,6 +94,9 @@
 #define A1846S_PABIAS_BIT          5  // pabias_voltage<5:0>
 #define A1846S_PABIAS_LENGTH       6
 
+#define A1846S_PADRV_BIT          14  // pabias_voltage<14:11>
+#define A1846S_PADRV_LENGTH       4
+
 // Bitfields for A1846S_BAND_SEL_REG
 #define A1846S_BAND_SEL_BIT        7  // band_sel<1:0>
 #define A1846S_BAND_SEL_LENGTH     2

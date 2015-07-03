@@ -59,22 +59,27 @@ void DDS::stop() {
 }
 
 // Set our current sine wave frequency in Hz
-void DDS::setFrequency(unsigned short freq) {
+ddsAccumulator_t DDS::calcFrequency(unsigned short freq) {
   // Fo = (M*Fc)/2^N
   // M = (Fo/Fc)*2^N
+  ddsAccumulator_t newStep;
   if(refclk == DDS_REFCLK_DEFAULT) {
     // Try to use precalculated values if possible
     if(freq == 2200) {
-      stepRate = (2200.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);
+      newStep = (2200.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);
     } else if (freq == 1200) {
-      stepRate = (1200.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);      
+      newStep = (1200.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);      
+    } else if(freq == 2400) {
+      newStep = (2400.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);
+    } else if (freq == 1500) {
+      newStep = (1500.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);      
     } else if (freq == 600) {
-      stepRate = (600.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);      
+      newStep = (600.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);      
     }
   } else {
-    // BUG: Step rate isn't properly calculated here, it gets the wrong frequency
-    stepRate = pow(2,ACCUMULATOR_BITS)*freq / (refclk+DDS_REFCLK_OFFSET);
+    newStep = pow(2,ACCUMULATOR_BITS)*freq / (refclk+DDS_REFCLK_OFFSET);
   }
+  return newStep;
 }
 
 // Degrees should be between -360 and +360 (others don't make much sense)
@@ -134,19 +139,25 @@ void DDS::clockTick() {
 }
 
 uint8_t DDS::getDutyCycle() {
-#if ACCUMULATOR_BIT_SHIFT >= 24
-  uint16_t phAng;
-#else
-  uint8_t phAng;
-#endif
+  #if ACCUMULATOR_BIT_SHIFT >= 24
+    uint16_t phAng;
+  #else
+    uint8_t phAng;
+  #endif
+  if(amplitude == 0) // Shortcut out on no amplitude
+    return 128>>(8-COMPARATOR_BITS);
   phAng = (accumulator >> ACCUMULATOR_BIT_SHIFT);
   int8_t position = pgm_read_byte_near(ddsSineTable + phAng); //>>(8-COMPARATOR_BITS);
   // Apply scaling and return
   int16_t scaled = position;
   // output = ((duty * amplitude) / 256) + 128
   // This keeps amplitudes centered around 50% duty
-  scaled *= amplitude;
-  scaled >>= 8+(8-COMPARATOR_BITS);
+  if(amplitude != 255) { // Amplitude is reduced, so do the full math
+    scaled *= amplitude;
+    scaled >>= 8+(8-COMPARATOR_BITS);
+  } else { // Otherwise, only shift for the comparator bits
+    scaled >>= (8-COMPARATOR_BITS);
+  }
   scaled += 128>>(8-COMPARATOR_BITS);
   return scaled;
 }

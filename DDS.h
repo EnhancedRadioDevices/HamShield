@@ -6,7 +6,7 @@
 // Use pin 3 for PWM? If not defined, use pin 11
 // Quality on pin 3 is higher than on 11, as it can be clocked faster
 // when the COMPARATOR_BITS value is less than 8
-// #define DDS_PWM_PIN_3
+#define DDS_PWM_PIN_3
 
 // Normally, we turn on timer2 and timer1, and have ADC sampling as our clock
 // Define this to only use Timer2, and not start the ADC clock
@@ -18,8 +18,10 @@
 
 #ifdef SHORT_ACCUMULATOR
 #define ACCUMULATOR_BITS      16
+typedef int16_t ddsAccumulator_t;
 #else
 #define ACCUMULATOR_BITS      32
+typedef int32_t ddsAccumulator_t;
 #endif
 
 // If defined, the timer will idle at 50% duty cycle
@@ -42,11 +44,16 @@
 // This is how often we'll perform a phase advance, as well as ADC sampling
 // rate. The higher this value, the smoother the output wave will be, at the
 // expense of CPU time. It maxes out around 62000 (TBD)
+// May be overridden in the sketch to improve performance
+#ifndef DDS_REFCLK_DEFAULT
 #define DDS_REFCLK_DEFAULT     38400
+#endif
 // As each Arduino crystal is a little different, this can be fine tuned to
 // provide more accurate frequencies. Adjustments in the range of hundreds
 // is a good start.
+#ifndef DDS_REFCLK_OFFSET
 #define DDS_REFCLK_OFFSET     0
+#endif
 
 #ifdef DDS_USE_ONLY_TIMER2
 // TODO: Figure out where this clock value is generated from
@@ -172,7 +179,7 @@ static const int8_t ddsSineTable[256] PROGMEM = {
 class DDS {
 public:
   DDS(): refclk(DDS_REFCLK_DEFAULT), accumulator(0), running(false),
-    timeLimited(false), tickDuration(0), amplitude(0)
+    timeLimited(false), tickDuration(0), amplitude(255)
     {};
 
   // Start all of the timers needed
@@ -210,9 +217,15 @@ public:
     delay(duration);
   }
   
+  // Use these to get some calculated values for specific frequencies
+  // or to get the current frequency stepping rate.
+  ddsAccumulator_t calcFrequency(unsigned short freq);
+  ddsAccumulator_t getPhaseAdvance() { return stepRate; };
+  
   // Our maximum clock isn't very high, so our highest
   // frequency supported will fit in a short.
-  void setFrequency(unsigned short freq);
+  void setFrequency(unsigned short freq) { stepRate = calcFrequency(freq); };
+  void setPrecalcFrequency(ddsAccumulator_t freq) { stepRate = freq; };
   
   // Handle phase shifts
   void setPhaseDeg(int16_t degrees);
@@ -244,15 +257,9 @@ private:
   volatile unsigned long tickDuration;
   volatile bool timeLimited;
   volatile unsigned char amplitude;
-#ifdef SHORT_ACCUMULATOR
-  volatile unsigned short accumulator;
-  volatile unsigned short stepRate;
-  unsigned short refclk;
-#else
-  volatile unsigned long accumulator;
-  volatile unsigned long stepRate;
-  unsigned long refclk;
-#endif
+  volatile ddsAccumulator_t accumulator;
+  volatile ddsAccumulator_t stepRate;
+  ddsAccumulator_t refclk;
   static DDS *sDDS;
 };
 

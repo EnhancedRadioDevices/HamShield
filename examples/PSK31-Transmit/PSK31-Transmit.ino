@@ -45,16 +45,24 @@ void loop() {
   }
 }
 
+const uint8_t amplitudeShape[41] = {
+  255, 241, 228, 215, 203, 191, 181, 171, 161, 152, 143, 135, 128, 121, 114, 107, 101, 96, 90, 85, 80, 76, 72, 68, 64, 60, 57, 54, 51, 48, 45, 42, 40, 38, 36, 34, 32, 30, 28, 27, 25
+};
+
 // This will trigger at 8kHz
 ISR(ADC_vect) {
   static uint8_t tcnt = 0;
   TIFR1 |= _BV(ICF1);
   // Wave shaping
   PORTD |= _BV(2);
-  if(tcnt < 32)
-    dds.setAmplitude(tcnt<<3);
-  if(tcnt > (255-32))
-    dds.setAmplitude((255 - tcnt)<<3);
+  // TODO: Improve how this would perform.
+  if(tcnt < 82)
+    dds.setAmplitude(amplitudeShape[(82-tcnt)/2]);
+  if(tcnt > (255-82))
+    dds.setAmplitude(amplitudeShape[(tcnt-173)/2]);
+  //else if(tcnt > (255-64))
+  //  dds.setAmplitude((255 - tcnt));
+  //else dds.setAmplitude(255);
   dds.clockTick();
   if(tcnt++ == 0) { // Next bit
     //PORTD ^= _BV(2); // Diagnostic pin (D2)

@@ -42,7 +42,7 @@
 // This is how often we'll perform a phase advance, as well as ADC sampling
 // rate. The higher this value, the smoother the output wave will be, at the
 // expense of CPU time. It maxes out around 62000 (TBD)
-#define DDS_REFCLK_DEFAULT     9600
+#define DDS_REFCLK_DEFAULT     38400
 // As each Arduino crystal is a little different, this can be fine tuned to
 // provide more accurate frequencies. Adjustments in the range of hundreds
 // is a good start.
@@ -193,10 +193,16 @@ public:
   // frequency supported will fit in a short.
   void setFrequency(unsigned short freq);
   
+  // Handle phase shifts
+  void setPhaseDeg(int16_t degrees);
+  void changePhaseDeg(int16_t degrees);
+  
   // Adjustable reference clock. This shoud be done before the timers are
   // started, or they will need to be restarted. Frequencies will need to
   // be set again to use the new clock.
-  void setReferenceClock(unsigned long ref);
+  void setReferenceClock(unsigned long ref) {
+    refclk = ref;
+  }
   unsigned long getReferenceClock() {
     return refclk;
   }
@@ -206,7 +212,7 @@ public:
   // Set a scaling factor. To keep things quick, this is a power of 2 value.
   // Set it with 0 for lowest (which will be off), 8 is highest.
   void setAmplitude(unsigned char amp) {
-    amplitude = 8 - amp;
+    amplitude = amp;
   }
   
   // This is the function called by the ADC_vect ISR to produce the tones

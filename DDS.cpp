@@ -42,8 +42,8 @@ void DDS::start() {
   // clock as the DDS.
   TCCR1B = _BV(CS11) | _BV(WGM13) | _BV(WGM12);
   TCCR1A = 0;
-  //ICR1 = ((F_CPU / 8) / refclk) - 1;
-  ICR1 = ((F_CPU / 8) / 9600) - 1;
+  ICR1 = ((F_CPU / 8) / refclk) - 1;
+  //ICR1 = ((F_CPU / 8) / 9600) - 1;
 
   // Configure the ADC here to automatically run and be triggered off Timer1
   ADMUX = _BV(REFS0) | _BV(ADLAR) | 0; // Channel 0, shift result left (ADCH used)
@@ -77,8 +77,21 @@ void DDS::setFrequency(unsigned short freq) {
   }
 }
 
+// Degrees should be between -360 and +360 (others don't make much sense)
+void DDS::setPhaseDeg(int16_t degrees) {
+  accumulator = degrees * (pow(2,ACCUMULATOR_BITS)/360.0);
+}
+void DDS::changePhaseDeg(int16_t degrees) {
+  accumulator += degrees * (pow(2,ACCUMULATOR_BITS)/360.0);
+}
+
 // TODO: Clean this up a bit..
 void DDS::clockTick() {
+/*  if(running) {
+    accumulator += stepRate;
+    OCR2A = getDutyCycle();
+  }
+  return;*/
   if(running) {
     accumulator += stepRate;
     if(timeLimited && tickDuration == 0) {
@@ -129,5 +142,7 @@ uint8_t DDS::getDutyCycle() {
   phAng = (accumulator >> ACCUMULATOR_BIT_SHIFT);
   uint8_t position = pgm_read_byte_near(ddsSineTable + phAng)>>(8-COMPARATOR_BITS);
   // Apply scaling and return
-  return position >> amplitude;
+  uint16_t scaled = position;
+  scaled *= amplitude;
+  return scaled>>8;
 }

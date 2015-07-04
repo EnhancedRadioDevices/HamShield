@@ -121,7 +121,7 @@ bool AFSK::Encoder::start() {
   lastZero = 0;
   bitPosition = 0;
   bitClock = 0;
-  preamble = 0b11000; // 6.7ms each, 23 = 153ms
+  preamble = 0b110000; // 6.7ms each, 23 = 153ms
   done = false;
   hdlc = true;
   packet = 0x0; // No initial packet, find in the ISR

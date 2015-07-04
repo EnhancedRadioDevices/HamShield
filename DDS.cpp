@@ -40,10 +40,18 @@ void DDS::start() {
   // Second, setup Timer1 to trigger the ADC interrupt
   // This lets us use decoding functions that run at the same reference
   // clock as the DDS.
-  TCCR1B = _BV(CS11) | _BV(WGM13) | _BV(WGM12);
+  // We use ICR1 as TOP and prescale by 8
+  TCCR1B = _BV(CS10) | _BV(WGM13) | _BV(WGM12);
   TCCR1A = 0;
-  ICR1 = ((F_CPU / 8) / refclk) - 1;
-  //ICR1 = ((F_CPU / 8) / 9600) - 1;
+  ICR1 = ((F_CPU / 1) / refclk) - 1;
+#ifdef DDS_DEBUG_SERIAL
+  Serial.print(F("DDS SysClk: "));
+  Serial.println(F_CPU/8);
+  Serial.print(F("DDS RefClk: "));
+  Serial.println(refclk, DEC);
+  Serial.print(F("DDS ICR1: "));
+  Serial.println(ICR1, DEC);
+#endif
 
   // Configure the ADC here to automatically run and be triggered off Timer1
   ADMUX = _BV(REFS0) | _BV(ADLAR) | 0; // Channel 0, shift result left (ADCH used)
@@ -56,6 +64,10 @@ void DDS::start() {
 
 void DDS::stop() {
   // TODO: Stop the timers.
+#ifndef DDS_USE_ONLY_TIMER2
+  TCCR1B = 0;
+#endif
+  TCCR2B = 0;
 }
 
 // Set our current sine wave frequency in Hz

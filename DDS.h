@@ -18,10 +18,10 @@
 
 #ifdef SHORT_ACCUMULATOR
 #define ACCUMULATOR_BITS      16
-typedef int16_t ddsAccumulator_t;
+typedef uint16_t ddsAccumulator_t;
 #else
 #define ACCUMULATOR_BITS      32
-typedef int32_t ddsAccumulator_t;
+typedef uint32_t ddsAccumulator_t;
 #endif
 
 // If defined, the timer will idle at 50% duty cycle
@@ -59,6 +59,9 @@ typedef int32_t ddsAccumulator_t;
 // TODO: Figure out where this clock value is generated from
 #define DDS_REFCLK_DEFAULT     (62500/4)
 #endif
+
+// Output some of the calculations and information about the DDS over serial
+#define DDS_DEBUG_SERIAL
 
 // When defined, use the 1024 element sine lookup table. This improves phase
 // accuracy, at the cost of more flash and CPU requirements.

@@ -1,3 +1,5 @@
+#define DDS_REFCLK_DEFAULT 9600
+
 #include <HamShield.h>
 #include <Wire.h>
 
@@ -6,25 +8,29 @@ DDS dds;
 
 void setup() {
   Serial.begin(9600);
-  // put your setup code here, to run once:
+  Wire.begin();
   pinMode(2, OUTPUT);
-  pinMode(10, OUTPUT);
   pinMode(3, OUTPUT);
-  pinMode(11, OUTPUT);
-  digitalWrite(2, LOW);
-  digitalWrite(10, LOW);
 
   Serial.println(F("Radio test connection"));
-  radio.testConnection();
+  Serial.println(radio.testConnection(), DEC);
   Serial.println(F("Initialize"));
+  delay(100);
   radio.initialize();
   Serial.println(F("Frequency"));
-  radio.frequency(446000);
+  delay(100);
+  radio.setVHF();
+  radio.frequency(145050);
+  radio.setRfPower(0);
   Serial.println(F("DDS Start"));
+  delay(100);
   dds.start();
   Serial.println(F("AFSK start"));
+  delay(100);
   radio.afsk.start(&dds);
   Serial.println(F("Starting..."));
+  pinMode(11, INPUT); // Bodge for now, as pin 3 is hotwired to pin 11
+  delay(100);
 }
 
 void loop() {
@@ -35,26 +41,34 @@ void loop() {
     packet->appendCallsign("VA6GA",15,true);
     packet->appendFCS(0x03);
     packet->appendFCS(0xf0);
-    packet->print("Hello ");
+    packet->print(F("Hello "));
     packet->println(millis());
     packet->finish();
     
     bool ret = radio.afsk.putTXPacket(packet);
-    if(radio.afsk.txReady())
+
+    if(radio.afsk.txReady()) {
+      Serial.println(F("txReady"));
+      radio.setModeTransmit();
+      //delay(100);
       if(radio.afsk.txStart()) {
-        radio.setModeTransmit();
+        Serial.println(F("txStart"));
+      } else {
+        radio.setModeReceive();
       }
+    }
     // Wait 2 seconds before we send our beacon again.
     Serial.println("tick");
     // Wait up to 2.5 seconds to finish sending, and stop transmitter.
     // TODO: This is hackery.
     for(int i = 0; i < 500; i++) {
-      if(!radio.afsk.encoder.isSending())
+      if(radio.afsk.encoder.isDone())
          break;
       delay(50);
     }
+    Serial.println("Done sending");
     radio.setModeReceive();
-    delay(2000);
+    delay(30000);
 }
 
 /*ISR(TIMER2_OVF_vect) {
@@ -68,10 +82,16 @@ void loop() {
   }
 }*/
 ISR(ADC_vect) {
+  static uint8_t tcnt = 0;
   TIFR1 = _BV(ICF1); // Clear the timer flag
-  digitalWrite(2, HIGH);
+  PORTD |= _BV(2); // Diagnostic pin (D2)
   dds.clockTick();
-  radio.afsk.timer();
-  digitalWrite(2, LOW);
+  if(++tcnt == 1) {
+    if(radio.afsk.encoder.isSending()) {
+      radio.afsk.timer();
+    }
+    tcnt = 0;
+  }
+  PORTD &= ~(_BV(2)); // Pin D2 off again
 }
 

@@ -2,8 +2,9 @@
 #define DDS_REFCLK_DEFAULT (34965/2)
 
 #include <HamShield.h>
+#include <Wire.h>
 
-//HamShield radio;
+HamShield radio;
 DDS dds;
 // Defined at the end of the sketch
 extern const uint16_t image[256*20] PROGMEM;
@@ -15,8 +16,21 @@ ddsAccumulator_t freqTable[3];
 
 void setup() {
   Serial.begin(9600);
+  Wire.begin();
+    // Query the HamShield for status information
+  Serial.print("Radio status: ");
+  int result = 0;
+  result = radio.testConnection();
+  Serial.println(result,DEC);
+  
+  // Tell the HamShield to start up
+  radio.initialize();
+  radio.setRfPower(0);
+  radio.setVHF();
+  radio.setFrequency(145500);
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
+  pinMode(11, INPUT); // HiZ
   // put your setup code here, to run once:
   //dds.setReferenceClock(34965/4);
   dds.start();
@@ -71,7 +85,8 @@ void loadScanline(uint8_t s, int y) {
 void loop() {
   // Load the first scanline
   loadScanline(0, 0);
-  
+  radio.setModeTransmit();
+  delay(500);
   // VIS
   dds.playWait(1900,300);
   dds.playWait(1200,10);
@@ -110,6 +125,7 @@ void loop() {
     }
   }
   dds.off();
+  radio.setModeReceive();
   delay(10000);
   return;
 }

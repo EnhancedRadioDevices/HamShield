@@ -50,29 +50,29 @@ void AFSK::Encoder::process() {
             lastTxEnd = millis();
             return;
           }
-        lastTx = millis();
-        currentBytePos = 0;
-      }
+          lastTx = millis();
+          currentBytePos = 0;
+        }
     
-      // We ran out of actual data, provide an HDLC frame (idle)
-      if(currentBytePos++ == packet->len) {
-        pBuf.freePacket(packet);
-        packet = pBuf.getPacket(); // Get the next, if any
-        currentBytePos = 0;
-        currentByte = HDLC_FRAME;
-        hdlc = true;
-      } else {
-        // Grab the next byte
-        currentByte = packet->getByte(); //[currentBytePos++];
-        if(currentByte == HDLC_ESCAPE) {
-          currentByte = packet->getByte(); //[currentBytePos++];
+        // We ran out of actual data, provide an HDLC frame (idle)
+        if(currentBytePos++ == packet->len) {
+          pBuf.freePacket(packet);
+          packet = pBuf.getPacket(); // Get the next, if any
+          currentBytePos = 0;
+          currentByte = HDLC_FRAME;
           hdlc = true;
         } else {
-          hdlc = false;
+          // Grab the next byte
+          currentByte = packet->getByte(); //[currentBytePos++];
+          if(currentByte == HDLC_ESCAPE) {
+            currentByte = packet->getByte(); //[currentBytePos++];
+            hdlc = true;
+          } else {
+            hdlc = false;
+          }
         }
       }
     }
-  }
 
   // Pickup the last bit
   currentBit = currentByte & 0x1;    
@@ -121,7 +121,7 @@ bool AFSK::Encoder::start() {
   lastZero = 0;
   bitPosition = 0;
   bitClock = 0;
-  preamble = 23; // 6.7ms each, 23 = 153ms
+  preamble = 0b11000; // 6.7ms each, 23 = 153ms
   done = false;
   hdlc = true;
   packet = 0x0; // No initial packet, find in the ISR
@@ -143,7 +143,7 @@ void AFSK::Encoder::stop() {
 AFSK::Decoder::Decoder() {
   // Initialize the sampler delay line (phase shift)
   for(unsigned char i = 0; i < SAMPLEPERBIT/2; i++)
-  delay_fifo.enqueue(0);
+    delay_fifo.enqueue(0);
 }
 
 bool AFSK::HDLCDecode::hdlcParse(bool bit, SimpleFIFO<uint8_t,HAMSHIELD_AFSK_RX_FIFO_LEN> *fifo) {
@@ -193,21 +193,42 @@ bool AFSK::HDLCDecode::hdlcParse(bool bit, SimpleFIFO<uint8_t,HAMSHIELD_AFSK_RX_
 
   return ret;
 }
-  
+
+#define FASTRING_SIZE 4
+#define FASTRING_MASK (FASTRING_SIZE-1)
+template <typename T, int size>
+class FastRing {
+private:
+  T ring[FASTRING_SIZE];
+  uint8_t position;
+public:
+  FastRing(): position(0) {}
+  inline void write(T value) {
+    ring[(position++) & FASTRING_MASK] = value;
+  }
+  inline T read() const {
+    return ring[position & FASTRING_MASK];
+  }
+  inline T readn(uint8_t n) const {
+    return ring[(position + (~n+1)) & FASTRING_MASK];
+  }
+};
+FastRing<uint8_t,4> delayLine;
+
 // Handle the A/D converter interrupt (hopefully quickly :)
 void AFSK::Decoder::process(int8_t curr_sample) {
   // Run the same through the phase multiplier and butterworth filter
   iir_x[0] = iir_x[1];
-  iir_x[1] = ((int8_t)delay_fifo.dequeue() * curr_sample) >> 2;
+  iir_x[1] = ((int8_t)delayLine.read() * curr_sample) >> 2;
   iir_y[0] = iir_y[1];
   iir_y[1] = iir_x[0] + iir_x[1] + (iir_y[0] >> 1) + (iir_y[0]>>3) + (iir_y[0]>>5);
   
+  // Place this ADC sample into the delay line
+  delayLine.write(curr_sample);
+
   // Shift the bit into place based on the output of the discriminator
   sampled_bits <<= 1;
-  sampled_bits |= (iir_y[1] > 0) ? 1 : 0;
-  
-  // Place this ADC sample into the delay line
-  delay_fifo.enqueue(curr_sample);
+  sampled_bits |= (iir_y[1] > 0) ? 1 : 0;  
   
   // If we found a 0/1 transition, adjust phases to track
   if(EDGE_FOUND(sampled_bits)) {
@@ -503,7 +524,8 @@ size_t AFSK::Packet::appendCallsign(const char *callsign, uint8_t ssid, bool fin
 void AFSK::timer() {
   if(encoder.isSending())
     encoder.process();
-  decoder.process(ADCH - 128);
+  else
+    decoder.process(ADCH - 128);
 }
 
 void AFSK::start(DDS *dds) {

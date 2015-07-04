@@ -1,4 +1,4 @@
-#define DDS_REFCLK_DEFAULT 19200
+#define DDS_REFCLK_DEFAULT 38400
 #define DDS_REFCLK_OFFSET  0
 #define DDS_DEBUG_SERIAL
 
@@ -30,14 +30,55 @@ void setup() {
 enum Sets {
   SET_REF,
   SET_TONE,
-  SET_AMPLITUDE
+  SET_AMPLITUDE,
+  SET_ADC_HALF
 } setting = SET_TONE;
 
 char freqBuffer[8];
 char *freqBufferPtr = freqBuffer;
 uint16_t lastFreq = 1200;
 
+volatile uint16_t recordedPulseLength;
+volatile bool recordedPulse = false;
+volatile bool listening = false;
+volatile uint8_t maxADC = 0, minADC = 255, adcHalf = 40;
+
 void loop() {
+  static uint16_t samples = 0;
+  static uint16_t pulse;
+  static uint32_t lastOutput = 0;
+  if(recordedPulse) {
+    uint32_t pulseAveraging;
+    uint16_t tmpPulse;
+    cli();
+    recordedPulse = false;
+    tmpPulse = recordedPulseLength;
+    sei();
+    if(samples++ == 0) {
+      pulse = tmpPulse;
+    } else {
+      pulseAveraging = (pulse + tmpPulse) >> 1;
+      pulse = pulseAveraging;
+    }
+    if((lastOutput + 1000) < millis()) {
+      Serial.print(F("Pulse:   "));
+      Serial.println(pulse);
+      Serial.print(F("Last:    "));
+      Serial.println(tmpPulse);
+      Serial.print(F("Samples: "));
+      Serial.println(samples);
+      Serial.print(F("ADC M/M: "));
+      Serial.print(minADC); minADC = 255;
+      Serial.print(F(" / "));
+      Serial.println(maxADC); maxADC = 0;
+      Serial.print(F("Freq:    "));
+      // F = 1/(pulse*(1/ref))
+      // F = ref/pulse
+      Serial.println((float)(dds.getReferenceClock()+(float)DDS_REFCLK_OFFSET)/(float)pulse);
+      samples = 0;
+      lastOutput = millis();
+    }
+  }
   while(Serial.available()) {
     char c = Serial.read();
     Serial.print(c);
@@ -50,6 +91,8 @@ void loop() {
         Serial.println(F("Tone:   t XXXX = XXXX Hz"));
         Serial.println(F("Amp.:   a XXX  = XXX out of 255"));
         Serial.println(F("DDS:    o = On, O = Off"));
+        Serial.println(F("Input:  l = Determine received frequency, L = stop"));
+        Serial.println(F("ADC:    m XXX = Set ADC midpoint (zero crossing level)"));
         Serial.println(F("ie. a 31 = 32/255 amplitude, r38400 sets 38400Hz refclk"));
         Serial.println("> ");
         break;
@@ -85,6 +128,20 @@ void loop() {
         Serial.println(dds.getReferenceClock());
         Serial.println("> ");
         break;
+      case 'l':
+        Serial.println(F("Start frequency listening, DDS off"));
+        dds.off();
+        listening = true;
+        lastOutput = millis();
+        Serial.println("> ");
+        break;
+      case 'L':
+        Serial.println(F("Stop frequency listening, DDS on"));
+        listening = false;
+        samples = 0;
+        dds.on();
+        Serial.println("> ");
+        break;
       case 'T':
         Serial.println(F("Radio transmit"));
         radio.setModeTransmit();
@@ -104,6 +161,9 @@ void loop() {
       case 'a':
         setting = SET_AMPLITUDE;
         break;
+      case 'm':
+        setting = SET_ADC_HALF;
+        break;
       case 'o':
         dds.on();
         Serial.println("> ");
@@ -117,7 +177,7 @@ void loop() {
           *freqBufferPtr = c;
           freqBufferPtr++;
         }
-        if(c == '\n' && freqBufferPtr != freqBuffer) {
+        if((c == '\n' || c == '\r') && freqBufferPtr != freqBuffer) {
           *freqBufferPtr = '\0';
           freqBufferPtr = freqBuffer;
           uint16_t freq = atoi(freqBuffer);
@@ -136,6 +196,10 @@ void loop() {
             dds.setAmplitude((uint8_t)(freq&0xFF));
             Serial.print(F("New Amplitude: "));
             Serial.println((uint8_t)(freq&0xFF));
+          } else if(setting == SET_ADC_HALF) {
+            adcHalf = freq&0xFF;
+            Serial.print(F("ADC midpoint set to "));
+            Serial.println((uint8_t)(freq&0xFF));
           }
           Serial.println("> ");
         }
@@ -145,8 +209,26 @@ void loop() {
 }
 
 ISR(ADC_vect) {
+  static uint16_t pulseLength = 0;
+  static uint8_t lastADC = 127;
   TIFR1 = _BV(ICF1);
   PORTD |= _BV(2);
   dds.clockTick();
+  if(listening) {
+    pulseLength++;
+    if(ADCH >= adcHalf && lastADC < adcHalf) {
+      // Zero crossing, upward
+      recordedPulseLength = pulseLength;
+      recordedPulse = true;
+      pulseLength = 0;
+    }
+    if(minADC > ADCH) {
+      minADC = ADCH;
+    }
+    if(maxADC < ADCH) {
+      maxADC = ADCH;
+    }
+    lastADC = ADCH;
+  }
   PORTD &= ~_BV(2);
 }

@@ -24,10 +24,82 @@ uint32_t MURS[] = {0,151820,151880,151940,154570,154600};
 uint32_t WX[] = {0,162550,162400,162475,162425,162450,162500,162525};
 
 /* morse code lookup table */
-
-const char *ascii = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,?'!/()&:;=+-_\"$@",
-  *itu[] = { ".-","-...","-.-.","-..",".","..-.","--.","....","..",".---","-.-",".-..","--","-.","---",".--.","--.-",".-.","...","-","..-","...-",".--","-..-","-.--","--..","-----",".----","..---","...--","....-",".....","-....","--...","---..","----.",".-.-.-","--..--","..--..",".----.","-.-.--","-..-.","-.--.","-.--.-",".-...","---...","-.-.-.","-...-",".-.-.","-....-","..--.-",".-..-.","...-..-",".--.-."
-  };
+// This is the Morse table in reverse binary format.
+// It will occupy 108 bytes of memory (or program memory if defined)
+#define MORSE_TABLE_LENGTH 54
+#define MORSE_TABLE_PROGMEM
+#ifndef MORSE_TABLE_PROGMEM
+const struct asciiMorse {
+    char ascii;
+    uint8_t itu;
+} asciiMorse[MORSE_TABLE_LENGTH] = {
+    { 'E', 0b00000010 }, // .
+    { 'T', 0b00000011 }, // -
+    { 'I', 0b00000100 }, // ..
+    { 'N', 0b00000101 }, // -.
+    { 'A', 0b00000110 }, // .-
+    { 'M', 0b00000111 }, // --
+    { 'S', 0b00001000 }, // ...
+    { 'D', 0b00001001 }, // -..
+    { 'R', 0b00001010 }, // .-.
+    { 'G', 0b00001011 }, // --.
+    { 'U', 0b00001100 }, // ..-
+    { 'K', 0b00001101 }, // -.-
+    { 'W', 0b00001110 }, // .--
+    { 'O', 0b00001111 }, // ---
+    { 'H', 0b00010000 }, // ....
+    { 'B', 0b00010001 }, // -...
+    { 'L', 0b00010010 }, // .-..
+    { 'Z', 0b00010011 }, // --..
+    { 'F', 0b00010100 }, // ..-.
+    { 'C', 0b00010101 }, // -.-.
+    { 'P', 0b00010110 }, // .--.
+    { 'V', 0b00011000 }, // ...-
+    { 'X', 0b00011001 }, // -..-
+    { 'Q', 0b00011011 }, // --.-
+    { 'Y', 0b00011101 }, // -.--
+    { 'J', 0b00011110 }, // .---
+    { '5', 0b00100000 }, // .....
+    { '6', 0b00100001 }, // -....
+    { '&', 0b00100010 }, // .-...
+    { '7', 0b00100011 }, // --...
+    { '8', 0b00100111 }, // ---..
+    { '/', 0b00101001 }, // -..-.
+    { '+', 0b00101010 }, // .-.-.
+    { '(', 0b00101101 }, // -.--.
+    { '9', 0b00101111 }, // ----.
+    { '4', 0b00110000 }, // ....-
+    { '=', 0b00110001 }, // -...-
+    { '3', 0b00111000 }, // ...--
+    { '2', 0b00111100 }, // ..---
+    { '1', 0b00111110 }, // .----
+    { '0', 0b00111111 }, // -----
+    { ':', 0b01000111 }, // ---...
+    { '?', 0b01001100 }, // ..--..
+    { '"', 0b01010010 }, // .-..-.
+    { ';', 0b01010101 }, // -.-.-.
+    { '@', 0b01010110 }, // .--.-.
+    { '\047', 0b01011110 }, // (') .----.
+    { '-', 0b01100001 }, // -....-
+    { '.', 0b01101010 }, // .-.-.-
+    { '_', 0b01101100 }, // ..--.-
+    { ')', 0b01101101 }, // -.--.-
+    { ',', 0b01110011 }, // --..--
+    { '!', 0b01110101 }, // -.-.--
+    { '$', 0b11001000 } // ...-..-
+};
+#else
+#include <avr/pgmspace.h>
+// This is a program memory variant, using 16 bit words for storage instead.
+const uint16_t asciiMorseProgmem[] PROGMEM = {
+  0x4502, 0x5403, 0x4904, 0x4E05, 0x4106, 0x4D07, 0x5308, 0x4409, 0x520A,
+  0x470B, 0x550C, 0x4B0D, 0x570E, 0x4F0F, 0x4810, 0x4211, 0x4C12, 0x5A13,
+  0x4614, 0x4315, 0x5016, 0x5618, 0x5819, 0x511B, 0x591D, 0x4A1E, 0x3520,
+  0x3621, 0x2622, 0x3723, 0x3827, 0x2F29, 0x2B2A, 0x282D, 0x392F, 0x3430,
+  0x3D31, 0x3338, 0x323C, 0x313E, 0x303F, 0x3A47, 0x3F4C, 0x2252, 0x3B55,
+  0x4056, 0x275E, 0x2D61, 0x2E6A, 0x5F6C, 0x296D, 0x2C73, 0x2175, 0x24C8
+};
+#endif // MORSE_TABLE_PROGMEM
 
 /* 2200 Hz */
 
@@ -1190,30 +1262,55 @@ bool HamShield::waitForChannel(long timeout = 0, long breakwindow = 0, int setRS
 /* Morse code out, blocking */
 
 void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) { 
-
- for(int x = 0; x < strlen(buffer); x++) {
-  char output = morseLookup(buffer[x]); 
-  if(buffer[x] != ' ') { 
-  for(int m = 0; m < strlen(itu[output]); m++) {
-     if(itu[output][m] == '-') { tone(HAMSHIELD_PWM_PIN,1000,HAMSHIELD_MORSE_DOT*3); delay(HAMSHIELD_MORSE_DOT*3); }
-     else { tone(HAMSHIELD_PWM_PIN,1000,HAMSHIELD_MORSE_DOT); delay(HAMSHIELD_MORSE_DOT); }
-     delay(HAMSHIELD_MORSE_DOT);
-     }
-     delay(HAMSHIELD_MORSE_DOT*3);
-  } else { delay(HAMSHIELD_MORSE_DOT*7); } 
- }
- return;
+  int i;
+  char prev = 0;
+  for(i = 0; buffer[i] != '\0' && i < HAMSHIELD_MORSE_BUFFER_SIZE; prev = buffer[i], i++) {
+    // On a space, delay 7 dots
+    if(buffer[i] == ' ') {
+      // We delay by 4 here, if we previously sent a symbol. Otherwise 7.
+      // This could probably just be always 7 and go relatively unnoticed.
+      if(prev == 0 || prev == ' ')
+        delay(HAMSHIELD_MORSE_DOT*7);
+      else
+        delay(HAMSHIELD_MORSE_DOT*4);
+      continue;
+    }
+    // Otherwise, lookup our character symbol
+    uint8_t bits = morseLookup(buffer[i]);
+    if(bits) { // If it is a valid character...
+      do {
+        if(bits & 1) {
+          tone(HAMSHIELD_PWM_PIN, 1000, HAMSHIELD_MORSE_DOT * 3);
+          delay(HAMSHIELD_MORSE_DOT*3);
+        } else {
+          tone(HAMSHIELD_PWM_PIN, 1000, HAMSHIELD_MORSE_DOT);
+          delay(HAMSHIELD_MORSE_DOT);
+        }
+        delay(HAMSHIELD_MORSE_DOT);
+        bits >>= 1; // Shift into the next symbol
+      } while(bits != 1); // Wait for 1 termination to be all we have left
+    }
+    // End of character
+    delay(HAMSHIELD_MORSE_DOT * 3);
+  }
+  return;
 }
 
 /* Morse code lookup table */
 
-char HamShield::morseLookup(char letter) { 
- for(int x = 0; x < 54; x++) { 
-  if(letter == ascii[x]) { 
-    return x; 
-   // return itu[x];
-  } 
- }
+uint8_t HamShield::morseLookup(char letter) { 
+  uint8_t i;
+  for(i = 0; i < MORSE_TABLE_LENGTH; i++) {
+#ifndef MORSE_TABLE_PROGMEM
+    if(asciiMorse[i].ascii == letter)
+      return asciiMorse[i].itu;
+#else
+    uint16_t w = pgm_read_word_near(asciiMorseProgmem + i);
+    if( (char)((w>>8) & 0xff) == letter )
+      return (uint8_t)(w & 0xff);
+#endif // MORSE_TABLE_PROGMEM
+  }
+  return 0;
 }
 
 /* 

@@ -286,8 +286,9 @@ void HamShield::initialize() {
  */
 bool HamShield::testConnection() {
     I2Cdev::readWord(devAddr, 0x09, radio_i2c_buf);
-// 03ac or 032c
-    return radio_i2c_buf[0] == 0x03AC; // TODO: find a device ID reg I can use
+    // TODO: find a device ID reg I can use
+    // 03ac or 032c
+    return (radio_i2c_buf[0] == 0x03AC || radio_i2c_buf[0] == 0x32C);
 }
 
 

@@ -90,7 +90,6 @@ const struct asciiMorse {
     { '$', 0b11001000 } // ...-..-
 };
 #else
-#include <avr/pgmspace.h>
 // This is a program memory variant, using 16 bit words for storage instead.
 const uint16_t asciiMorseProgmem[] PROGMEM = {
   0x4502, 0x5403, 0x4904, 0x4E05, 0x4106, 0x4D07, 0x5308, 0x4409, 0x520A,

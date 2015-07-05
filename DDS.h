@@ -181,7 +181,8 @@ static const int8_t ddsSineTable[256] PROGMEM = {
 
 class DDS {
 public:
-  DDS(): refclk(DDS_REFCLK_DEFAULT), accumulator(0), running(false),
+  DDS(): refclk(DDS_REFCLK_DEFAULT), refclkOffset(DDS_REFCLK_OFFSET),
+    accumulator(0), running(false),
     timeLimited(false), tickDuration(0), amplitude(255)
     {};
 
@@ -244,6 +245,13 @@ public:
     return refclk;
   }
 
+  void setReferenceOffset(int16_t offset) {
+    refclkOffset = offset;
+  }
+  int16_t getReferenceOffset() {
+    return refclkOffset;
+  }
+  
   uint8_t getDutyCycle();
 
   // Set a scaling factor. To keep things quick, this is a power of 2 value.
@@ -263,6 +271,7 @@ private:
   volatile ddsAccumulator_t accumulator;
   volatile ddsAccumulator_t stepRate;
   ddsAccumulator_t refclk;
+  int16_t refclkOffset;
   static DDS *sDDS;
 };
 

@@ -89,7 +89,7 @@ ddsAccumulator_t DDS::calcFrequency(unsigned short freq) {
       newStep = (600.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);      
     }
   } else {
-    newStep = pow(2,ACCUMULATOR_BITS)*freq / (refclk+DDS_REFCLK_OFFSET);
+    newStep = pow(2,ACCUMULATOR_BITS)*freq / (refclk+refclkOffset);
   }
   return newStep;
 }

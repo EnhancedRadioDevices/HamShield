@@ -31,7 +31,8 @@ enum Sets {
   SET_REF,
   SET_TONE,
   SET_AMPLITUDE,
-  SET_ADC_HALF
+  SET_ADC_HALF,
+  SET_OFFSET
 } setting = SET_TONE;
 
 char freqBuffer[8];
@@ -47,6 +48,7 @@ void loop() {
   static uint16_t samples = 0;
   static uint16_t pulse;
   static uint32_t lastOutput = 0;
+  static float pulseFloat = 0.0;
   if(recordedPulse) {
     uint32_t pulseAveraging;
     uint16_t tmpPulse;
@@ -56,9 +58,11 @@ void loop() {
     sei();
     if(samples++ == 0) {
       pulse = tmpPulse;
+      //pulseFloat = tmpPulse;
     } else {
       pulseAveraging = (pulse + tmpPulse) >> 1;
       pulse = pulseAveraging;
+      pulseFloat = pulseFloat + 0.01*((float)pulse-pulseFloat);
     }
     if((lastOutput + 1000) < millis()) {
       Serial.print(F("Pulse:   "));
@@ -74,7 +78,17 @@ void loop() {
       Serial.print(F("Freq:    "));
       // F = 1/(pulse*(1/ref))
       // F = ref/pulse
-      Serial.println((float)(dds.getReferenceClock()+(float)DDS_REFCLK_OFFSET)/(float)pulse);
+      Serial.print((float)((float)dds.getReferenceClock()+(float)dds.getReferenceOffset())/(float)pulse);
+      Serial.print(F(" / "));
+      Serial.print((float)((float)dds.getReferenceClock()+(float)dds.getReferenceOffset())/pulseFloat);
+      Serial.print(F(" / "));
+      Serial.println(pulseFloat);
+      Serial.print(F("Freq2:   "));
+      // F = 1/(pulse*(1/ref))
+      // F = ref/pulse
+      Serial.print((float)dds.getReferenceClock()/(float)pulse);
+      Serial.print(F(" / "));
+      Serial.println((float)dds.getReferenceClock()/pulseFloat);
       samples = 0;
       lastOutput = millis();
     }
@@ -87,6 +101,7 @@ void loop() {
         Serial.println(F("Commands:"));
         Serial.println(F("RefClk: u = +10, U = +100, r XXXX = XXXX"));
         Serial.println(F("        d = -10, D = -100"));
+        Serial.println(F("Offset: s XXX = Set refclk offset"));
         Serial.println(F("Radio:  T = transmit, R = receive"));
         Serial.println(F("Tone:   t XXXX = XXXX Hz"));
         Serial.println(F("Amp.:   a XXX  = XXX out of 255"));
@@ -164,6 +179,9 @@ void loop() {
       case 'm':
         setting = SET_ADC_HALF;
         break;
+      case 's':
+        setting = SET_OFFSET;
+        break;
       case 'o':
         dds.on();
         Serial.println("> ");
@@ -173,7 +191,7 @@ void loop() {
         Serial.println("> ");
         break;
       default:
-        if(c >= '0' && c <= '9') {
+        if(c == '-' || (c >= '0' && c <= '9')) {
           *freqBufferPtr = c;
           freqBufferPtr++;
         }
@@ -200,6 +218,11 @@ void loop() {
             adcHalf = freq&0xFF;
             Serial.print(F("ADC midpoint set to "));
             Serial.println((uint8_t)(freq&0xFF));
+          } else if(setting == SET_OFFSET) {
+            dds.setReferenceOffset((int16_t)atoi(freqBuffer));
+            dds.setFrequency(lastFreq);
+            Serial.print(F("Refclk offset: "));
+            Serial.println(dds.getReferenceOffset());
           }
           Serial.println("> ");
         }
@@ -211,9 +234,11 @@ void loop() {
 ISR(ADC_vect) {
   static uint16_t pulseLength = 0;
   static uint8_t lastADC = 127;
+  cli();
   TIFR1 = _BV(ICF1);
   PORTD |= _BV(2);
   dds.clockTick();
+  sei();
   if(listening) {
     pulseLength++;
     if(ADCH >= adcHalf && lastADC < adcHalf) {

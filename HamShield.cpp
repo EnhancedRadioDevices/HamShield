@@ -6,6 +6,7 @@
 #include "Arduino.h"
 #include "HamShield.h"
 #include <avr/wdt.h>
+#include <avr/pgmspace.h>
 // #include <PCM.h>
 
 /* don't change this regulatory value, use dangerMode() and safeMode() instead */
@@ -15,13 +16,13 @@ HamShield *HamShield::sHamShield = NULL;
 
 /* channel lookup tables */
 
-uint32_t FRS[] = {0,462562,462587,462612,462637,462662,462687,462712,467562,467587,467612,467637,467662,467687,467712};
+uint32_t FRS[] PROGMEM = {0,462562,462587,462612,462637,462662,462687,462712,467562,467587,467612,467637,467662,467687,467712};
 
-uint32_t GMRS[] = {0,462550,462575,462600,462625,462650,462675,462700,462725};
+uint32_t GMRS[] PROGMEM = {0,462550,462575,462600,462625,462650,462675,462700,462725};
 
-uint32_t MURS[] = {0,151820,151880,151940,154570,154600};
+uint32_t MURS[] PROGMEM = {0,151820,151880,151940,154570,154600};
 
-uint32_t WX[] = {0,162550,162400,162475,162425,162450,162500,162525};
+uint32_t WX[] PROGMEM = {0,162550,162400,162475,162425,162450,162500,162525};
 
 /* morse code lookup table */
 // This is the Morse table in reverse binary format.
@@ -89,7 +90,6 @@ const struct asciiMorse {
     { '$', 0b11001000 } // ...-..-
 };
 #else
-#include <avr/pgmspace.h>
 // This is a program memory variant, using 16 bit words for storage instead.
 const uint16_t asciiMorseProgmem[] PROGMEM = {
   0x4502, 0x5403, 0x4904, 0x4E05, 0x4106, 0x4D07, 0x5308, 0x4409, 0x520A,
@@ -286,8 +286,9 @@ void HamShield::initialize() {
  */
 bool HamShield::testConnection() {
     I2Cdev::readWord(devAddr, 0x09, radio_i2c_buf);
-// 03ac or 032c
-    return radio_i2c_buf[0] == 0x03AC; // TODO: find a device ID reg I can use
+    // TODO: find a device ID reg I can use
+    // 03ac or 032c
+    return (radio_i2c_buf[0] == 0x03AC || radio_i2c_buf[0] == 0x32C);
 }
 
 
@@ -1054,7 +1055,7 @@ bool HamShield::frequency(uint32_t freq_khz) {
 
 bool HamShield::setFRSChannel(uint8_t channel) { 
   if(channel < 15) { 
-    setFrequency(FRS[channel]);
+    setFrequency(pgm_read_dword_near(FRS + channel));
     return true;
   }
   return false;
@@ -1065,11 +1066,11 @@ bool HamShield::setFRSChannel(uint8_t channel) {
 bool HamShield::setGMRSChannel(uint8_t channel) { 
   if((channel > 8) & (channel < 16)) { 
      channel = channel - 7;           // we start with 0, to try to avoid channel 8 being nothing
-     setFrequency(FRS[channel]);
+     setFrequency(pgm_read_dword_near(FRS + channel));
      return true; 
   }
   if(channel < 9) { 
-     setFrequency(GMRS[channel]);
+     setFrequency(pgm_read_dword_near(GMRS + channel));
      return true;
   }
   return false;
@@ -1079,7 +1080,7 @@ bool HamShield::setGMRSChannel(uint8_t channel) {
 
 bool HamShield::setMURSChannel(uint8_t channel) { 
   if(channel < 6) { 
-     setFrequency(MURS[channel]); 
+     setFrequency(pgm_read_dword_near(MURS + channel)); 
      return true;
   }
 }
@@ -1088,7 +1089,7 @@ bool HamShield::setMURSChannel(uint8_t channel) {
 
 bool HamShield::setWXChannel(uint8_t channel) { 
   if(channel < 8) { 
-     setFrequency(WX[channel]);
+     setFrequency(pgm_read_dword_near(WX + channel));
      setModeReceive();
      // turn off squelch?
      // channel bandwidth? 

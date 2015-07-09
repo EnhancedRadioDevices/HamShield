@@ -925,7 +925,7 @@ bool HamShield::getPreDeEmphEnabled(){
 int16_t HamShield::readRSSI(){
 	I2Cdev::readBitsW(devAddr, A1846S_RSSI_REG, A1846S_RSSI_BIT, A1846S_RSSI_LENGTH, radio_i2c_buf);
 	
-    int16_t rssi = (radio_i2c_buf[0] & 0x3FF); // - 137;
+    int16_t rssi = (radio_i2c_buf[0] & 0x3FF) - 137;
 	return rssi;
 }
 uint16_t HamShield::readVSSI(){

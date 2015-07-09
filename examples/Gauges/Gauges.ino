@@ -28,6 +28,7 @@ void setup() {
   Serial.println(result,DEC); 
   radio.initialize();
   radio.setFrequency(446000);
+  radio.setModeReceive();
   Serial.println("Entering gauges...");
   tone(9,1000);
   delay(2000);

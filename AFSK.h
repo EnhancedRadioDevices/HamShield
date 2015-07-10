@@ -111,6 +111,8 @@ public:
     inline bool crcOK() {
       return (fcs == 0xF0B8);
     }
+    
+    void print(Stream *s);
   private:
 #ifdef PACKET_PREALLOCATE
     uint8_t dataPtr[128];

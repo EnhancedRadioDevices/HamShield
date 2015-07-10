@@ -194,26 +194,25 @@ bool AFSK::HDLCDecode::hdlcParse(bool bit, SimpleFIFO<uint8_t,HAMSHIELD_AFSK_RX_
   return ret;
 }
 
-#define FASTRING_SIZE 4
-#define FASTRING_MASK (FASTRING_SIZE-1)
 template <typename T, int size>
 class FastRing {
 private:
-  T ring[FASTRING_SIZE];
+  T ring[size];
   uint8_t position;
 public:
   FastRing(): position(0) {}
   inline void write(T value) {
-    ring[(position++) & FASTRING_MASK] = value;
+    ring[(position++) & (size-1)] = value;
   }
   inline T read() const {
-    return ring[position & FASTRING_MASK];
+    return ring[position & (size-1)];
   }
   inline T readn(uint8_t n) const {
-    return ring[(position + (~n+1)) & FASTRING_MASK];
+    return ring[(position + (~n+1)) & (size-1)];
   }
 };
-FastRing<uint8_t,4> delayLine;
+// Create a delay line that's half the length of the bit cycle (-90 degrees)
+FastRing<uint8_t,(T_BIT/2)> delayLine;
 
 // Handle the A/D converter interrupt (hopefully quickly :)
 void AFSK::Decoder::process(int8_t curr_sample) {
@@ -269,7 +268,6 @@ bool AFSK::Decoder::read() {
   while(rx_fifo.count()) {
     // Grab the character
     char c = rx_fifo.dequeue();
-    
     bool escaped = false;
     if(c == HDLC_ESCAPE) { // We received an escaped byte, mark it
       escaped = true;
@@ -312,10 +310,10 @@ bool AFSK::Decoder::read() {
               if((currentPacket->getByte() & 0x1) == 0x1) { // Found a byte with LSB set
                 // which marks the final address payload
                 // next two bytes should be the control/PID
-                if(currentPacket->getByte() == 0x03 && currentPacket->getByte() == 0xf0) {
+                //if(currentPacket->getByte() == 0x03 && currentPacket->getByte() == 0xf0) {
                   filtered = true;
                   break; // Found it
-                }
+                //}
               }
             }
             
@@ -520,12 +518,36 @@ size_t AFSK::Packet::appendCallsign(const char *callsign, uint8_t ssid, bool fin
   appendFCS(ssidField);
 }
 
+void AFSK::Packet::print(Stream *s) {
+  uint8_t i;
+  // Second 6 bytes are source callsign
+  for(i=7; i<13; i++) {
+    s->write(*(dataPtr+i)>>1);
+  }
+  // SSID
+  s->write('-');
+  s->print((*(dataPtr+13) >> 1) & 0xF);
+  s->print(" -> ");
+  // First 6 bytes are destination callsign
+  for(i=0; i<6; i++) {
+    s->write(*(dataPtr+i)>>1);
+  }
+  // SSID
+  s->write('-');
+  s->print((*(dataPtr+6) >> 1) & 0xF);
+  // Control/PID next two bytes
+  // Skip those, print payload
+  for(i = 15; i<len; i++) {
+    s->write(*(dataPtr+i));
+  }
+}
+
 // Determine what we want to do on this ADC tick.
 void AFSK::timer() {
   if(encoder.isSending())
     encoder.process();
   else
-    decoder.process(ADCH - 128);
+    decoder.process(((int8_t)(ADCH - 128)));
 }
 
 void AFSK::start(DDS *dds) {

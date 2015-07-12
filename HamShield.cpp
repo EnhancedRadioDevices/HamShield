@@ -228,7 +228,7 @@ void HamShield::initialize() {
 	tx_data = 0x0A50;
     I2Cdev::writeWord(devAddr, 0x59, tx_data); // Tx FM Deviation
 	
-	tx_data = 0x0A10;
+	tx_data = 0x1425; //0x0A10;
     I2Cdev::writeWord(devAddr, 0x62, tx_data); // Modu_det_thresh (sq setting)
 	
 	tx_data = 0x2494;

@@ -23,7 +23,7 @@ void KISS::loop() {
      }
    }
    // Check if we have incoming data to turn into a packet
-   if(io->available()) {
+   while(io->available()) {
      uint8_t c = (uint8_t)io->read();
      if(c == KISS_FEND) {
        if(inFrame && kissLen > 0) {
@@ -31,7 +31,7 @@ void KISS::loop() {
          AFSK::Packet *packet = AFSK::PacketBuffer::makePacket(PACKET_MAX_LEN);
          packet->start();
          for(i = 0; i < kissLen; i++) {
-           packet->append(kissBuffer[i]);
+           packet->appendFCS(kissBuffer[i]);
          }
          packet->finish();
          radio->afsk.encoder.putPacket(packet);

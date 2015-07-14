@@ -15,15 +15,19 @@
 #define PACKET_BUFFER_SIZE 2
 #define PACKET_STATIC 0
 
+// Enable the packet parser which will tokenize the AX25 frame into easy strings
+#define PACKET_PARSER
+
 // If this is set, all the packet buffers will be pre-allocated at compile time
 // This will use more RAM, but can make it easier to do memory planning.
 // TODO: Make this actually work right and not crash.
-//#define PACKET_PREALLOCATE
+#define PACKET_PREALLOCATE
 
-// This is with all the digis, two addresses, framing and full payload
-// Two more bytes are added for HDLC_ESCAPEs
-#define PACKET_MAX_LEN 512
-#define AX25_PACKET_HEADER_MINLEN 22
+// This is with all the digis, two addresses, and full payload
+// Dst(7) + Src(7) + Digis(56) + Ctl(1) + PID(1) + Data(0-256) + FCS(2)
+#define PACKET_MAX_LEN 330
+// Minimum is Dst + Src + Ctl + FCS
+#define AX25_PACKET_HEADER_MINLEN 17
 
 // HDLC framing bits
 #define HDLC_FRAME    0x7E
@@ -65,9 +69,11 @@ public:
     }
     inline void start() {
       fcs = 0xffff;
-      *dataPos++ = HDLC_ESCAPE;
-      *dataPos++ = HDLC_FRAME;
-      len = 2;
+      // No longer put an explicit frame start here
+      //*dataPos++ = HDLC_ESCAPE;
+      //*dataPos++ = HDLC_FRAME;
+      //len = 2;
+      len = 0;
     }
     
     inline bool append(char c) {
@@ -96,8 +102,9 @@ public:
     inline void finish() {
       append(~(fcs & 0xff));
       append(~((fcs>>8) & 0xff));
-      append(HDLC_ESCAPE);
-      append(HDLC_FRAME);
+      // No longer append the frame boundaries themselves
+      //append(HDLC_ESCAPE);
+      //append(HDLC_FRAME);
       ready = 1;
     }
     
@@ -111,13 +118,27 @@ public:
     inline bool crcOK() {
       return (fcs == 0xF0B8);
     }
-    
-    void print(Stream *s);
+#ifdef PACKET_PARSER
+    bool parsePacket();
+#endif
+    void printPacket(Stream *s);
   private:
 #ifdef PACKET_PREALLOCATE
-    uint8_t dataPtr[128];
+    uint8_t dataPtr[PACKET_MAX_LEN]; // 256 byte I frame + headers max of 78
 #else
     uint8_t *dataPtr;
+#endif
+#ifdef PACKET_PARSER
+    char srcCallsign[7];
+    uint8_t srcSSID;
+    char dstCallsign[7];
+    uint8_t dstSSID;
+    char digipeater[8][7];
+    uint8_t digipeaterSSID[8];
+    uint8_t *iFrameData;
+    uint8_t length;
+    uint8_t control;
+    uint8_t pid;
 #endif
     uint8_t *dataPos, *readPos;
     unsigned short fcs;
@@ -156,6 +177,7 @@ public:
       done = true;
       packet = 0x0;
       currentBytePos = 0;
+      nextByte = 0;
     }
     void setDDS(DDS *d) { dds = d; }
     volatile inline bool isSending() volatile { 
@@ -184,12 +206,13 @@ public:
     byte lastZero : 3;
     byte bitPosition : 3;
     byte preamble : 6;
-    byte bitClock;
+    //byte bitClock;
     bool hdlc;
+    byte nextByte;
     byte maxTx;
     Packet *packet;
     PacketBuffer pBuf;
-    unsigned char currentBytePos;
+    unsigned int currentBytePos;
     volatile unsigned long randomWait;
     volatile bool done;
     DDS *dds;
@@ -228,7 +251,7 @@ public:
     }
   private:
     Packet *currentPacket;
-    SimpleFIFO<int8_t,SAMPLEPERBIT/2+1> delay_fifo;
+    //SimpleFIFO<int8_t,SAMPLEPERBIT/2+1> delay_fifo;
     SimpleFIFO<uint8_t,RX_FIFO_LEN> rx_fifo; // This should be drained fairly often
     int16_t iir_x[2];
     int16_t iir_y[2];
@@ -243,12 +266,12 @@ public:
   inline bool read() {
     return decoder.read();
   }
-  inline bool txReady() volatile {
+  volatile inline bool txReady() volatile {
     if(encoder.isDone() && encoder.hasPackets())
       return true;
     return false;
   }
-  inline bool isDone() volatile { return encoder.isDone(); }
+  volatile inline bool isDone() volatile { return encoder.isDone(); }
   inline bool txStart() {
     if(decoder.isReceiving()) {
       encoder.setRandomWait();

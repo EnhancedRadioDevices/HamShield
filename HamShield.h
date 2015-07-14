@@ -9,6 +9,9 @@
 #define _HAMSHIELD_H_
 
 #include "I2Cdev_rda.h"
+#include "SimpleFIFO.h"
+#include "AFSK.h"
+#include "DDS.h"
 #include <avr/pgmspace.h>
 
 // HamShield constants
@@ -18,6 +21,8 @@
 #define HAMSHIELD_AUX_BUTTON              5    // Pin assignment for AUX button
 #define HAMSHIELD_PWM_PIN                 11    // Pin assignment for PWM output
 #define HAMSHIELD_EMPTY_CHANNEL_RSSI   -110    // Default threshold where channel is considered "clear"
+
+#define HAMSHIELD_AFSK_RX_FIFO_LEN 16
 
 // button modes
 #define PTT_MODE 1
@@ -32,14 +37,14 @@
 #define A1846S_CTL_REG              0x30    // control register
 #define A1846S_CLK_MODE_REG         0x04    // clk_mode
 #define A1846S_PABIAS_REG           0x0A    // control register for bias voltage
-#define A1846S_BAND_SEL_REG         0x0F    // band_sel register <1:0>
+//#define A1846S_BAND_SEL_REG         0x0F    // band_sel register <1:0>
 #define A1846S_GPIO_MODE_REG        0x1F    // GPIO mode select register
 #define A1846S_FREQ_HI_REG          0x29    // freq<29:16>
 #define A1846S_FREQ_LO_REG          0x2A    // freq<15:0>
-#define A1846S_XTAL_FREQ_REG        0x2B    // xtal_freq<15:0>
-#define A1846S_ADCLK_FREQ_REG       0x2C    // adclk_freq<15:0>
+//#define A1846S_XTAL_FREQ_REG        0x2B    // xtal_freq<15:0>
+//#define A1846S_ADCLK_FREQ_REG       0x2C    // adclk_freq<15:0>
 #define A1846S_INT_MODE_REG         0x2D    // interrupt enables
-#define A1846S_TX_VOICE_REG         0x3C    // tx voice control reg
+#define A1846S_TX_VOICE_REG         0x3A    // tx voice control reg
 #define A1846S_TH_H_VOX_REG         0x41    // register holds vox high (open) threshold bits
 #define A1846S_TH_L_VOX_REG         0x42    // register holds vox low (shut) threshold bits
 #define A1846S_FM_DEV_REG           0x43    // register holds fm deviation settings
@@ -53,8 +58,8 @@
 #define A1846S_SQ_OUT_SEL_REG       0x54    // see sq
 #define A1846S_EMPH_FILTER_REG      0x58
 #define A1846S_FLAG_REG             0x5C    // holds flags for different statuses
-#define A1846S_RSSI_REG             0x5F    // holds RSSI (unit 1/8dB)
-#define A1846S_VSSI_REG             0x60    // holds VSSI (unit mV)
+#define A1846S_RSSI_REG             0x1B    // holds RSSI (unit 1dB)
+#define A1846S_VSSI_REG             0x1A    // holds VSSI (unit mV)
 #define A1846S_DTMF_CTL_REG         0x63    // see dtmf
 #define A1846S_DTMF_C01_REG         0x66    // holds frequency value for c0 and c1
 #define A1846S_DTMF_C23_REG         0x67    // holds frequency value for c2 and c3
@@ -93,8 +98,8 @@
 #define A1846S_PADRV_LENGTH       4
 
 // Bitfields for A1846S_BAND_SEL_REG
-#define A1846S_BAND_SEL_BIT        7  // band_sel<1:0>
-#define A1846S_BAND_SEL_LENGTH     2
+//#define A1846S_BAND_SEL_BIT        7  // band_sel<1:0>
+//#define A1846S_BAND_SEL_LENGTH     2
 
 // Bitfields for RDA1864_GPIO_MODE_REG
 #define RDA1864_GPIO7_MODE_BIT     15  // <1:0> 00=hi-z,01=vox,10=low,11=hi
@@ -127,8 +132,8 @@
 #define A1846S_VOX_INT_BIT              0  // vox uint16_t enable
 
 // Bitfields for A1846S_TX_VOICE_REG
-#define A1846S_VOICE_SEL_BIT      15  //voice_sel<1:0>
-#define A1846S_VOICE_SEL_LENGTH    2
+#define A1846S_VOICE_SEL_BIT      14  //voice_sel<1:0>
+#define A1846S_VOICE_SEL_LENGTH    3
 
 // Bitfields for A1846S_TH_H_VOX_REG
 #define A1846S_TH_H_VOX_BIT       14  // th_h_vox<14:0>
@@ -181,8 +186,8 @@
 #define A1846S_VOX_FLAG_BIT        0  // vox out from dsp
 
 // Bitfields for A1846S_RSSI_REG
-#define A1846S_RSSI_BIT            9  // RSSI readings <9:0>
-#define A1846S_RSSI_LENGTH        10
+#define A1846S_RSSI_BIT            15  // RSSI readings <9:0>
+#define A1846S_RSSI_LENGTH         8
 
 // Bitfields for A1846S_VSSI_REG
 #define A1846S_VSSI_BIT           14  // voice signal strength indicator <14:0> (unit mV)
@@ -329,8 +334,9 @@ class HamShield {
 	// 11 - no tx source
 	void setTxSource(uint16_t tx_source);
 	void setTxSourceMic();
-	void setTxSourceSine();
-	void setTxSourceCode();
+	void setTxSourceTone1();
+	void setTxSourceTone2();
+	void setTxSourceTones();
 	void setTxSourceNone();
 	uint16_t getTxSource();
 	
@@ -534,7 +540,14 @@ class HamShield {
         bool parityCalc(int code);
        // void AFSKOut(char buffer[80]); 
 
-
+       // AFSK routines
+       bool AFSKStart();
+       bool AFSKEnabled() { return afsk.enabled(); }
+       bool AFSKStop();
+       bool AFSKOut(const char *);
+       
+       class AFSK afsk;
+       
     private:
         uint8_t devAddr;
         uint16_t radio_i2c_buf[4];
@@ -545,9 +558,10 @@ class HamShield {
         uint32_t MURS[];
         uint32_t WX[];
         
-    public:
+        // public singleton for ISRs to reference
+      public:
         static HamShield *sHamShield; // HamShield singleton, used for ISRs mostly
-         
+        
 //          int8_t A1846S::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16_t timeout);
 //          int8_t A1846S::readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t *data, uint16_t timeout);
 //          int8_t A1846S::readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t *data, uint16_t timeout);

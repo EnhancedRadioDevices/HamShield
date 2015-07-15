@@ -104,8 +104,7 @@ void loop() {
            
            case 32:  // space - transmit
                if(repeater == 1) { radio.frequency(tx); } 
-               radio.setRX(0);
-               radio.setTX(1);
+               radio.setModeTransmit();
                state = 10;
                Serial.print("#TX,ON;");
                timer = millis();
@@ -181,7 +180,7 @@ void loop() {
 
   }
       if(state == 10) { 
-    if(millis() > (timer + 500)) { Serial.print("#TX,OFF;");radio.setRX(1); radio.setTX(0); if(repeater == 1) { radio.frequency(freq); }  state = 0; txcount = 0; }
+    if(millis() > (timer + 500)) { Serial.print("#TX,OFF;");radio.setModeReceive(); if(repeater == 1) { radio.frequency(freq); }  state = 0; txcount = 0; }
     }
 }
 

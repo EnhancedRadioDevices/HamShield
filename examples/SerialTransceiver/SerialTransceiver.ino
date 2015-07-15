@@ -17,6 +17,7 @@ Frequency      F<freq>;    Set the receive frequency in KHz, if offset is disabl
 CDCSS In       G<code>;    <code> must be a valid CDCSS code                                                                                                            No
 CDCSS Out      H<code>;    <code> must be a valid CDCSS code                                                                                                            No
 Print tones    I           Prints out all configured tones and codes, coma delimited in format: CTCSS In, CTCSS Out, CDCSS In, CDCSS Out                                No
+Morse Out      M<text>;    A small buffer for morse code (32 chars)
 Power level    P<level>;   Set the power amp level, 0 = lowest, 15 = highest                                                                                           No
 Enable Offset  R<state>;   1 turns on repeater offset mode, 0 turns off repeater offset mode                                                                            No
 Squelch        S<level>;   Set the squelch level                                                                                                                        No
@@ -46,7 +47,7 @@ Debug Msg    @<text>;   32 character debug message
 */
 
 #include "Wire.h"
-#include "HAMShield.h"
+#include "HamShield.h"
 
 int state;
 int txcount = 0;
@@ -62,7 +63,7 @@ int cdcssin = 0;
 int cdcssout = 0;
 
 
-HAMShield radio;
+HamShield radio;
 
 
 
@@ -136,6 +137,14 @@ void loop() {
                freq = atol(cmdbuff);
                if(radio.frequency(freq) == true) { Serial.print("@"); Serial.print(freq,DEC); Serial.print(";!;"); } else { Serial.print("X1;"); } 
                break;
+
+           case 'M':
+               getValue();
+               radio.setModeTransmit();
+               delay(300);
+               radio.morseOut(cmdbuff);
+               state = 10;
+               break; 
                
            case 80: // P - power level
                getValue();

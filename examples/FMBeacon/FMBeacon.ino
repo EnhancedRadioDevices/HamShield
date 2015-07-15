@@ -30,16 +30,17 @@ void setup() {
   
   // Tell the HamShield to start up
   radio.initialize();
-  
+  radio.setRfPower(15);
   // Configure the HamShield to transmit and recieve on 446.000MHz
-  radio.frequency(446000);
+  radio.frequency(145570);
+  pinMode(11, INPUT); // Bodge for now, as pin 3 is hotwired to pin 11
   
   Serial.println("Radio Configured.");
 }
 
 void loop() {
   // We'll wait up to 30 seconds for a clear channel, requiring that the channel is clear for 2 seconds before we transmit
-  if (radio.waitForChannel(30000,2000,-50)) {
+  if (radio.waitForChannel(30000,2000,-5)) {
     // If we get here, the channel is clear. Let's print the RSSI to the serial port as well.
     Serial.print("Signal is clear, RSSI: ");
     Serial.println(radio.readRSSI());
@@ -49,14 +50,14 @@ void loop() {
     radio.setModeTransmit();
     
     // Send a message out in morse code
-    radio.morseOut("CALLSIGN LOCATOR ARDUINO HAMSHIELD");
+    radio.morseOut("KC7IBT ARDUINO HAMSHIELD");
     
     // We're done sending the message, set the radio back into recieve mode.
     radio.setModeReceive();
     Serial.println("Done.");
     
     // Wait 30 seconds before we send our beacon again.
-    delay(30000);    
+    delay(1000);    
   } else {
     // If we get here, the channel is busy. Let's also print out the RSSI.
     Serial.print("The channel was busy. Waiting 10 seconds. RSSI: ");

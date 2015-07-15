@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+  <meta charset="utf-8">
+  <title>APRSMessenger</title>
+  <link rel="stylesheet" href="jquery-ui.css">
+  <script src="jquery-1.10.2.js"></script>
+  <script src="jquery-ui.js"></script>
+</head>
+  <body>
+    <div class="lcd" style="width: 768px">
+       144.390 MHz | APRS | <img src="bars-3.png" style="height: 32px; width: 32px;">
+    </div>
+    <div class="lcd" style="width: 768px; font-size: 15px;">
+      2M | BW: 25KHz | TX CTCSS: OFF | RX CTCSS: OFF | Filter: OFF | Presence: Available 
+    </div>
+    <div class="btn" style="width: 75px">
+       Tune
+    </div>
+    <div class="btn">
+       Presence
+    </div>
+    <div class="btn">
+      GPS
+    </div>
+    <div class="btn">
+      SSTV
+    </div>
+    <div class="btn">
+      WX
+    </div>
+    <div class="btn">
+      MSG
+    </div>
+    <div class="btn">
+      SQ-
+    </div>
+    <div class="btn">
+      SQ+
+    </div>
+    <div class="btn">
+      VOL
+    </div>
+    <br/><br/>
+    <div id="tabs">
+     <ul>
+       <li><a href="#tabs-1">Console</a></li>
+       <li><a href="#tabs-2">KG7OGM</a></li>
+       <li><a href="#tabs-3">KC7IBT</a></li>
+     </ul>
+    </div>
+    <div id="tabs-1">
+      Debug messages
+    </div>
+    <div id="tabs-2">
+    </div>
+    <div id="tabs-3">
+    </div>
+  </body>
+</html>

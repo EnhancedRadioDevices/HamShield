@@ -1,0 +1,10 @@
+{
+  "name": "HamShield",
+  "description": "HamShield",
+  "version": "1.0.0",
+  "app": {
+    "background": {
+        "scripts": ["background.js"]
+    }
+  }
+ }

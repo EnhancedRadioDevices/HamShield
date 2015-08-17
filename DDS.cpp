@@ -24,10 +24,12 @@ void DDS::start() {
   Serial.print(F("DDS SysClk: "));
   Serial.println(F_CPU/8);
   Serial.print(F("DDS RefClk: "));
-  Serial.println(refclk, DEC);
+  Serial.println(refclk, DEC);  
 #endif
 
 #ifdef __SAMD21G18A__
+  // SAMD21, like Ardino Zero
+
   // Enable the Generic Clock Generator 0 and configure for TC4 and TC5.
   // We only need TC5, but they are configured together
   GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)) ;
@@ -55,9 +57,20 @@ void DDS::start() {
   TC_WAIT();
 
   //Configure the DAC
+#if COMPARATOR_BITS==6
+  // Not sure why you'd use 6-bit, other than debugging.
+  // Reduced amplitude: clockTick() and getDutyCycle() do not scale the 6 up to 8-bits
   analogWriteResolution(8);
-  analogWrite(A0, 0);
+#elif COMPARATOR_BITS == 8 || COMPARATOR_BITS == 10
+  analogWriteResolution(COMPARATOR_BITS);
 #else
+#error Unsupported resoltuion for DAC (expected 8 or 10)
+#endif
+  analogWrite(A0, 0);
+
+#else
+  // For AVRs
+
   // Use the clkIO clock rate
   ASSR &= ~(_BV(EXCLK) | _BV(AS2));
   
@@ -81,7 +94,7 @@ void DDS::start() {
   // Setting Comparator Bits smaller will allow for higher frequency PWM,
   // with the loss of resolution.
   #ifdef DDS_PWM_PIN_3
-    OCR2A = pow(2,COMPARATOR_BITS)-1;
+    OCR2A = DDS_MAX_COMPARATOR-1;
     OCR2B = 0;
   #else
     OCR2A = 0;
@@ -132,33 +145,32 @@ void DDS::stop() {
 ddsAccumulator_t DDS::calcFrequency(unsigned short freq) {
   // Fo = (M*Fc)/2^N
   // M = (Fo/Fc)*2^N
-  ddsAccumulator_t newStep;
+  
   if(refclk == DDS_REFCLK_DEFAULT) {
     // Try to use precalculated values if possible
     if(freq == 2200) {
-      newStep = (2200.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);
+      return (2200.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * DDS_MAX_ACCUMULATOR;
     } else if (freq == 1200) {
-      newStep = (1200.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);      
+      return (1200.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * DDS_MAX_ACCUMULATOR;
     } else if(freq == 2400) {
-      newStep = (2400.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);
+      return (2400.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * DDS_MAX_ACCUMULATOR;
     } else if (freq == 1500) {
-      newStep = (1500.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);      
+      return (1500.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * DDS_MAX_ACCUMULATOR;      
     } else if (freq == 600) {
-      newStep = (600.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * pow(2,ACCUMULATOR_BITS);      
+     return (600.0 / (DDS_REFCLK_DEFAULT+DDS_REFCLK_OFFSET)) * DDS_MAX_ACCUMULATOR;      
     }
-  } else {
-    //TODO:  This doesn't work with the SAM21D... yet
-    newStep = pow(2,ACCUMULATOR_BITS)*freq / (refclk+refclkOffset);
-  }
-  return newStep;
+  } 
+
+  // Not a pre-calc frequency OR not using default REFCLK
+  return DDS_MAX_ACCUMULATOR * freq / (refclk+refclkOffset);
 }
 
 // Degrees should be between -360 and +360 (others don't make much sense)
 void DDS::setPhaseDeg(int16_t degrees) {
-  accumulator = degrees * (pow(2,ACCUMULATOR_BITS)/360.0);
+  accumulator = degrees * (DDS_MAX_ACCUMULATOR/360.0);
 }
 void DDS::changePhaseDeg(int16_t degrees) {
-  accumulator += degrees * (pow(2,ACCUMULATOR_BITS)/360.0);
+  accumulator += degrees * (DDS_MAX_ACCUMULATOR/360.0);
 }
 
 // TODO: Clean this up a bit..
@@ -173,7 +185,7 @@ void DDS::clockTick() {
     if(timeLimited && tickDuration == 0) {
 #ifdef __SAMD21G18A__
   #ifdef DDS_IDLE_HIGH
-    analogWrite(A0, pow(2,COMPARATOR_BITS)/2);
+    analogWrite(A0, DDS_MAX_COMPARATOR/2);
   #else
     analogWrite(A0, 0);
   #endif
@@ -183,7 +195,7 @@ void DDS::clockTick() {
   #else
   #ifdef DDS_IDLE_HIGH
       // Set the duty cycle to 50%
-      OCR2B = pow(2,COMPARATOR_BITS)/2;
+      OCR2B = DDS_MAX_COMPARATOR/2;
   #else
       // Set duty cycle to 0, effectively off
         OCR2B = 0;
@@ -208,7 +220,7 @@ void DDS::clockTick() {
   } else {
 #ifdef __SAMD21G18A__
   #ifdef DDS_IDLE_HIGH
-    analogWrite(A0, pow(2,COMPARATOR_BITS)/2);
+    analogWrite(A0, DDS_MAX_COMPARATOR/2);
   #else
     analogWrite(A0, 0);
   #endif
@@ -219,7 +231,7 @@ void DDS::clockTick() {
   #else
     #ifdef DDS_IDLE_HIGH
     // Set the duty cycle to 50%
-      OCR2B = pow(2,COMPARATOR_BITS)/2;
+      OCR2B = DDS_MAX_COMPARATOR/2;
     #else
       // Set duty cycle to 0, effectively off
       OCR2B = 0;
@@ -229,27 +241,49 @@ void DDS::clockTick() {
   }
 }
 
+//TODO: rename this function as it is more than just dutyCycle?
+//now it powers both a PWM dutyCycle as well as a DAC value on the Zero
 ddsComparitor_t DDS::getDutyCycle() {
-  #if ACCUMULATOR_BIT_SHIFT >= 24
+  #if ACCUMULATOR_BITS - ACCUMULATOR_BIT_SHIFT > 8
+    // For larger sineTables which need more thn 8 bits.
     uint16_t phAng;
   #else
+    // For standard sineTables which need 8 bits.
     uint8_t phAng;
   #endif
+  
   if(amplitude == 0) // Shortcut out on no amplitude
-    return 128>>(8-COMPARATOR_BITS);
+    return DDS_MAX_COMPARATOR/2;
+
+  // Lookup the value from the sin table.
   phAng = (accumulator >> ACCUMULATOR_BIT_SHIFT);
-  int8_t position = pgm_read_byte_near(ddsSineTable + phAng); //>>(8-COMPARATOR_BITS);
-  // Apply scaling and return
+#if DDS_LOOKUPVALUE_BITS > 8
+  // 16-bit lookup
+  int16_t position = pgm_read_word_near(ddsSineTable + phAng); //>>(8-COMPARATOR_BITS);  
+  int32_t scaled = position;
+#else
+  // 8-bit lookup
+  int8_t position = pgm_read_byte_near(ddsSineTable + phAng); //>>(8-COMPARATOR_BITS);  
   int16_t scaled = position;
-  // output = ((duty * amplitude) / 256) + 128
-  // This keeps amplitudes centered around 50% duty
+#endif
+
+  // If there's an amplitude, scale it
   if(amplitude != 255) { // Amplitude is reduced, so do the full math
-    scaled *= amplitude;
-    scaled >>= 8+(8-COMPARATOR_BITS);
-  } else { // Otherwise, only shift for the comparator bits
-    scaled >>= (8-COMPARATOR_BITS);
+    scaled *= amplitude;  // multiply by the amplitude, max 255 or an 8-bit shift
+    scaled >>= 8;         // bring it back 8 bits devide
   }
-  scaled += 128>>(8-COMPARATOR_BITS);
+
+  // Scale to the number of bits available
+#if COMPARATOR_BITS > DDS_LOOKUPVALUE_BITS
+  scaled <<= (COMPARATOR_BITS - DDS_LOOKUPVALUE_BITS);   
+#elif COMPARATOR_BITS < DDS_LOOKUPVALUE_BITS
+  scaled >>= (DDS_LOOKUPVALUE_BITS-COMPARATOR_BITS); 
+#else
+  // COMARATOR_BITS == DDS_LOOKUPVALUE_BITS -- no math needed.
+#endif
+
+  //Move the sinewave up 1/2 scale into the positive range.
+  scaled += DDS_MAX_COMPARATOR/2;
   return scaled;
 }
 

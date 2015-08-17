@@ -1,12 +1,19 @@
 #ifndef _DDS_H_
 #define _DDS_H_
-
+#include <Arduino.h>
 #include <avr/pgmspace.h>
+
+// Just a little reminder
+#ifndef __SAMD21G18A__
+#warning Experimental support for ArduinoZero.  Not yet complete
+#endif 
 
 // Use pin 3 for PWM? If not defined, use pin 11
 // Quality on pin 3 is higher than on 11, as it can be clocked faster
 // when the COMPARATOR_BITS value is less than 8
+#ifndef __SAMD21G18A__
 #define DDS_PWM_PIN_3
+#endif
 
 // Normally, we turn on timer2 and timer1, and have ADC sampling as our clock
 // Define this to only use Timer2, and not start the ADC clock
@@ -14,7 +21,9 @@
 
 // Use a short (16 bit) accumulator. Phase accuracy is reduced, but speed
 // is increased, along with a reduction in memory use.
+#ifndef __SAMD21G18A__
 #define SHORT_ACCUMULATOR
+#endif
 
 #ifdef SHORT_ACCUMULATOR
 #define ACCUMULATOR_BITS      16
@@ -35,10 +44,17 @@ typedef uint32_t ddsAccumulator_t;
 // 8 = 62.5kHz PWM
 // 7 = 125kHz PWM
 // 6 = 250kHz PWM
-#ifdef DDS_PWM_PIN_3
+#ifdef __SAMD21G18A__
+//TODO: 10 bit resolution for the Zero's DAC.  
+//Doesn't work just yet, so keep 8-bit for now.
+#define COMPARATOR_BITS       8
+typedef uint8_t ddsComparitor_t;
+#elif defined(DDS_PWM_PIN_3)
 #define COMPARATOR_BITS       6
+typedef uint8_t ddsComparitor_t;
 #else // When using pin 11, we always want 8 bits
 #define COMPARATOR_BITS       8
+typedef uint8_t ddsComparitor_t;
 #endif
 
 // This is how often we'll perform a phase advance, as well as ADC sampling
@@ -46,8 +62,13 @@ typedef uint32_t ddsAccumulator_t;
 // expense of CPU time. It maxes out around 62000 (TBD)
 // May be overridden in the sketch to improve performance
 #ifndef DDS_REFCLK_DEFAULT
-#define DDS_REFCLK_DEFAULT     9600
+  #ifdef __SAMD21G18A__
+    #define DDS_REFCLK_DEFAULT     44100
+  #else
+    #define DDS_REFCLK_DEFAULT     9600
+  #endif
 #endif
+
 // As each Arduino crystal is a little different, this can be fine tuned to
 // provide more accurate frequencies. Adjustments in the range of hundreds
 // is a good start.
@@ -61,7 +82,7 @@ typedef uint32_t ddsAccumulator_t;
 #endif
 
 // Output some of the calculations and information about the DDS over serial
-//#define DDS_DEBUG_SERIAL
+#define DDS_DEBUG_SERIAL
 
 // When defined, use the 1024 element sine lookup table. This improves phase
 // accuracy, at the cost of more flash and CPU requirements.
@@ -202,7 +223,7 @@ public:
     return refclkOffset;
   }
   
-  uint8_t getDutyCycle();
+  ddsComparitor_t getDutyCycle();
 
   // Set a scaling factor. To keep things quick, this is a power of 2 value.
   // Set it with 0 for lowest (which will be off), 8 is highest.
@@ -222,7 +243,7 @@ private:
   volatile ddsAccumulator_t stepRate;
   ddsAccumulator_t refclk;
   int16_t refclkOffset;
-  static DDS *sDDS;
+  //static _DDS *sDDS;
 };
 
 #endif /* _DDS_H_ */

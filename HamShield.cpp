@@ -152,6 +152,10 @@ void HamShield::initialize() {
     //set up clock to ues 12-14MHz
     setClkMode(1);
     
+	// set up GPIO voltage (want 3.3V)
+	tx_data = 0x03AC; // default is 0x32C
+    I2Cdev::writeWord(devAddr, 0x09, tx_data);
+
 	
     tx_data = 0x0031;
     I2Cdev::writeWord(devAddr, 0x31, tx_data); // included as per AU supplied register table
@@ -162,11 +166,14 @@ void HamShield::initialize() {
 	tx_data = 0x2B87;
     I2Cdev::writeWord(devAddr, 0x34, tx_data); // Rx digital gain - included as per AU supplied register table
 
+	//  bits 6:0 are for digital voice gain
 	tx_data = 0x470F;
-    I2Cdev::writeWord(devAddr, 0x41, tx_data); // digital gain for Tx - included as per AU supplied register table
-
+    I2Cdev::writeWord(devAddr, 0x41, tx_data); 
+	
+	// bits 11:8 are for voice digital gain after tx ADC downsample
+	// bits 7:0 are for rx volume control
 	tx_data = 0x0DFF;
-    I2Cdev::writeWord(devAddr, A1846S_RX_VOLUME_REG, tx_data); 
+    I2Cdev::writeWord(devAddr, 0x44, tx_data); // addx was A1846S_RX_VOLUME_REG
 
 	tx_data = 0x7FFF;
     I2Cdev::writeWord(devAddr, 0x47, tx_data);// soft mute
@@ -210,7 +217,7 @@ void HamShield::initialize() {
 	tx_data = 0x1100;
     I2Cdev::writeWord(devAddr, 0x15, tx_data); // tuning bit
 	
-	tx_data = 0x4495;
+	tx_data = 0x1495; // 4495
     I2Cdev::writeWord(devAddr, 0x32, tx_data); // agc target power	
 	
 	tx_data = 0x40C3;
@@ -228,7 +235,7 @@ void HamShield::initialize() {
 	tx_data = 0x0A50;
     I2Cdev::writeWord(devAddr, 0x59, tx_data); // Tx FM Deviation
 	
-	tx_data = 0x1425; //0x0A10;
+	tx_data = 0x0A10; //use 0x1425 if there's an LNA in line
     I2Cdev::writeWord(devAddr, 0x62, tx_data); // Modu_det_thresh (sq setting)
 	
 	tx_data = 0x2494;
@@ -332,6 +339,34 @@ void HamShield::setFrequency(uint32_t freq_khz) {
     radio_frequency = freq_khz;
     uint32_t freq_raw = freq_khz << 4; // shift by 4 to multiply by 16 (was shift by 3 in old 1846 chip)
 
+	// if we're using a 12MHz crystal and the frequency is
+	// 136.5M,409.5M and 455M, then we have to do special stuff
+    if (radio_frequency == 136500 ||
+        radio_frequency == 490500 ||
+		radio_frequency == 455000) {
+		
+		// close TX or RX
+		I2Cdev::readWord(devAddr, 0x00, radio_i2c_buf);
+		I2Cdev::writeWord(devAddr, 0x30, 0x06);
+		
+		// set up AU1846 for funky freq
+		I2Cdev::writeWord(devAddr, 0x05, 0x86D3);
+
+		// open TX or RX
+		I2Cdev::writeWord(devAddr, 0x30, radio_i2c_buf[0]);		
+	} else {
+		// just undo it regardless of what the last frequency was
+		// close TX or RX
+		I2Cdev::readWord(devAddr, 0x00, radio_i2c_buf);
+		I2Cdev::writeWord(devAddr, 0x30, 0x06);
+		
+		// set up AU1846 for normal freq
+		I2Cdev::writeWord(devAddr, 0x05, 0x8763);
+		
+		// open TX or RX
+		I2Cdev::writeWord(devAddr, 0x30, radio_i2c_buf[0]);		
+	}
+	
     // send top 16 bits to A1846S_FREQ_HI_REG	
     uint16_t freq_half = (uint16_t) (0x3FFF & (freq_raw >> 16));
     I2Cdev::writeWord(devAddr, A1846S_FREQ_HI_REG, freq_half);
@@ -460,15 +495,10 @@ void HamShield::setTX(bool on_noff){
     if (on_noff) {
       setRX(false);
       
-      // For RF6886:
-      // first turn on power
         // set RX output off
       setGpioHi(4); // remember that RX and TX are active low
         // set TX output on
       setGpioLow(5); // remember that RX and TX are active low
-      // then turn on VREG (PWM output)
-      // then apply RF signal
-      setRfPower(9); // figure out a good default number (TODO: or don't set a default)
     }
 
     I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, on_noff);
@@ -484,7 +514,7 @@ void HamShield::setRX(bool on_noff){
      setTX(false);
      
     // set TX output off
-    setGpioHiZ(5); // remember that RX and TX are active low
+    setGpioHi(5); // remember that RX and TX are active low
     // set RX output on
     setGpioLow(4); // remember that RX and TX are active low
    }
@@ -1023,12 +1053,7 @@ uint16_t HamShield::readDTMFCode(){
 
 
 void HamShield::setRfPower(uint8_t pwr) {
-  
-   // using loop reference voltage input to op-amp
-   // (see RF6886 datasheet)
-   // 30 is 0.5V, which is ~min loop reference voltage
-   // 127 is 2.5V, which is ~max loop ref voltage
-   int max_pwr = 15; //167; // 167 is 3.3*255/5 - 1;
+   int max_pwr = 15;
    if (pwr > max_pwr) {
      pwr = max_pwr; 
    }
@@ -1039,8 +1064,7 @@ void HamShield::setRfPower(uint8_t pwr) {
 
 
 bool HamShield::frequency(uint32_t freq_khz) {  
-  //TODO: there are several "special" frequencies that require extra setup of the AU1846
-  if((freq_khz >= 137000) && (freq_khz <= 174000)) { 
+  if((freq_khz >= 134000) && (freq_khz <= 174000)) { 
       setVHF();
       //setBand(3); // 0b11 is 134-174MHz
       setFrequency(freq_khz);

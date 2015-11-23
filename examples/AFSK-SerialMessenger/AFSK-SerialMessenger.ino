@@ -11,6 +11,10 @@
 #include <Wire.h>
 #include <avr/wdt.h> 
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 HamShield radio;
 DDS dds;
 String messagebuff = "";
@@ -20,16 +24,25 @@ String textmessage = "";
 int msgptr = 0;
 
 void setup() {
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  // turn on the radio
+  digitalWrite(RESET_PIN, HIGH);
+  
   Serial.begin(115200);
   Wire.begin();
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
   radio.initialize();
   radio.frequency(145570);
   radio.setRfPower(15);
   dds.start();
   radio.afsk.start(&dds);
-  pinMode(11, INPUT); // Bodge for now, as pin 3 is hotwired to pin 11
   delay(100);
   Serial.println("HELLO");
 }
@@ -75,7 +88,7 @@ void prepMessage() {
 
     if(radio.afsk.txReady()) {
       Serial.println(F("txReady"));
-      radio.setModeTransmit();
+      //radio.setModeTransmit();
       //delay(100);
       if(radio.afsk.txStart()) {
         Serial.println(F("txStart"));
@@ -97,14 +110,15 @@ void prepMessage() {
     radio.setModeReceive();
 } 
  
- 
+
+// TODO: d2 is now our switch, so don't write to that
 ISR(TIMER2_OVF_vect) {
   TIFR2 = _BV(TOV2);
   static uint8_t tcnt = 0;
   if(++tcnt == 8) {
-  digitalWrite(2, HIGH);
+  //digitalWrite(2, HIGH);
   dds.clockTick();
-  digitalWrite(2, LOW);
+  //digitalWrite(2, LOW);
     tcnt = 0;
   }
 }
@@ -112,7 +126,7 @@ ISR(TIMER2_OVF_vect) {
 ISR(ADC_vect) {
   static uint8_t tcnt = 0;
   TIFR1 = _BV(ICF1); // Clear the timer flag
-  PORTD |= _BV(2); // Diagnostic pin (D2)
+  //PORTD |= _BV(2); // Diagnostic pin (D2)
   dds.clockTick();
   if(++tcnt == 1) {
     if(radio.afsk.encoder.isSending()) {
@@ -120,7 +134,7 @@ ISR(ADC_vect) {
     }
     tcnt = 0;
   }
-  PORTD &= ~(_BV(2)); // Pin D2 off again
+  //PORTD &= ~(_BV(2)); // Pin D2 off again
 }
 
 

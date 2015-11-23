@@ -14,6 +14,10 @@ Plays back the current signal strength level and morses out it's call sign at th
 #include <Wire.h>
 #include <PCM.h>
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 HAMShield radio;
 int16_t rssi;
 int peak = -150;
@@ -73,14 +77,25 @@ const unsigned char dbm[] PROGMEM = {
 
 /* get our radio ready */
 
-void setup() { 
+void setup() {
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, HIGH);
+  
   Wire.begin();
   Serial.begin(9600);
   Serial.print("Radio status: ");
   int result = radio.testConnection();
   Serial.println(result);
   radio.initialize();
-  radio.setFrequency(446000);
+  radio.frequency(446000);
   radio.setVolume1(0xF);
   radio.setVolume2(0xF);
   radio.setModeReceive();
@@ -104,7 +119,7 @@ void loop() {
      
    if(rssi < -120) { 
      Serial.println("Transmit On");
-     radio.setTX(1);
+     radio.setModeTransmit();
      delay(250);
      tone(11,1000,500); 
      delay(1000);
@@ -131,9 +146,8 @@ void loop() {
      delay(1000);
      Serial.println("done!");
      radio.morseOut(CALLSIGN);
-     radio.setTX(0);
-     Serial.println("Transmit off");
      radio.setModeReceive();
+     Serial.println("Transmit off");
      delay(1000);
    }
 }

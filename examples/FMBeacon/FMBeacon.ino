@@ -9,11 +9,26 @@ Beacon will check to see if the channel is clear before it will transmit.
 #include <HamShield.h>
 #include <Wire.h>
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 // Create a new instance of our HamSheild class, called 'radio'
 HamShield radio;
 
 // Run our start up things here
 void setup() { 
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, HIGH);
+  
   // Set up the serial port at 9600 Baud
   Serial.begin(9600);
   
@@ -30,10 +45,9 @@ void setup() {
   
   // Tell the HamShield to start up
   radio.initialize();
-  radio.setRfPower(15);
+  radio.setRfPower(8);
   // Configure the HamShield to transmit and recieve on 446.000MHz
   radio.frequency(145570);
-  pinMode(11, INPUT); // Bodge for now, as pin 3 is hotwired to pin 11
   
   Serial.println("Radio Configured.");
 }

@@ -4,18 +4,32 @@
 HamShield radio;
 DDS dds;
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 #define DON(p) PORTD |= _BV((p))
 #define DOFF(p) PORTD &= ~(_BV((p)))
 
 void setup() {
   Serial.begin(9600);
   Wire.begin();
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
   pinMode(6, OUTPUT);
   pinMode(7, OUTPUT);
+  
+    // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  // turn on pwr to the radio
+  digitalWrite(RESET_PIN, HIGH);
   
   Serial.println(F("Radio test connection"));
   Serial.println(radio.testConnection(), DEC);
@@ -24,14 +38,12 @@ void setup() {
   radio.initialize();
   Serial.println(F("Frequency"));
   delay(100);
-  radio.setVHF();
   radio.frequency(145010);
   //radio.setRfPower(0);
   delay(100);
   dds.start();
   delay(100);
   radio.afsk.start(&dds);
-  pinMode(11, INPUT); // Bodge for now, as pin 3 is hotwired to pin 11
   delay(100);
   dds.setFrequency(0);
   dds.on();

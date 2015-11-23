@@ -3,6 +3,10 @@
 #include <HAMShield.h>
 #include <Wire.h>
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 // transmit for 1 minute, every 10 minutes 
 
 #define TRANSMITLENGTH 1
@@ -11,7 +15,18 @@
 
 HAMShield radio;
 
-void setup() { 
+void setup() {
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, HIGH);
+  
   Wire.begin();
   radio.initialize();
   radio.setFrequency(145510);

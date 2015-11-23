@@ -20,11 +20,11 @@ public:
     TIFR1 = _BV(ICF1); // Clear the timer flag
     dds->clockTick();
     if(++tcnt == (DDS_REFCLK_DEFAULT/9600)) {
-      PORTD |= _BV(2); // Diagnostic pin (D2)
+      //PORTD |= _BV(2); // Diagnostic pin (D2)
       radio->afsk.timer();
       tcnt = 0;
     }
-    PORTD &= ~(_BV(2));
+    //PORTD &= ~(_BV(2));
   }
 private:
   Stream *io;

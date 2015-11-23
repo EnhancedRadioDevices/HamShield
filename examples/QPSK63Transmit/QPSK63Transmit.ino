@@ -1,13 +1,26 @@
 #include <HamShield.h>
 #include "varicode.h"
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 DDS dds;
 
 void setup() {
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, LOW);
+  
+  
   Serial.begin(9600);
-  pinMode(11, OUTPUT);
-  pinMode(3, OUTPUT);
-  pinMode(2, OUTPUT);
   // put your setup code here, to run once:
   dds.setReferenceClock(32000);
   dds.start();

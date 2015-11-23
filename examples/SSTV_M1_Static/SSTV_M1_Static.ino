@@ -4,6 +4,10 @@
 #include <HamShield.h>
 #include <Wire.h>
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 HamShield radio;
 DDS dds;
 // Defined at the end of the sketch
@@ -15,6 +19,17 @@ extern const uint16_t image[256*20] PROGMEM;
 ddsAccumulator_t freqTable[3];
 
 void setup() {
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, HIGH);
+  
   Serial.begin(9600);
   Wire.begin();
     // Query the HamShield for status information
@@ -26,11 +41,7 @@ void setup() {
   // Tell the HamShield to start up
   radio.initialize();
   radio.setRfPower(0);
-  radio.setVHF();
-  radio.setFrequency(145500);
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
-  pinMode(11, INPUT); // HiZ
+  radio.frequency(145500);
   // put your setup code here, to run once:
   //dds.setReferenceClock(34965/4);
   dds.start();

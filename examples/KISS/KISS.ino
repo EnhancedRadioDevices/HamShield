@@ -6,20 +6,35 @@ HamShield radio;
 DDS dds;
 KISS kiss(&Serial, &radio, &dds);
 
+//TODO: move these into library
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 void setup() {
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
-  pinMode(11, INPUT);
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, LOW);
   
   Serial.begin(9600);
+  
+  while (digitalRead(SWITCH_PIN));
+  
+  // let the AU ot of reset
+  digitalWrite(RESET_PIN, HIGH);
+  
   Wire.begin();
   radio.initialize();
-  radio.setVHF();
   radio.setSQOff();
-  radio.setFrequency(145010);
-  I2Cdev::writeWord(A1846S_DEV_ADDR_SENLOW, 0x30, 0x06);
-  I2Cdev::writeWord(A1846S_DEV_ADDR_SENLOW, 0x30, 0x26);
-  I2Cdev::writeWord(A1846S_DEV_ADDR_SENLOW, 0x44, 0x05FF);
+  radio.setFrequency(144390);
+  //I2Cdev::writeWord(A1846S_DEV_ADDR_SENLOW, 0x44, 0x05FF);
 
   dds.start();
   radio.afsk.start(&dds);

@@ -6,10 +6,15 @@ Arduino audio overlay example
 
 */
 
+
 #include <HAMShield.h>
 #include <Wire.h>
 
 #define DOT 100
+
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
 
 HAMShield radio;
 
@@ -21,7 +26,18 @@ const char *callsign = {"1ZZ9ZZ/B"} ;
   
 char morsebuffer[8];  
   
-void setup() { 
+void setup() {
+// NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, HIGH);
+  
   Serial.begin(9600);
   Serial.println("starting up..");
   Wire.begin();
@@ -29,7 +45,7 @@ void setup() {
   int result = radio.testConnection();
   Serial.println(result,DEC);
   radio.initialize();
-  radio.setFrequency(446000);
+  radio.frequency(446000);
   radio.setVolume1(0xF);
   radio.setVolume2(0xF);
   radio.setModeReceive();

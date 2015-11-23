@@ -9,6 +9,10 @@ A bit robotic and weird
 #include <HAMShield.h>
 #include <Wire.h>
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 #define RATE 500
 #define SIZE 1500
 
@@ -21,6 +25,17 @@ int16_t rssi;
 byte mode = 8;
 
 void setup() { 
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, HIGH);
+  
   Wire.begin();
   // int result = radio.testConnection();
   radio.initialize();

@@ -11,6 +11,12 @@
 #include <Wire.h>
 #include <avr/wdt.h> 
 
+//TODO: move these into library
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
+
 HamShield radio;
 DDS dds;
 String messagebuff = "";
@@ -20,16 +26,27 @@ String textmessage = "";
 int msgptr = 0;
 
 void setup() {
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  // turn on pwr to the radio
+  digitalWrite(RESET_PIN, HIGH);
+  
   Serial.begin(115200);
   Wire.begin();
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
+
+  
   radio.initialize();
   radio.frequency(144390);
-  radio.setRfPower(15);
+  radio.setRfPower(8);
   dds.start();
   radio.afsk.start(&dds);
-  pinMode(11, INPUT); // Bodge for now, as pin 3 is hotwired to pin 11
   delay(100);
   Serial.println("HELLO");
 }

@@ -4,6 +4,10 @@ Sends an SSTV test pattern
 
 */
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 #define DOT 100
 #define CALLSIGN "1ZZ9ZZ/B"
 
@@ -17,14 +21,25 @@ int16_t rssi;
 
 /* get our radio ready */
 
-void setup() { 
+void setup() {
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, HIGH);
+  
   Wire.begin();
   Serial.begin(9600);
   Serial.print("Radio status: ");
   int result = radio.testConnection();
   Serial.println(result);
   radio.initialize();
-  radio.setFrequency(446000);
+  radio.frequency(446000);
   radio.setModeReceive();
 }
 

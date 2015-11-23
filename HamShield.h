@@ -18,8 +18,8 @@
 
 #define HAMSHIELD_MORSE_DOT             100    // Morse code dot length (smaller is faster WPM)
 #define HAMSHIELD_MORSE_BUFFER_SIZE      80    // Char buffer size for morse code text
-#define HAMSHIELD_AUX_BUTTON              5    // Pin assignment for AUX button
-#define HAMSHIELD_PWM_PIN                 11    // Pin assignment for PWM output
+#define HAMSHIELD_AUX_BUTTON              2    // Pin assignment for AUX button
+#define HAMSHIELD_PWM_PIN                 3    // Pin assignment for PWM output
 #define HAMSHIELD_EMPTY_CHANNEL_RSSI   -110    // Default threshold where channel is considered "clear"
 
 #define HAMSHIELD_AFSK_RX_FIFO_LEN 16
@@ -272,16 +272,10 @@ class HamShield {
 	uint32_t getFrequency();
 		
 	// band
-	// 00 - 400-520MHz
-	// 10 - 200-260MHz
-	// 11 - 134-174MHz
-	void setBand(uint16_t band);
-	uint16_t getBand();
-	
-        void setUHF();
-        void setVHF();
-        void setNoFilters();
-        bool frequency(uint32_t freq_khz);
+    void setTxBand2m();
+    void setTxBand1_2m();
+    void setTxBand70cm();
+    bool frequency(uint32_t freq_khz);
         
 	// xtal frequency (kHz)
 	// 12-14MHz crystal: this reg is set to crystal freq_khz
@@ -483,6 +477,7 @@ class HamShield {
 	void setGpioLow(uint16_t gpio);
 	void setGpioHi(uint16_t gpio);
 	uint16_t getGpioMode(uint16_t gpio);
+	uint16_t getGpios();
 	
 	// Int
 	void enableInterrupt(uint16_t interrupt);
@@ -551,7 +546,8 @@ class HamShield {
     private:
         uint8_t devAddr;
         uint16_t radio_i2c_buf[4];
-        int pwr_control_pin;
+		bool tx_active;
+		bool rx_active;
         uint32_t radio_frequency;
         uint32_t FRS[];
         uint32_t GMRS[];

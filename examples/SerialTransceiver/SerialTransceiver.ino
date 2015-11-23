@@ -49,6 +49,10 @@ Debug Msg    @<text>;   32 character debug message
 #include "Wire.h"
 #include "HamShield.h"
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 int state;
 int txcount = 0;
 long timer = 0;
@@ -68,6 +72,17 @@ HamShield radio;
 
 
 void setup() {
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, HIGH);
+  
   Serial.begin(115200);
   Serial.print(";;;;;;;;;;;;;;;;;;;;;;;;;;");
   Wire.begin();

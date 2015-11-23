@@ -5,20 +5,31 @@
 #include <HamShield.h>
 #include <Wire.h>
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 HamShield radio;
 DDS dds;
 
 void setup() {
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  // turn on radio
+  digitalWrite(RESET_PIN, HIGH);
+  
   Serial.begin(9600);
   Wire.begin();
   radio.initialize();
-  radio.setVHF();
   radio.setRfPower(0);
   radio.setFrequency(145050);
-  
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
-  pinMode(11, INPUT);
   
   dds.start();
   dds.setFrequency(1200);
@@ -236,7 +247,7 @@ ISR(ADC_vect) {
   static uint8_t lastADC = 127;
   cli();
   TIFR1 = _BV(ICF1);
-  PORTD |= _BV(2);
+  //PORTD |= _BV(2);
   dds.clockTick();
   sei();
   if(listening) {
@@ -255,5 +266,5 @@ ISR(ADC_vect) {
     }
     lastADC = ADCH;
   }
-  PORTD &= ~_BV(2);
+  //PORTD &= ~_BV(2);
 }

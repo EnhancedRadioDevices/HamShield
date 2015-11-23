@@ -136,11 +136,7 @@ HamShield::HamShield(uint8_t address) {
 /** Power on and prepare for general usage.
  * 
  */
-void HamShield::initialize() {
-   // set up PWM output for RF power control - commenting out to get rid of terrible buzzing noise
-   // pwr_control_pin = 9;  
-  
-  
+void HamShield::initialize() {  
    // Note: these initial settings are for UHF 12.5kHz channel
    // see the A1846S register table and initial settings for more info
    
@@ -156,6 +152,11 @@ void HamShield::initialize() {
 	tx_data = 0x03AC; // default is 0x32C
     I2Cdev::writeWord(devAddr, 0x09, tx_data);
 
+	// AGC problem improve settings?
+	tx_data = 0x43A0;
+    I2Cdev::writeWord(devAddr, 0x0A, tx_data);
+	tx_data = 0xA100;
+    I2Cdev::writeWord(devAddr, 0x13, tx_data);
 	
     tx_data = 0x0031;
     I2Cdev::writeWord(devAddr, 0x31, tx_data); // included as per AU supplied register table
@@ -167,15 +168,15 @@ void HamShield::initialize() {
     I2Cdev::writeWord(devAddr, 0x34, tx_data); // Rx digital gain - included as per AU supplied register table
 
 	//  bits 6:0 are for digital voice gain
-	tx_data = 0x470F;
+	tx_data = 0x060f; //0x470F;
     I2Cdev::writeWord(devAddr, 0x41, tx_data); 
 	
 	// bits 11:8 are for voice digital gain after tx ADC downsample
 	// bits 7:0 are for rx volume control
-	tx_data = 0x0DFF;
+	tx_data = 0x0AFF;
     I2Cdev::writeWord(devAddr, 0x44, tx_data); // addx was A1846S_RX_VOLUME_REG
 
-	tx_data = 0x7FFF;
+	tx_data = 0x7F2F;
     I2Cdev::writeWord(devAddr, 0x47, tx_data);// soft mute
 
 	tx_data = 0x2C62;
@@ -193,13 +194,13 @@ void HamShield::initialize() {
 	tx_data = 0x1C00;
     I2Cdev::writeWord(devAddr, 0x57, tx_data);// bypass rssi lpfilter
 	
-	tx_data = 0x0EDB;
+	tx_data = 0x0EDD;
     I2Cdev::writeWord(devAddr, 0x5A, tx_data);// SQ detection time
 
 	tx_data = 0x101E;
     I2Cdev::writeWord(devAddr, 0x60, tx_data);// SQ noise threshold
 	
-	tx_data = 0x16AD;
+	tx_data = 0x3FFF;
     I2Cdev::writeWord(devAddr, 0x63, tx_data);// pre-emphasis bypass threshold
 
 	// calibration
@@ -214,22 +215,28 @@ void HamShield::initialize() {
 	delay(10);
 	
 	// continue default setup in 12.5kHz mode
+	tx_data = 0x3D37;
+    I2Cdev::writeWord(devAddr, 0x11, tx_data); // tuning bit
+	
+	tx_data = 0x0100;
+    I2Cdev::writeWord(devAddr, 0x12, tx_data); // tuning bit
+	
 	tx_data = 0x1100;
     I2Cdev::writeWord(devAddr, 0x15, tx_data); // tuning bit
 	
-	tx_data = 0x1495; // 4495
+	tx_data = 0x4495; // 4495
     I2Cdev::writeWord(devAddr, 0x32, tx_data); // agc target power	
 	
 	tx_data = 0x40C3;
     I2Cdev::writeWord(devAddr, 0x3A, tx_data); // modu_det_sel sq setting
 	
-	tx_data = 0x0F1E;
+	tx_data = 0x0407;
     I2Cdev::writeWord(devAddr, 0x3C, tx_data); // pk_det_thr sq setting
 	
 	tx_data = 0x28D0;
     I2Cdev::writeWord(devAddr, 0x3F, tx_data); // pk_det_thr sq setting
 
-	tx_data = 0x20BE;
+	tx_data = 0x203E;
     I2Cdev::writeWord(devAddr, 0x48, tx_data); // pk_det_thr sq setting
 
 	tx_data = 0x0A50;
@@ -241,7 +248,7 @@ void HamShield::initialize() {
 	tx_data = 0x2494;
     I2Cdev::writeWord(devAddr, 0x65, tx_data); // setting th_sif for SQ rssi detect
 
-	tx_data = 0x2494;
+	tx_data = 0xEB2E;//0x2494;
     I2Cdev::writeWord(devAddr, 0x66, tx_data); // setting th_sif for SQ rssi detect
 	
 	// AGC gain table settings
@@ -250,28 +257,40 @@ void HamShield::initialize() {
 	tx_data = 0x0001;
     I2Cdev::writeWord(devAddr, 0x7F, tx_data);
 	
-	tx_data = 0x0014;
-    I2Cdev::writeWord(devAddr, 0x06, tx_data);
+	tx_data = 0x000C;
+    I2Cdev::writeWord(devAddr, 0x05, tx_data);
 	tx_data = 0x020C;
-    I2Cdev::writeWord(devAddr, 0x07, tx_data);
-	tx_data = 0x0214;
-    I2Cdev::writeWord(devAddr, 0x08, tx_data);
+    I2Cdev::writeWord(devAddr, 0x06, tx_data);
 	tx_data = 0x030C;
-    I2Cdev::writeWord(devAddr, 0x09, tx_data);
-	tx_data = 0x0314;
-    I2Cdev::writeWord(devAddr, 0x0A, tx_data);
+    I2Cdev::writeWord(devAddr, 0x07, tx_data);
 	tx_data = 0x0324;
-    I2Cdev::writeWord(devAddr, 0x0B, tx_data);
-	tx_data = 0x0344;
-    I2Cdev::writeWord(devAddr, 0x0C, tx_data);
+    I2Cdev::writeWord(devAddr, 0x08, tx_data);
 	tx_data = 0x1344;
+    I2Cdev::writeWord(devAddr, 0x09, tx_data);
+	tx_data = 0x3F44;//
+    I2Cdev::writeWord(devAddr, 0x0A, tx_data);
+	tx_data = 0x3F44;
+    I2Cdev::writeWord(devAddr, 0x0B, tx_data);
+	tx_data = 0x3F44;
+    I2Cdev::writeWord(devAddr, 0x0C, tx_data);
+	tx_data = 0x3F44;
     I2Cdev::writeWord(devAddr, 0x0D, tx_data);
-	tx_data = 0x1B44;
+	tx_data = 0x3F44;
     I2Cdev::writeWord(devAddr, 0x0E, tx_data);
 	tx_data = 0x3F44;
     I2Cdev::writeWord(devAddr, 0x0F, tx_data);
-	tx_data = 0xE0EB;
+	tx_data = 0xE0ED;
     I2Cdev::writeWord(devAddr, 0x12, tx_data);
+	tx_data = 0xF2FE;
+    I2Cdev::writeWord(devAddr, 0x13, tx_data);
+	tx_data = 0x0A16;
+    I2Cdev::writeWord(devAddr, 0x14, tx_data);
+	tx_data = 0x2424;
+    I2Cdev::writeWord(devAddr, 0x15, tx_data);
+	tx_data = 0x2424;
+    I2Cdev::writeWord(devAddr, 0x16, tx_data);
+	tx_data = 0x2424;
+    I2Cdev::writeWord(devAddr, 0x17, tx_data);
 	
 	// done writing to upper page addresses, so set 0x7F back
 	tx_data = 0x0000;
@@ -339,32 +358,21 @@ void HamShield::setFrequency(uint32_t freq_khz) {
     radio_frequency = freq_khz;
     uint32_t freq_raw = freq_khz << 4; // shift by 4 to multiply by 16 (was shift by 3 in old 1846 chip)
 
+	// turn off tx/rx
+	I2Cdev::writeBitsW(devAddr, A1846S_CTL_REG, 6, 2, 0);
+	
 	// if we're using a 12MHz crystal and the frequency is
 	// 136.5M,409.5M and 455M, then we have to do special stuff
     if (radio_frequency == 136500 ||
         radio_frequency == 490500 ||
 		radio_frequency == 455000) {
 		
-		// close TX or RX
-		I2Cdev::readWord(devAddr, 0x00, radio_i2c_buf);
-		I2Cdev::writeWord(devAddr, 0x30, 0x06);
-		
 		// set up AU1846 for funky freq
 		I2Cdev::writeWord(devAddr, 0x05, 0x86D3);
 
-		// open TX or RX
-		I2Cdev::writeWord(devAddr, 0x30, radio_i2c_buf[0]);		
 	} else {
-		// just undo it regardless of what the last frequency was
-		// close TX or RX
-		I2Cdev::readWord(devAddr, 0x00, radio_i2c_buf);
-		I2Cdev::writeWord(devAddr, 0x30, 0x06);
-		
 		// set up AU1846 for normal freq
 		I2Cdev::writeWord(devAddr, 0x05, 0x8763);
-		
-		// open TX or RX
-		I2Cdev::writeWord(devAddr, 0x30, radio_i2c_buf[0]);		
 	}
 	
     // send top 16 bits to A1846S_FREQ_HI_REG	
@@ -373,54 +381,35 @@ void HamShield::setFrequency(uint32_t freq_khz) {
     //  send bottom 16 bits to A1846S_FREQ_LO_REG
     freq_half = (uint16_t) (freq_raw & 0xFFFF);
     I2Cdev::writeWord(devAddr, A1846S_FREQ_LO_REG, freq_half);
+	
+   	if (rx_active) {
+		setRX(true);
+	} else if (tx_active) {
+		setTX(true);
+	}
 }
 
 uint32_t HamShield::getFrequency() {
   return radio_frequency;
 }
 
-void HamShield::setUHF() {
-  setGpioHi(2); // turn off VHF
-  setGpioLow(3); // turn on UHF
+void HamShield::setTxBand2m() {
+  setGpioLow(4); // V1
+  setGpioHi(5); // V2
 }
 
-void HamShield::setVHF() {
-  setGpioHi(3); // turn off UHF
-  setGpioLow(2); // turn on VHF
+void HamShield::setTxBand1_2m() {
+  setGpioHi(4); // V1
+  setGpioLow(5); // V2
 }
 
-void HamShield::setNoFilters() {
-  setGpioHi(3); // turn off UHF
-  setGpioHi(2); // turn off VHF
+void HamShield::setTxBand70cm() {
+  setGpioHi(4); // V1
+  setGpioHi(5); // V2
 }
 
-/*
-// band
-// 00 - 400-520MHz 
-// 10 - 200-260MHz
-// 11 - 134-174MHz
-// TODO: add write to 0x32 based on band selection
-void HamShield::setBand(uint16_t band){
-    if (band == 0) {
-      setUHF();
-    } else if (band == 2) {
-      // not quite in the band for our filters, but use VHF
-      setVHF();
-    } else if (band == 3) {
-      setVHF();
-    } else {
-      // illegal write code, turn UHF and VHF channels both off
-      setNoFilters();
-      // turn off transmit as well to make sure we don't break anything
-      setTX(0);
-    }
-    I2Cdev::writeBitsW(devAddr, A1846S_BAND_SEL_REG, A1846S_BAND_SEL_BIT, A1846S_BAND_SEL_LENGTH, band);
-}
-uint16_t HamShield::getBand(){
-    I2Cdev::readBitsW(devAddr, A1846S_BAND_SEL_REG, A1846S_BAND_SEL_BIT, A1846S_BAND_SEL_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
-}
-*/
+
+
 
 /*
 // xtal frequency (kHz)
@@ -493,15 +482,30 @@ uint16_t HamShield::getChanMode(){
 void HamShield::setTX(bool on_noff){
     // make sure RX is off
     if (on_noff) {
-      setRX(false);
-      
-        // set RX output off
-      setGpioHi(4); // remember that RX and TX are active low
-        // set TX output on
-      setGpioLow(5); // remember that RX and TX are active low
+		tx_active = true;
+		rx_active = false;
+		setRX(false);
+		
+		if((radio_frequency >= 134000) && (radio_frequency <= 174000)) { 
+			setTxBand2m();
+		}
+		if((radio_frequency >= 200000) && (radio_frequency <= 260000)) { 
+			setTxBand1_2m();
+		}
+		if((radio_frequency >= 400000) && (radio_frequency <= 520000)) { 
+			setTxBand70cm();
+		}
+		
+		delay(500);
     }
 
     I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, on_noff);
+	
+	/*
+	if (on_noff) {
+		delay(6000);
+	}
+	*/
 }
 bool HamShield::getTX(){
     I2Cdev::readBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, radio_i2c_buf);
@@ -509,15 +513,15 @@ bool HamShield::getTX(){
 }
 
 void HamShield::setRX(bool on_noff){
-   // make sure TX is off
-   if (on_noff) {
-     setTX(false);
-     
-    // set TX output off
-    setGpioHi(5); // remember that RX and TX are active low
-    // set RX output on
-    setGpioLow(4); // remember that RX and TX are active low
-   }
+	// make sure TX is off
+	if (on_noff) {
+		tx_active = false;
+		rx_active = true;
+		setTX(false);
+		
+		setGpioLow(4); // V1
+		setGpioLow(5); // V2
+  }
    
    I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, on_noff);
 }
@@ -529,25 +533,30 @@ bool HamShield::getRX(){
 void HamShield::setModeTransmit(){
     // check to see if we should allow them to do this
     if(restrictions == true) { 
-       if((radio_frequency > 139999) & (radio_frequency < 148001)) { setRX(false); setTX(true); } 
-       if((radio_frequency > 218999) & (radio_frequency < 225001)) { setRX(false); setTX(true); } 
-       if((radio_frequency > 419999) & (radio_frequency < 450001)) { setRX(false); setTX(true); }                     
+       if((radio_frequency > 139999) & (radio_frequency < 148001)) { setRX(false); } 
+       if((radio_frequency > 218999) & (radio_frequency < 225001)) { setRX(false); } 
+       if((radio_frequency > 419999) & (radio_frequency < 450001)) { setRX(false); }                     
     } else { 
-		// turn off rx, turn on tx
-		setRX(false); // break before make
 		setTX(true);
 	}
 } 
 void HamShield::setModeReceive(){
 	// turn on rx, turn off tx
-	setTX(false); // break before make
 	setRX(true);
 } 
 void HamShield::setModeOff(){
-	// turn off rx, turn off tx, set pwr_dwn bit
-	setTX(false);
-	setRX(false);
-} 
+	// turn off tx/rx
+	I2Cdev::writeBitsW(devAddr, A1846S_CTL_REG, 6, 2, 0);
+	
+	// turn off amplifiers
+	setGpioLow(4); // V1
+	setGpioLow(5); // V2
+
+	tx_active = false;
+	rx_active = true;
+	
+	//TODO: set pwr_dwn bit
+}
 
 // set tx source
 // 000 - Nothing
@@ -983,6 +992,11 @@ uint16_t HamShield::getGpioMode(uint16_t gpio){
     return radio_i2c_buf[0];
 }
 
+uint16_t HamShield::getGpios(){
+	I2Cdev::readWord(devAddr, A1846S_GPIO_MODE_REG, radio_i2c_buf);
+    return radio_i2c_buf[0];
+}
+
 // Int
 void HamShield::enableInterrupt(uint16_t interrupt){
     I2Cdev::writeBitW(devAddr, A1846S_INT_MODE_REG, interrupt, 1);
@@ -1053,34 +1067,41 @@ uint16_t HamShield::readDTMFCode(){
 
 
 void HamShield::setRfPower(uint8_t pwr) {
-   int max_pwr = 15;
-   if (pwr > max_pwr) {
-     pwr = max_pwr; 
-   }
-  
-   I2Cdev::writeBitsW(devAddr, A1846S_PABIAS_REG, A1846S_PADRV_BIT, A1846S_PADRV_LENGTH, pwr);
+	int max_pwr = 15;
+	if (pwr > max_pwr) {
+		pwr = max_pwr; 
+	}
+
+	// turn off tx/rx
+	I2Cdev::writeBitsW(devAddr, A1846S_CTL_REG, 6, 2, 0);
+   
+	I2Cdev::writeBitsW(devAddr, A1846S_PABIAS_REG, A1846S_PADRV_BIT, A1846S_PADRV_LENGTH, pwr);
+
+   	if (rx_active) {
+		setRX(true);
+	} else if (tx_active) {
+		setTX(true);
+	}
 }
 
 
 
 bool HamShield::frequency(uint32_t freq_khz) {  
+
   if((freq_khz >= 134000) && (freq_khz <= 174000)) { 
-      setVHF();
-      //setBand(3); // 0b11 is 134-174MHz
+      setTxBand2m();
       setFrequency(freq_khz);
       return true;
   }
   
   if((freq_khz >= 200000) && (freq_khz <= 260000)) { 
-      setVHF();
-      //setBand(2); // 10 is 200-260MHz
+      setTxBand1_2m();
       setFrequency(freq_khz);
       return true;
   }
   
   if((freq_khz >= 400000) && (freq_khz <= 520000)) { 
-      setUHF();
-      //setBand(00); // 00 is 400-520MHz
+      setTxBand70cm();
       setFrequency(freq_khz); 
       return true;
   }

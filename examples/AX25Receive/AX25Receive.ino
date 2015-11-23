@@ -1,24 +1,35 @@
 #include <HamShield.h>
 #include <Wire.h>
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 HamShield radio;
 DDS dds;
 
 void setup() {
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  // turn on radio
+  digitalWrite(RESET_PIN, HIGH);
+  
   Serial.begin(9600);
   Wire.begin();
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
   Serial.println(F("Radio test connection"));
   Serial.println(radio.testConnection(), DEC);
   Serial.println(F("Initialize"));
   delay(100);
   radio.initialize();
   radio.frequency(145010);
-  radio.setVHF();
   radio.setSQOff();
-  I2Cdev::writeWord(A1846S_DEV_ADDR_SENLOW, 0x30, 0x06);
-  I2Cdev::writeWord(A1846S_DEV_ADDR_SENLOW, 0x30, 0x26);
   I2Cdev::writeWord(A1846S_DEV_ADDR_SENLOW, 0x44, 0b11111111);
   Serial.println(F("Frequency"));
   delay(100);
@@ -36,7 +47,6 @@ void setup() {
   delay(100);
   radio.afsk.start(&dds);
   Serial.println(F("Starting..."));
-  pinMode(11, INPUT); // Bodge for now, as pin 3 is hotwired to pin 11
   delay(100);
   dds.setAmplitude(255);
 }
@@ -57,11 +67,12 @@ void loop() {
     }
 }
 
+//TODO: d2 is the switch input, so remove this
 ISR(ADC_vect) {
   static uint8_t tcnt = 0;
   TIFR1 = _BV(ICF1); // Clear the timer flag
-  PORTD |= _BV(2); // Diagnostic pin (D2)
+  //PORTD |= _BV(2); // Diagnostic pin (D2)
   //dds.clockTick();
   radio.afsk.timer();
-  PORTD &= ~(_BV(2)); // Pin D2 off again
+  //PORTD &= ~(_BV(2)); // Pin D2 off again
 }

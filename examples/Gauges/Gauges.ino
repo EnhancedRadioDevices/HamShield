@@ -10,6 +10,10 @@ Simple gauges for the radio receiver.
 #include <HAMShield.h>
 #include <Wire.h>
 
+#define PWM_PIN 3
+#define RESET_PIN A3
+#define SWITCH_PIN 2
+
 HAMShield radio;
 
 void clr() { 
@@ -19,7 +23,18 @@ void clr() {
   Serial.print("[H");     // cursor to home command 
 }
 
-void setup() { 
+void setup() {
+  // NOTE: if not using PWM out, it should be held low to avoid tx noise
+  pinMode(PWM_PIN, OUTPUT);
+  digitalWrite(PWM_PIN, LOW);
+  
+  // prep the switch
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+  
+  // set up the reset control pin
+  pinMode(RESET_PIN, OUTPUT);
+  digitalWrite(RESET_PIN, HIGH);
+  
   analogReference(DEFAULT);
   Serial.begin(115200);
   Wire.begin();

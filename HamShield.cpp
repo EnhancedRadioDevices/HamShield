@@ -152,161 +152,114 @@ void HamShield::initialize() {
 	tx_data = 0x03AC; // default is 0x32C
     I2Cdev::writeWord(devAddr, 0x09, tx_data);
 
-	// AGC problem improve settings?
-	tx_data = 0x43A0;
+	tx_data = 0x4381;
     I2Cdev::writeWord(devAddr, 0x0A, tx_data);
 	tx_data = 0xA100;
     I2Cdev::writeWord(devAddr, 0x13, tx_data);
-	
-    tx_data = 0x0031;
-    I2Cdev::writeWord(devAddr, 0x31, tx_data); // included as per AU supplied register table
-
+	tx_data = 0x5001;
+    I2Cdev::writeWord(devAddr, 0x1F, tx_data);
+	tx_data = 0x0031;
+    I2Cdev::writeWord(devAddr, 0x31, tx_data);
 	tx_data = 0x44A5;
-    I2Cdev::writeWord(devAddr, 0x33, tx_data); // agc number - included as per AU supplied register table
-	
+    I2Cdev::writeWord(devAddr, 0x33, tx_data);
 	tx_data = 0x2B87;
-    I2Cdev::writeWord(devAddr, 0x34, tx_data); // Rx digital gain - included as per AU supplied register table
-
-	//  bits 6:0 are for digital voice gain
-	tx_data = 0x060f; //0x470F;
-    I2Cdev::writeWord(devAddr, 0x41, tx_data); 
-	
-	// bits 11:8 are for voice digital gain after tx ADC downsample
-	// bits 7:0 are for rx volume control
+    I2Cdev::writeWord(devAddr, 0x34, tx_data);
+	tx_data = 0x060F;
+    I2Cdev::writeWord(devAddr, 0x41, tx_data);
 	tx_data = 0x0AFF;
-    I2Cdev::writeWord(devAddr, 0x44, tx_data); // addx was A1846S_RX_VOLUME_REG
-
+    I2Cdev::writeWord(devAddr, 0x44, tx_data);
 	tx_data = 0x7F2F;
-    I2Cdev::writeWord(devAddr, 0x47, tx_data);// soft mute
-
+    I2Cdev::writeWord(devAddr, 0x47, tx_data);
 	tx_data = 0x2C62;
-    I2Cdev::writeWord(devAddr, 0x4F, tx_data);// included as per AU supplied register table
-	
+    I2Cdev::writeWord(devAddr, 0x4F, tx_data);
 	tx_data = 0x0094;
-    I2Cdev::writeWord(devAddr, 0x53, tx_data);// included as per AU supplied register table	
-	
+    I2Cdev::writeWord(devAddr, 0x53, tx_data);
+	tx_data = 0x2A18;
+    I2Cdev::writeWord(devAddr, 0x54, tx_data);
 	tx_data = 0x0081;
-    I2Cdev::writeWord(devAddr, 0x55, tx_data);// included as per AU supplied register table		
-	
-	tx_data = 0x0B22;
-    I2Cdev::writeWord(devAddr, 0x56, tx_data);// sq detection time
-	
+    I2Cdev::writeWord(devAddr, 0x55, tx_data);
+	tx_data = 0x0B02;
+    I2Cdev::writeWord(devAddr, 0x56, tx_data);
 	tx_data = 0x1C00;
-    I2Cdev::writeWord(devAddr, 0x57, tx_data);// bypass rssi lpfilter
-	
+    I2Cdev::writeWord(devAddr, 0x57, tx_data);
+	tx_data = 0x800D;
+    I2Cdev::writeWord(devAddr, 0x58, tx_data);
 	tx_data = 0x0EDD;
-    I2Cdev::writeWord(devAddr, 0x5A, tx_data);// SQ detection time
-
-	tx_data = 0x101E;
-    I2Cdev::writeWord(devAddr, 0x60, tx_data);// SQ noise threshold
-	
+    I2Cdev::writeWord(devAddr, 0x5A, tx_data);
 	tx_data = 0x3FFF;
-    I2Cdev::writeWord(devAddr, 0x63, tx_data);// pre-emphasis bypass threshold
-
-	// calibration
+    I2Cdev::writeWord(devAddr, 0x63, tx_data);
+	
+	
 	tx_data = 0x00A4;
     I2Cdev::writeWord(devAddr, 0x30, tx_data);
-	delay(50);
+	delay(100);
 	tx_data = 0x00A6;
     I2Cdev::writeWord(devAddr, 0x30, tx_data);
 	delay(100);
 	tx_data = 0x0006;
     I2Cdev::writeWord(devAddr, 0x30, tx_data);
-	delay(10);
 	
-	// continue default setup in 12.5kHz mode
-	tx_data = 0x3D37;
-    I2Cdev::writeWord(devAddr, 0x11, tx_data); // tuning bit
-	
-	tx_data = 0x0100;
-    I2Cdev::writeWord(devAddr, 0x12, tx_data); // tuning bit
+	delay(25);
 	
 	tx_data = 0x1100;
-    I2Cdev::writeWord(devAddr, 0x15, tx_data); // tuning bit
-	
-	tx_data = 0x4495; // 4495
-    I2Cdev::writeWord(devAddr, 0x32, tx_data); // agc target power	
-	
+    I2Cdev::writeWord(devAddr, 0x15, tx_data);
+	tx_data = 0x4495;
+    I2Cdev::writeWord(devAddr, 0x32, tx_data);
 	tx_data = 0x40C3;
-    I2Cdev::writeWord(devAddr, 0x3A, tx_data); // modu_det_sel sq setting
-	
+    I2Cdev::writeWord(devAddr, 0x3A, tx_data);
 	tx_data = 0x0407;
-    I2Cdev::writeWord(devAddr, 0x3C, tx_data); // pk_det_thr sq setting
-	
+    I2Cdev::writeWord(devAddr, 0x3C, tx_data);
 	tx_data = 0x28D0;
-    I2Cdev::writeWord(devAddr, 0x3F, tx_data); // pk_det_thr sq setting
-
+    I2Cdev::writeWord(devAddr, 0x3F, tx_data);
 	tx_data = 0x203E;
-    I2Cdev::writeWord(devAddr, 0x48, tx_data); // pk_det_thr sq setting
-
-	tx_data = 0x0A50;
-    I2Cdev::writeWord(devAddr, 0x59, tx_data); // Tx FM Deviation
-	
-	tx_data = 0x0A10; //use 0x1425 if there's an LNA in line
-    I2Cdev::writeWord(devAddr, 0x62, tx_data); // Modu_det_thresh (sq setting)
-	
+    I2Cdev::writeWord(devAddr, 0x48, tx_data);
+	tx_data = 0x1BB7;
+    I2Cdev::writeWord(devAddr, 0x60, tx_data);
+	tx_data = 0x0A10; // use 0x1425 if there's an LNA
+    I2Cdev::writeWord(devAddr, 0x62, tx_data);
 	tx_data = 0x2494;
-    I2Cdev::writeWord(devAddr, 0x65, tx_data); // setting th_sif for SQ rssi detect
+    I2Cdev::writeWord(devAddr, 0x65, tx_data);
+	tx_data = 0xEB2E;
+    I2Cdev::writeWord(devAddr, 0x66, tx_data);
 
-	tx_data = 0xEB2E;//0x2494;
-    I2Cdev::writeWord(devAddr, 0x66, tx_data); // setting th_sif for SQ rssi detect
-	
-	// AGC gain table settings
-	// the rest of these settings are to upper register addresses
-	// set 0x7F to 1 to write to them
+	// AGC table
 	tx_data = 0x0001;
     I2Cdev::writeWord(devAddr, 0x7F, tx_data);
-	
-	tx_data = 0x000C;
-    I2Cdev::writeWord(devAddr, 0x05, tx_data);
-	tx_data = 0x020C;
+	tx_data = 0x0014;
     I2Cdev::writeWord(devAddr, 0x06, tx_data);
-	tx_data = 0x030C;
+	tx_data = 0x020C;
     I2Cdev::writeWord(devAddr, 0x07, tx_data);
-	tx_data = 0x0324;
+	tx_data = 0x0214;
     I2Cdev::writeWord(devAddr, 0x08, tx_data);
-	tx_data = 0x1344;
+	tx_data = 0x030C;
     I2Cdev::writeWord(devAddr, 0x09, tx_data);
-	tx_data = 0x3F44;//
+	tx_data = 0x0314;
     I2Cdev::writeWord(devAddr, 0x0A, tx_data);
-	tx_data = 0x3F44;
+	tx_data = 0x0324;
     I2Cdev::writeWord(devAddr, 0x0B, tx_data);
-	tx_data = 0x3F44;
+	tx_data = 0x0344;
     I2Cdev::writeWord(devAddr, 0x0C, tx_data);
-	tx_data = 0x3F44;
+	tx_data = 0x1344;
     I2Cdev::writeWord(devAddr, 0x0D, tx_data);
-	tx_data = 0x3F44;
+	tx_data = 0x1B44;
     I2Cdev::writeWord(devAddr, 0x0E, tx_data);
 	tx_data = 0x3F44;
     I2Cdev::writeWord(devAddr, 0x0F, tx_data);
-	tx_data = 0xE0ED;
+	tx_data = 0x0EEB;
     I2Cdev::writeWord(devAddr, 0x12, tx_data);
-	tx_data = 0xF2FE;
-    I2Cdev::writeWord(devAddr, 0x13, tx_data);
-	tx_data = 0x0A16;
-    I2Cdev::writeWord(devAddr, 0x14, tx_data);
-	tx_data = 0x2424;
-    I2Cdev::writeWord(devAddr, 0x15, tx_data);
-	tx_data = 0x2424;
-    I2Cdev::writeWord(devAddr, 0x16, tx_data);
-	tx_data = 0x2424;
-    I2Cdev::writeWord(devAddr, 0x17, tx_data);
-	
-	// done writing to upper page addresses, so set 0x7F back
 	tx_data = 0x0000;
-    I2Cdev::writeWord(devAddr, 0x7F, tx_data);	
+    I2Cdev::writeWord(devAddr, 0x7F, tx_data);
 	
     delay(100);
 
     // setup default values
-    setFrequency(446000);
+    frequency(446000);
     //setVolume1(0xF);
     //setVolume2(0xF);
     setModeReceive();
     setTxSourceMic();
     setSQLoThresh(80);
     setSQOn();
-
 }
 
 /** Verify the I2C connection.
@@ -404,39 +357,14 @@ void HamShield::setTxBand1_2m() {
 }
 
 void HamShield::setTxBand70cm() {
-  setGpioHi(4); // V1
-  setGpioHi(5); // V2
+  //setGpioHi(4); // V1
+  //setGpioHi(5); // V2
+  
+  uint16_t mode_len = 4;
+  uint16_t bit = 11;
+
+  I2Cdev::writeBitsW(devAddr, A1846S_GPIO_MODE_REG, bit, mode_len, 0xF);
 }
-
-
-
-
-/*
-// xtal frequency (kHz)
-// 12-14MHz crystal: this reg is set to crystal freq_khz
-// 24-28MHz crystal: this reg is set to crystal freq_khz / 2
-void HamShield::setXtalFreq(uint16_t freq_kHz){
-	I2Cdev::writeWord(devAddr, A1846S_XTAL_FREQ_REG, freq_kHz);	
-}
-uint16_t HamShield::getXtalFreq(){
-	I2Cdev::readWord(devAddr, A1846S_XTAL_FREQ_REG, radio_i2c_buf);
-	
-	return radio_i2c_buf[0];
-}
-
-
-// adclk frequency (kHz)
-// 12-14MHz crystal: this reg is set to crystal freq_khz / 2
-// 24-28MHz crystal: this reg is set to crystal freq_khz / 4
-void HamShield::setAdcClkFreq(uint16_t freq_kHz){
-	I2Cdev::writeWord(devAddr, A1846S_ADCLK_FREQ_REG, freq_kHz);	
-}
-
-uint16_t HamShield::getAdcClkFreq(){
-	I2Cdev::readWord(devAddr, A1846S_ADCLK_FREQ_REG, radio_i2c_buf);
-	return radio_i2c_buf[0];
-}
-*/
 
 // clk mode
 // 12-14MHz: set to 1
@@ -454,14 +382,6 @@ bool HamShield::getClkMode(){
     I2Cdev::readBitW(devAddr, A1846S_CLK_MODE_REG, A1846S_CLK_MODE_BIT, radio_i2c_buf);
     return (radio_i2c_buf[0] != 0);
 }
-
-// clk example
-// 12.8MHz clock
-// A1846S_XTAL_FREQ_REG[15:0]= xtal_freq<15:0>=12.8*1000=12800
-// A1846S_ADCLK_FREQ_REG[12:0] =adclk_freq<15:0>=(12.8/2)*1000=6400
-// A1846S_CLK_MODE_REG[0]= clk_mode =1
-
-// TX/RX control
 
 // TODO: create a 25kHz setup option as well as 12.5kHz (as is implemented now)
 /*
@@ -495,17 +415,10 @@ void HamShield::setTX(bool on_noff){
 		if((radio_frequency >= 400000) && (radio_frequency <= 520000)) { 
 			setTxBand70cm();
 		}
-		
-		delay(500);
-    }
-
-    I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, on_noff);
-	
-	/*
-	if (on_noff) {
-		delay(6000);
 	}
-	*/
+
+	delay(10); // delay required by AU1846
+    I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, on_noff);
 }
 bool HamShield::getTX(){
     I2Cdev::readBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, radio_i2c_buf);
@@ -521,9 +434,10 @@ void HamShield::setRX(bool on_noff){
 		
 		setGpioLow(4); // V1
 		setGpioLow(5); // V2
-  }
-   
-   I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, on_noff);
+	}
+  
+	delay(10); // delay required by AU1846
+	I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, on_noff);
 }
 bool HamShield::getRX(){
     I2Cdev::readBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, radio_i2c_buf);

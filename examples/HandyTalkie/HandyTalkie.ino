@@ -38,8 +38,8 @@ void setup() {
   
   
   // initialize serial communication
-  Serial.begin(115200);
-  Serial.println("press the swich to begin...");
+  Serial.begin(9600);
+  Serial.println("press the switch to begin...");
   
   while (digitalRead(SWITCH_PIN));
   
@@ -66,7 +66,7 @@ void setup() {
   Serial.println("changing frequency");
   
   radio.setSQOff();
-  freq = 450000;
+  freq = 446000;
   radio.frequency(freq);
   
   // set to receive
@@ -115,12 +115,20 @@ void loop() {
   
   
   if (Serial.available()) {
-    Serial.setTimeout(40);
-    freq = Serial.parseInt();
-    Serial.flush();
-    radio.frequency(freq);
-    Serial.print("set frequency: ");
-    Serial.println(freq);
+    if (Serial.peek() == 'r') {
+      Serial.read();
+      digitalWrite(RESET_PIN, LOW);
+      delay(1000);
+      digitalWrite(RESET_PIN, HIGH);
+      radio.initialize(); // initializes automatically for UHF 12.5kHz channel
+    } else {
+      Serial.setTimeout(40);
+      freq = Serial.parseInt();
+      Serial.flush();
+      radio.frequency(freq);
+      Serial.print("set frequency: ");
+      Serial.println(freq);
+    }
   }
   
   if (!currently_tx && (millis() - rssi_timeout) > RSSI_REPORT_RATE_MS)
@@ -129,4 +137,3 @@ void loop() {
     rssi_timeout = millis();
   }
 }
-

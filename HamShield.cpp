@@ -152,44 +152,86 @@ void HamShield::initialize() {
 	tx_data = 0x03AC; // default is 0x32C
     I2Cdev::writeWord(devAddr, 0x09, tx_data);
 
-	tx_data = 0x4381;
-    I2Cdev::writeWord(devAddr, 0x0A, tx_data);
+	tx_data = 0x47E0; //0x43A0; // 0x7C20; //
+    I2Cdev::writeWord(devAddr, 0x0A, tx_data); // pga gain [10:6]
 	tx_data = 0xA100;
     I2Cdev::writeWord(devAddr, 0x13, tx_data);
 	tx_data = 0x5001;
-    I2Cdev::writeWord(devAddr, 0x1F, tx_data);
+    I2Cdev::writeWord(devAddr, 0x1F, tx_data); // GPIO7->VOX, GPIO0->CTC/DCS
+	
+	
 	tx_data = 0x0031;
     I2Cdev::writeWord(devAddr, 0x31, tx_data);
-	tx_data = 0x44A5;
-    I2Cdev::writeWord(devAddr, 0x33, tx_data);
-	tx_data = 0x2B87;
-    I2Cdev::writeWord(devAddr, 0x34, tx_data);
-	tx_data = 0x060F;
-    I2Cdev::writeWord(devAddr, 0x41, tx_data);
-	tx_data = 0x0AFF;
-    I2Cdev::writeWord(devAddr, 0x44, tx_data);
+	tx_data = 0x0AF2; //
+    I2Cdev::writeWord(devAddr, 0x33, tx_data); // agc number
+	
+	// AGC table
+	tx_data = 0x0001;
+    I2Cdev::writeWord(devAddr, 0x7F, tx_data);
+	tx_data = 0x000C;
+    I2Cdev::writeWord(devAddr, 0x05, tx_data);
+	tx_data = 0x020C;
+    I2Cdev::writeWord(devAddr, 0x06, tx_data);
+	tx_data = 0x030C;
+    I2Cdev::writeWord(devAddr, 0x07, tx_data);
+	tx_data = 0x0324;
+    I2Cdev::writeWord(devAddr, 0x08, tx_data);
+	tx_data = 0x1344;
+    I2Cdev::writeWord(devAddr, 0x09, tx_data);
+	tx_data = 0x3F44;
+    I2Cdev::writeWord(devAddr, 0x0A, tx_data);
+	tx_data = 0x3F44;
+    I2Cdev::writeWord(devAddr, 0x0B, tx_data);
+	tx_data = 0x3F44;
+    I2Cdev::writeWord(devAddr, 0x0C, tx_data);
+	tx_data = 0x3F44;
+    I2Cdev::writeWord(devAddr, 0x0D, tx_data);
+	tx_data = 0x3F44;
+    I2Cdev::writeWord(devAddr, 0x0E, tx_data);
+	tx_data = 0x3F44;
+    I2Cdev::writeWord(devAddr, 0x0F, tx_data);
+	tx_data = 0xE0ED;
+    I2Cdev::writeWord(devAddr, 0x12, tx_data);
+	tx_data = 0xF2FE;
+    I2Cdev::writeWord(devAddr, 0x13, tx_data);
+	tx_data = 0x0A16;
+    I2Cdev::writeWord(devAddr, 0x14, tx_data);
+	tx_data = 0x2424;
+    I2Cdev::writeWord(devAddr, 0x15, tx_data);
+	tx_data = 0x2424;
+    I2Cdev::writeWord(devAddr, 0x16, tx_data);
+	tx_data = 0x2424;
+    I2Cdev::writeWord(devAddr, 0x17, tx_data);
+	tx_data = 0x0000;
+    I2Cdev::writeWord(devAddr, 0x7F, tx_data);
+	// end AGC table
+
+	tx_data = 0x067F; //0x0601; //0x470F;
+    I2Cdev::writeWord(devAddr, 0x41, tx_data); // voice gain tx [6:0]
+	tx_data = 0x02FF; // using 0x04FF to avoid tx voice delay
+    I2Cdev::writeWord(devAddr, 0x44, tx_data); // tx gain [11:8]
 	tx_data = 0x7F2F;
     I2Cdev::writeWord(devAddr, 0x47, tx_data);
 	tx_data = 0x2C62;
     I2Cdev::writeWord(devAddr, 0x4F, tx_data);
 	tx_data = 0x0094;
-    I2Cdev::writeWord(devAddr, 0x53, tx_data);
+    I2Cdev::writeWord(devAddr, 0x53, tx_data); // compressor update time (bits 6:0, 5.12ms per unit)
 	tx_data = 0x2A18;
     I2Cdev::writeWord(devAddr, 0x54, tx_data);
 	tx_data = 0x0081;
     I2Cdev::writeWord(devAddr, 0x55, tx_data);
-	tx_data = 0x0B02;
-    I2Cdev::writeWord(devAddr, 0x56, tx_data);
+	tx_data = 0x0B22;
+    I2Cdev::writeWord(devAddr, 0x56, tx_data); // sq detect time
 	tx_data = 0x1C00;
     I2Cdev::writeWord(devAddr, 0x57, tx_data);
 	tx_data = 0x800D;
-    I2Cdev::writeWord(devAddr, 0x58, tx_data);
+    I2Cdev::writeWord(devAddr, 0x58, tx_data); 
 	tx_data = 0x0EDD;
-    I2Cdev::writeWord(devAddr, 0x5A, tx_data);
+    I2Cdev::writeWord(devAddr, 0x5A, tx_data); // sq and noise detect times
 	tx_data = 0x3FFF;
-    I2Cdev::writeWord(devAddr, 0x63, tx_data);
+    I2Cdev::writeWord(devAddr, 0x63, tx_data); // pre-emphasis bypass
 	
-	
+	// calibration
 	tx_data = 0x00A4;
     I2Cdev::writeWord(devAddr, 0x30, tx_data);
 	delay(100);
@@ -198,19 +240,26 @@ void HamShield::initialize() {
 	delay(100);
 	tx_data = 0x0006;
     I2Cdev::writeWord(devAddr, 0x30, tx_data);
-	
-	delay(25);
-	
+	delay(100);
+
+
+	// setup for 12.5kHz channel width
+	tx_data = 0x3D37;
+    I2Cdev::writeWord(devAddr, 0x11, tx_data);	
+	tx_data = 0x0100;
+    I2Cdev::writeWord(devAddr, 0x12, tx_data);	
 	tx_data = 0x1100;
     I2Cdev::writeWord(devAddr, 0x15, tx_data);
 	tx_data = 0x4495;
-    I2Cdev::writeWord(devAddr, 0x32, tx_data);
+    I2Cdev::writeWord(devAddr, 0x32, tx_data); // agc target power [11:6]
+	tx_data = 0x2B8E;
+    I2Cdev::writeWord(devAddr, 0x34, tx_data);
 	tx_data = 0x40C3;
-    I2Cdev::writeWord(devAddr, 0x3A, tx_data);
+    I2Cdev::writeWord(devAddr, 0x3A, tx_data); // modu_det_sel sq setting
 	tx_data = 0x0407;
-    I2Cdev::writeWord(devAddr, 0x3C, tx_data);
+    I2Cdev::writeWord(devAddr, 0x3C, tx_data); // pk_det_th sq setting [8:7]
 	tx_data = 0x28D0;
-    I2Cdev::writeWord(devAddr, 0x3F, tx_data);
+    I2Cdev::writeWord(devAddr, 0x3F, tx_data); // rssi3_th sq setting
 	tx_data = 0x203E;
     I2Cdev::writeWord(devAddr, 0x48, tx_data);
 	tx_data = 0x1BB7;
@@ -221,34 +270,6 @@ void HamShield::initialize() {
     I2Cdev::writeWord(devAddr, 0x65, tx_data);
 	tx_data = 0xEB2E;
     I2Cdev::writeWord(devAddr, 0x66, tx_data);
-
-	// AGC table
-	tx_data = 0x0001;
-    I2Cdev::writeWord(devAddr, 0x7F, tx_data);
-	tx_data = 0x0014;
-    I2Cdev::writeWord(devAddr, 0x06, tx_data);
-	tx_data = 0x020C;
-    I2Cdev::writeWord(devAddr, 0x07, tx_data);
-	tx_data = 0x0214;
-    I2Cdev::writeWord(devAddr, 0x08, tx_data);
-	tx_data = 0x030C;
-    I2Cdev::writeWord(devAddr, 0x09, tx_data);
-	tx_data = 0x0314;
-    I2Cdev::writeWord(devAddr, 0x0A, tx_data);
-	tx_data = 0x0324;
-    I2Cdev::writeWord(devAddr, 0x0B, tx_data);
-	tx_data = 0x0344;
-    I2Cdev::writeWord(devAddr, 0x0C, tx_data);
-	tx_data = 0x1344;
-    I2Cdev::writeWord(devAddr, 0x0D, tx_data);
-	tx_data = 0x1B44;
-    I2Cdev::writeWord(devAddr, 0x0E, tx_data);
-	tx_data = 0x3F44;
-    I2Cdev::writeWord(devAddr, 0x0F, tx_data);
-	tx_data = 0x0EEB;
-    I2Cdev::writeWord(devAddr, 0x12, tx_data);
-	tx_data = 0x0000;
-    I2Cdev::writeWord(devAddr, 0x7F, tx_data);
 	
     delay(100);
 

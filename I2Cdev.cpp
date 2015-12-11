@@ -1,6 +1,6 @@
 // I2Cdev library collection - Main I2C device class
 // Abstracts bit and byte I2C R/W functions into a convenient class
-// 6/9/2012 by Jeff Rowberg <jeff@rowberg.net>
+// 2013-06-05 by Jeff Rowberg <jeff@rowberg.net>
 //
 // Changelog:
 //      2013-05-06 - add Francesco Ferrara's Fastwire v0.24 implementation with small modifications
@@ -43,28 +43,28 @@ THE SOFTWARE.
 ===============================================
 */
 
-#include "I2Cdev_rda.h"
+#include "I2Cdev.h"
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
 
     #ifdef I2CDEV_IMPLEMENTATION_WARNINGS
         #if ARDUINO < 100
             #warning Using outdated Arduino IDE with Wire library is functionally limiting.
-            #warning Arduino IDE v1.0.1+ with I2Cdev Fastwire implementation is recommended.
+            #warning Arduino IDE v1.6.5+ with I2Cdev Fastwire implementation is recommended.
             #warning This I2Cdev implementation does not support:
             #warning - Repeated starts conditions
             #warning - Timeout detection (some Wire requests block forever)
         #elif ARDUINO == 100
             #warning Using outdated Arduino IDE with Wire library is functionally limiting.
-            #warning Arduino IDE v1.0.1+ with I2Cdev Fastwire implementation is recommended.
+            #warning Arduino IDE v1.6.5+ with I2Cdev Fastwire implementation is recommended.
             #warning This I2Cdev implementation does not support:
             #warning - Repeated starts conditions
             #warning - Timeout detection (some Wire requests block forever)
         #elif ARDUINO > 100
-            #warning Using current Arduino IDE with Wire library is functionally limiting.
-            #warning Arduino IDE v1.0.1+ with I2CDEV_BUILTIN_FASTWIRE implementation is recommended.
+            /*#warning Using current Arduino IDE with Wire library is functionally limiting.
+            #warning Arduino IDE v1.6.5+ with I2CDEV_BUILTIN_FASTWIRE implementation is recommended.
             #warning This I2Cdev implementation does not support:
-            #warning - Timeout detection (some Wire requests block forever)
+            #warning - Timeout detection (some Wire requests block forever)*/
         #endif
     #endif
 
@@ -405,8 +405,7 @@ int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint1
                 Wire.endTransmission();
             }
         #elif (ARDUINO > 100)
-			//Serial.println("wires");
-			// Arduino v1.0.1+, Wire library
+            // Arduino v1.0.1+, Wire library
             // Adds official support for repeated start condition, yay!
 
             // I2C/TWI subsystem uses internal buffer that breaks with large data requests
@@ -415,8 +414,8 @@ int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint1
             for (uint8_t k = 0; k < length * 2; k += min(length * 2, BUFFER_LENGTH)) {
                 Wire.beginTransmission(devAddr);
                 Wire.write(regAddr);
-                Wire.endTransmission(false);
-//                Wire.beginTransmission(devAddr);
+                Wire.endTransmission();
+                Wire.beginTransmission(devAddr);
                 Wire.requestFrom(devAddr, (uint8_t)(length * 2)); // length=words, this wants bytes
         
                 bool msb = true; // starts with MSB, then LSB

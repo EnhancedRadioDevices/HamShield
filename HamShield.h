@@ -258,6 +258,9 @@
 
 class HamShield {
     public:
+	    // public singleton for ISRs to reference
+        static HamShield *sHamShield; // HamShield singleton, used for ISRs mostly
+		
         HamShield();
         HamShield(uint8_t address);
 
@@ -268,240 +271,205 @@ class HamShield {
         uint16_t readCtlReg();
         void softReset();
 		
-	// center frequency
-	void setFrequency(uint32_t freq_khz);
-	uint32_t getFrequency();
+        // restrictions control
+        void dangerMode();
+        void safeMode();
 		
-	// band
-    void setTxBand2m();
-    void setTxBand1_2m();
-    void setTxBand70cm();
-    bool frequency(uint32_t freq_khz);
-        
-	// xtal frequency (kHz)
-	// 12-14MHz crystal: this reg is set to crystal freq_khz
-	// 24-28MHz crystal: this reg is set to crystal freq_khz / 2
-	void setXtalFreq(uint16_t freq_kHz);
-	uint16_t getXtalFreq();
-		
-	// adclk frequency (kHz)
-	// 12-14MHz crystal: this reg is set to crystal freq_khz / 2
-	// 24-28MHz crystal: this reg is set to crystal freq_khz / 4
-	void setAdcClkFreq(uint16_t freq_kHz);
-	uint16_t getAdcClkFreq();
-
-	// clk mode
-	// 12-14MHz: set to 1
-	// 24-28MHz: set to 0
-	void setClkMode(bool LFClk);
-	bool getClkMode();
-		
-	// clk example
-	// 12.8MHz clock
-	// A1846S_XTAL_FREQ_REG[15:0]= xtal_freq<15:0>=12.8*1000=12800
-	// A1846S_ADCLK_FREQ_REG[12:0] =adclk_freq<15:0>=(12.8/2)*1000=6400
-	// A1846S_CLK_MODE_REG[0]= clk_mode =1
-	
-	// TX/RX control
-		
-	// channel mode
-	// 11 - 25kHz channel
-	// 00 - 12.5kHz channel
-	// 10,01 - reserved
-	void setChanMode(uint16_t mode);
-	uint16_t getChanMode();
-	
-	// choose tx or rx
-	void setTX(bool on_noff);
-	bool getTX();
-	
-	void setRX(bool on_noff);
-	bool getRX();
-	
-	void setModeTransmit(); // turn off rx, turn on tx
-	void setModeReceive(); // turn on rx, turn off tx
-	void setModeOff(); // turn off rx, turn off tx, set pwr_dwn bit
-	
-	// set tx source
-	// 00 - Mic source
-	// 01 - sine source from tone2
-	// 10 - tx code from GPIO1 code_in (gpio1<1:0> must be set to 01)
-	// 11 - no tx source
-	void setTxSource(uint16_t tx_source);
-	void setTxSourceMic();
-	void setTxSourceTone1();
-	void setTxSourceTone2();
-	void setTxSourceTones();
-	void setTxSourceNone();
-	uint16_t getTxSource();
-	
-	// set PA_bias voltage
-	//    000000: 1.01V
-	//    000001:1.05V
-	//    000010:1.09V
-	//    000100: 1.18V
-	//    001000: 1.34V
-	//    010000: 1.68V
-	//    100000: 2.45V
-	//    1111111:3.13V
-	void setPABiasVoltage(uint16_t voltage);
-	uint16_t getPABiasVoltage();
-	
-	// Subaudio settings
-	
-	//   Ctcss/cdcss mode sel
-	//      x00=disable,
-	//      001=inner ctcss en,
-	//      010= inner cdcss en
-	//      101= outer ctcss en,
-	//      110=outer cdcss en
-	//      others =disable
-	void setCtcssCdcssMode(uint16_t mode);
-	uint16_t getCtcssCdcssMode();
-	void setInnerCtcssMode();
-	void setInnerCdcssMode();
-	void setOuterCtcssMode();
-	void setOuterCdcssMode();
-	void disableCtcssCdcss();
-	
-	//   Ctcss_sel
-	//      1 = ctcss_cmp/cdcss_cmp out via gpio
-	//      0 = ctcss/cdcss sdo out vio gpio
-	void setCtcssSel(bool cmp_nsdo);
-	bool getCtcssSel();
-	
-	//   Cdcss_sel
-	//      1 = long (24 bit) code
-	//      0 = short(23 bit) code
-	void setCdcssSel(bool long_nshort);
-	bool getCdcssSel();
-		// Cdcss neg_det_en
-	void enableCdcssNegDet();
-	void disableCdcssNegDet();
-	bool getCdcssNegDetEnabled();
-	
-	// Cdcss pos_det_en
-	void enableCdcssPosDet();
-	void disableCdcssPosDet();
-	bool getCdcssPosDetEnabled();
-
-	// css_det_en
-	void enableCssDet();
-	void disableCssDet();
-	bool getCssDetEnabled();
-	
-	// ctcss freq
-        void setCtcss(float freq);
-	void setCtcssFreq(uint16_t freq);
-	uint16_t getCtcssFreq();
-	void setCtcssFreqToStandard(); // freq must be 134.4Hz for standard cdcss mode
-	
-	// cdcss codes
-	void setCdcssCode(uint16_t code);
-	uint16_t getCdcssCode();
+		bool frequency(uint32_t freq_khz);
+		uint32_t getFrequency();
 			
-	// SQ
-	void setSQOn();
-	void setSQOff();
-	bool getSQState();
-	
-	// SQ threshold
-	void setSQHiThresh(uint16_t sq_hi_threshold); // Sq detect high th, rssi_cmp will be 1 when rssi>th_h_sq, unit 1/8dB
-	uint16_t getSQHiThresh();
-	void setSQLoThresh(uint16_t sq_lo_threshold); // Sq detect low th, rssi_cmp will be 0 when rssi<th_l_sq && time delay meet, unit 1/8 dB
-	uint16_t getSQLoThresh();
-	
-	// SQ out select
-	void setSQOutSel();
-	void clearSQOutSel();
-	bool getSQOutSel();
-	
-	// VOX
-	void setVoxOn();
-	void setVoxOff();
-	bool getVoxOn();
-	
-	// Vox Threshold
-	void setVoxOpenThresh(uint16_t vox_open_thresh); // When vssi > th_h_vox, then vox will be 1(unit mV )
-	uint16_t getVoxOpenThresh();
-	void setVoxShutThresh(uint16_t vox_shut_thresh); // When vssi < th_l_vox && time delay meet, then vox will be 0 (unit mV )
-	uint16_t getVoxShutThresh();
-	
-	// Tail Noise
-	void enableTailNoiseElim();
-	void disableTailNoiseElim();
-	bool getTailNoiseElimEnabled();
-	
-	// tail noise shift select
-	//   Select ctcss phase shift when use tail eliminating function when TX
-	//     00 = 120 degree shift
-	//     01 = 180 degree shift
-	//     10 = 240 degree shift
-	//     11 = reserved
-	void setShiftSelect(uint16_t shift_sel);
-	uint16_t getShiftSelect();
-	
-	// DTMF
-	void setDTMFC0(uint16_t freq);
-	uint16_t getDTMFC0();
-	void setDTMFC1(uint16_t freq);
-	uint16_t getDTMFC1();	
-	void setDTMFC2(uint16_t freq);
-	uint16_t getDTMFC2();
-	void setDTMFC3(uint16_t freq);
-	uint16_t getDTMFC3();
-	void setDTMFC4(uint16_t freq);
-	uint16_t getDTMFC4();
-	void setDTMFC5(uint16_t freq);
-	uint16_t getDTMFC5();
-	void setDTMFC6(uint16_t freq);
-	uint16_t getDTMFC6();
-	void setDTMFC7(uint16_t freq);
-	uint16_t getDTMFC7();
-	
-	// TX FM deviation
-	void setFMVoiceCssDeviation(uint16_t deviation);
-	uint16_t getFMVoiceCssDeviation();
-	void setFMCssDeviation(uint16_t deviation);
-	uint16_t getFMCssDeviation();
-	
-	// RX voice range
-	void setVolume1(uint16_t volume);
-	uint16_t getVolume1();
-	void setVolume2(uint16_t volume);
-	uint16_t getVolume2();
-	
-	// GPIO
-	void setGpioMode(uint16_t gpio, uint16_t mode);
-	void setGpioHiZ(uint16_t gpio);
-	void setGpioFcn(uint16_t gpio);
-	void setGpioLow(uint16_t gpio);
-	void setGpioHi(uint16_t gpio);
-	uint16_t getGpioMode(uint16_t gpio);
-	uint16_t getGpios();
-	
-	// Int
-	void enableInterrupt(uint16_t interrupt);
-	void disableInterrupt(uint16_t interrupt);
-	bool getInterruptEnabled(uint16_t interrupt);
-	
-	// ST mode
-	void setStMode(uint16_t mode);
-	uint16_t getStMode();
-	void setStFullAuto();
-	void setStRxAutoTxManu();
-	void setStFullManu();
-	
-	// Pre-emphasis, De-emphasis filter
-	void bypassPreDeEmph();
-	void usePreDeEmph();
-	bool getPreDeEmphEnabled();
-	
-	// Read Only Status Registers
-	int16_t readRSSI();
-	uint16_t readVSSI();
-	uint16_t readDTMFIndex(); // may want to split this into two (index1 and index2)
-	uint16_t readDTMFCode();
+		// channel mode
+		// 11 - 25kHz channel
+		// 00 - 12.5kHz channel
+		// 10,01 - reserved
+		void setChanMode(uint16_t mode);
+		uint16_t getChanMode();
+		
+		void setModeTransmit(); // turn off rx, turn on tx
+		void setModeReceive(); // turn on rx, turn off tx
+		void setModeOff(); // turn off rx, turn off tx, set pwr_dwn bit
+		
+		// set tx source
+		// 00 - Mic source
+		// 01 - sine source from tone2
+		// 10 - tx code from GPIO1 code_in (gpio1<1:0> must be set to 01)
+		// 11 - no tx source
+		void setTxSource(uint16_t tx_source);
+		void setTxSourceMic();
+		void setTxSourceTone1();
+		void setTxSourceTone2();
+		void setTxSourceTones();
+		void setTxSourceNone();
+		uint16_t getTxSource();
+		
+		// PA bias voltage is unused (maybe remove this)
+		// set PA_bias voltage
+		//    000000: 1.01V
+		//    000001:1.05V
+		//    000010:1.09V
+		//    000100: 1.18V
+		//    001000: 1.34V
+		//    010000: 1.68V
+		//    100000: 2.45V
+		//    1111111:3.13V
+		void setPABiasVoltage(uint16_t voltage);
+		uint16_t getPABiasVoltage();
+		
+		// Subaudio settings
+		
+		//   Ctcss/cdcss mode sel
+		//      x00=disable,
+		//      001=inner ctcss en,
+		//      010= inner cdcss en
+		//      101= outer ctcss en,
+		//      110=outer cdcss en
+		//      others =disable
+		void setCtcssCdcssMode(uint16_t mode);
+		uint16_t getCtcssCdcssMode();
+		void setInnerCtcssMode();
+		void setInnerCdcssMode();
+		void setOuterCtcssMode();
+		void setOuterCdcssMode();
+		void disableCtcssCdcss();
+		
+		//   Ctcss_sel
+		//      1 = ctcss_cmp/cdcss_cmp out via gpio
+		//      0 = ctcss/cdcss sdo out vio gpio
+		void setCtcssSel(bool cmp_nsdo);
+		bool getCtcssSel();
+		
+		//   Cdcss_sel
+		//      1 = long (24 bit) code
+		//      0 = short(23 bit) code
+		void setCdcssSel(bool long_nshort);
+		bool getCdcssSel();
+		// Cdcss neg_det_en
+		void enableCdcssNegDet();
+		void disableCdcssNegDet();
+		bool getCdcssNegDetEnabled();
+		
+		// Cdcss pos_det_en
+		void enableCdcssPosDet();
+		void disableCdcssPosDet();
+		bool getCdcssPosDetEnabled();
+
+		// css_det_en
+		void enableCssDet();
+		void disableCssDet();
+		bool getCssDetEnabled();
+		
+		// ctcss freq
+		void setCtcss(float freq);
+		void setCtcssFreq(uint16_t freq);
+		uint16_t getCtcssFreq();
+		void setCtcssFreqToStandard(); // freq must be 134.4Hz for standard cdcss mode
+		
+		// cdcss codes
+		void setCdcssCode(uint16_t code);
+		uint16_t getCdcssCode();
+				
+		// SQ
+		void setSQOn();
+		void setSQOff();
+		bool getSQState();
+		
+		// SQ threshold
+		void setSQHiThresh(uint16_t sq_hi_threshold); // Sq detect high th, rssi_cmp will be 1 when rssi>th_h_sq, unit 1/8dB
+		uint16_t getSQHiThresh();
+		void setSQLoThresh(uint16_t sq_lo_threshold); // Sq detect low th, rssi_cmp will be 0 when rssi<th_l_sq && time delay meet, unit 1/8 dB
+		uint16_t getSQLoThresh();
+		
+		// SQ out select
+		void setSQOutSel();
+		void clearSQOutSel();
+		bool getSQOutSel();
+		
+		// VOX
+		void setVoxOn();
+		void setVoxOff();
+		bool getVoxOn();
+		
+		// Vox Threshold
+		void setVoxOpenThresh(uint16_t vox_open_thresh); // When vssi > th_h_vox, then vox will be 1(unit mV )
+		uint16_t getVoxOpenThresh();
+		void setVoxShutThresh(uint16_t vox_shut_thresh); // When vssi < th_l_vox && time delay meet, then vox will be 0 (unit mV )
+		uint16_t getVoxShutThresh();
+		
+		// Tail Noise
+		void enableTailNoiseElim();
+		void disableTailNoiseElim();
+		bool getTailNoiseElimEnabled();
+		
+		// tail noise shift select
+		//   Select ctcss phase shift when use tail eliminating function when TX
+		//     00 = 120 degree shift
+		//     01 = 180 degree shift
+		//     10 = 240 degree shift
+		//     11 = reserved
+		void setShiftSelect(uint16_t shift_sel);
+		uint16_t getShiftSelect();
+		
+		// DTMF
+		void setDTMFC0(uint16_t freq);
+		uint16_t getDTMFC0();
+		void setDTMFC1(uint16_t freq);
+		uint16_t getDTMFC1();	
+		void setDTMFC2(uint16_t freq);
+		uint16_t getDTMFC2();
+		void setDTMFC3(uint16_t freq);
+		uint16_t getDTMFC3();
+		void setDTMFC4(uint16_t freq);
+		uint16_t getDTMFC4();
+		void setDTMFC5(uint16_t freq);
+		uint16_t getDTMFC5();
+		void setDTMFC6(uint16_t freq);
+		uint16_t getDTMFC6();
+		void setDTMFC7(uint16_t freq);
+		uint16_t getDTMFC7();
+		
+		// TX FM deviation
+		void setFMVoiceCssDeviation(uint16_t deviation);
+		uint16_t getFMVoiceCssDeviation();
+		void setFMCssDeviation(uint16_t deviation);
+		uint16_t getFMCssDeviation();
+		
+		// RX voice range
+		void setVolume1(uint16_t volume);
+		uint16_t getVolume1();
+		void setVolume2(uint16_t volume);
+		uint16_t getVolume2();
+		
+		// GPIO
+		void setGpioMode(uint16_t gpio, uint16_t mode);
+		void setGpioHiZ(uint16_t gpio);
+		void setGpioFcn(uint16_t gpio);
+		void setGpioLow(uint16_t gpio);
+		void setGpioHi(uint16_t gpio);
+		uint16_t getGpioMode(uint16_t gpio);
+		uint16_t getGpios();
+		
+		// Int
+		void enableInterrupt(uint16_t interrupt);
+		void disableInterrupt(uint16_t interrupt);
+		bool getInterruptEnabled(uint16_t interrupt);
+		
+		// ST mode
+		void setStMode(uint16_t mode);
+		uint16_t getStMode();
+		void setStFullAuto();
+		void setStRxAutoTxManu();
+		void setStFullManu();
+		
+		// Pre-emphasis, De-emphasis filter
+		void bypassPreDeEmph();
+		void usePreDeEmph();
+		bool getPreDeEmphEnabled();
+		
+		// Read Only Status Registers
+		int16_t readRSSI();
+		uint16_t readVSSI();
+		uint16_t readDTMFIndex(); // may want to split this into two (index1 and index2)
+		uint16_t readDTMFCode();
 
         // set output power of radio
         void setRfPower(uint8_t pwr);
@@ -512,11 +480,6 @@ class HamShield {
         bool setMURSChannel(uint8_t channel);
         bool setWXChannel(uint8_t channel);
         uint8_t scanWXChannel();
- 
-
-        // restrictions control
-        void dangerMode();
-        void safeMode();
   
         // utilities
         uint32_t scanMode(uint32_t start,uint32_t stop, uint8_t speed, uint16_t step, uint16_t threshold);
@@ -526,23 +489,23 @@ class HamShield {
         void buttonMode(uint8_t mode);
         static void isr_ptt();
         static void isr_reset();
-	void morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]);
-	uint8_t morseLookup(char letter);
+		void morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]);
+		uint8_t morseLookup(char letter);
         bool waitForChannel(long timeout, long breakwindow, int setRSSI);
         void SSTVVISCode(int code);
         void SSTVTestPattern(int code);
         void toneWait(uint16_t freq, long timer);
         void toneWaitU(uint16_t freq, long timer);
         bool parityCalc(int code);
-       // void AFSKOut(char buffer[80]); 
+		// void AFSKOut(char buffer[80]); 
 
-       // AFSK routines
-       bool AFSKStart();
-       bool AFSKEnabled() { return afsk.enabled(); }
-       bool AFSKStop();
-       bool AFSKOut(const char *);
+		// AFSK routines
+		bool AFSKStart();
+		bool AFSKEnabled() { return afsk.enabled(); }
+		bool AFSKStop();
+		bool AFSKOut(const char *);
        
-       class AFSK afsk;
+		class AFSK afsk;
        
     private:
         uint8_t devAddr;
@@ -554,17 +517,40 @@ class HamShield {
         uint32_t GMRS[];
         uint32_t MURS[];
         uint32_t WX[];
-        
-        // public singleton for ISRs to reference
-      public:
-        static HamShield *sHamShield; // HamShield singleton, used for ISRs mostly
-        
-//          int8_t A1846S::readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16_t timeout);
-//          int8_t A1846S::readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t *data, uint16_t timeout);
-//          int8_t A1846S::readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t *data, uint16_t timeout);
-//          int8_t A1846S::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16_t timeout);
-//          bool A1846S::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t data);
-//          bool A1846S::writeBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t data);
+		
+		// private utility functions
+		// these functions should not be called in the Arduino sketch
+		// just use the above public functions to do everything
+		
+		void setFrequency(uint32_t freq_khz);
+		void setTxBand2m();
+		void setTxBand1_2m();
+		void setTxBand70cm();
+		
+		// xtal frequency (kHz)
+		// 12-14MHz crystal: this reg is set to crystal freq_khz
+		// 24-28MHz crystal: this reg is set to crystal freq_khz / 2
+		void setXtalFreq(uint16_t freq_kHz);
+		uint16_t getXtalFreq();
+			
+		// adclk frequency (kHz)
+		// 12-14MHz crystal: this reg is set to crystal freq_khz / 2
+		// 24-28MHz crystal: this reg is set to crystal freq_khz / 4
+		void setAdcClkFreq(uint16_t freq_kHz);
+		uint16_t getAdcClkFreq();
+
+		// clk mode
+		// 12-14MHz: set to 1
+		// 24-28MHz: set to 0
+		void setClkMode(bool LFClk);
+		bool getClkMode();
+		
+		// choose tx or rx
+		void setTX(bool on_noff);
+		bool getTX();
+		
+		void setRX(bool on_noff);
+		bool getRX();
 };
 
 #endif /* _HAMSHIELD_H_ */

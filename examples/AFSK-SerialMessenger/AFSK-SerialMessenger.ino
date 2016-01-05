@@ -40,7 +40,7 @@ void setup() {
   Wire.begin();
   radio.initialize();
   radio.frequency(145570);
-  radio.setRfPower(15);
+  radio.setRfPower(0);
   dds.start();
   radio.afsk.start(&dds);
   delay(100);

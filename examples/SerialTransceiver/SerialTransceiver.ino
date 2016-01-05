@@ -97,7 +97,7 @@ void setup() {
   radio.setVolume2(0xF);
   radio.setModeReceive();
   radio.setTxSourceMic();
-  radio.setRfPower(9);
+  radio.setRfPower(0);
   radio.setSQLoThresh(80);
   radio.setSQOn();
 }

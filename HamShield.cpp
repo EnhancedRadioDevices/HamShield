@@ -279,6 +279,7 @@ void HamShield::initialize() {
     //setVolume2(0xF);
     setModeReceive();
     setTxSourceMic();
+	setRfPower(0);
     setSQLoThresh(80);
     setSQOn();
 }
@@ -436,9 +437,10 @@ void HamShield::setTX(bool on_noff){
 		if((radio_frequency >= 400000) && (radio_frequency <= 520000)) { 
 			setTxBand70cm();
 		}
+		
+		delay(50); // delay required by AU1846
 	}
 
-	delay(10); // delay required by AU1846
     I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, on_noff);
 }
 bool HamShield::getTX(){
@@ -455,9 +457,9 @@ void HamShield::setRX(bool on_noff){
 		
 		setGpioLow(4); // V1
 		setGpioLow(5); // V2
+		delay(50); // delay required by AU1846
 	}
   
-	delay(10); // delay required by AU1846
 	I2Cdev::writeBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, on_noff);
 }
 bool HamShield::getRX(){

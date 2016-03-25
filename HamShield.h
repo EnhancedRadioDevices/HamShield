@@ -9,7 +9,8 @@
 #define _HAMSHIELD_H_
 
 //#include "I2Cdev_rda.h"
-#include "I2Cdev.h"
+//#include "I2Cdev.h"
+#include "HamShield_comms.h"
 #include "SimpleFIFO.h"
 #include "AFSK.h"
 #include "DDS.h"

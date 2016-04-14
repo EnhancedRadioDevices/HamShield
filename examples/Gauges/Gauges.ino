@@ -7,14 +7,13 @@ Simple gauges for the radio receiver.
 
 */
 
-#include <HAMShield.h>
-#include <Wire.h>
+#include <HamShield.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
 #define SWITCH_PIN 2
 
-HAMShield radio;
+HamShield radio;
 
 void clr() { 
 /* Serial.write(27);
@@ -37,7 +36,7 @@ void setup() {
   
   analogReference(DEFAULT);
   Serial.begin(115200);
-  Wire.begin();
+
   Serial.print("Radio status: ");
   int result = radio.testConnection();
   Serial.println(result,DEC); 

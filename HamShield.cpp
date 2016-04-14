@@ -142,6 +142,11 @@ void HamShield::initialize() {
    
     uint16_t tx_data;
   
+    pinMode(A1, OUTPUT);
+    digitalWrite(A1, HIGH);
+    pinMode(A4, OUTPUT);
+    pinMode(A5, OUTPUT);
+  
     // reset all registers in A1846S
     softReset();
 	
@@ -990,7 +995,7 @@ bool HamShield::getPreDeEmphEnabled(){
 int16_t HamShield::readRSSI(){
 	HSreadBitsW(devAddr, A1846S_RSSI_REG, A1846S_RSSI_BIT, A1846S_RSSI_LENGTH, radio_i2c_buf);
 	
-    int16_t rssi = (radio_i2c_buf[0] & 0x3FF) - 137;
+    int16_t rssi = (radio_i2c_buf[0] & 0xFF); // - 137;
 	return rssi;
 }
 uint16_t HamShield::readVSSI(){

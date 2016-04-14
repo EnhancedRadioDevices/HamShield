@@ -1,6 +1,6 @@
 /*
 
-SerialTransceiver is TTL Serial port "glue" to allow desktop or laptop control of the HAMShield
+SerialTransceiver is TTL Serial port "glue" to allow desktop or laptop control of the HamShield
 
 Commands:
 
@@ -46,7 +46,6 @@ Debug Msg    @<text>;   32 character debug message
 
 */
 
-#include "Wire.h"
 #include "HamShield.h"
 
 #define PWM_PIN 3
@@ -85,7 +84,7 @@ void setup() {
   
   Serial.begin(115200);
   Serial.print(";;;;;;;;;;;;;;;;;;;;;;;;;;");
-  Wire.begin();
+
   int result = radio.testConnection();
   Serial.print("*");
   Serial.print(result,DEC);

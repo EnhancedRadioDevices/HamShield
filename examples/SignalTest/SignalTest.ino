@@ -10,15 +10,14 @@ Plays back the current signal strength level and morses out it's call sign at th
 
 /* Standard libraries and variable init */
 
-#include <HAMShield.h>
-#include <Wire.h>
+#include <HamShield.h>
 #include <PCM.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
 #define SWITCH_PIN 2
 
-HAMShield radio;
+HamShield radio;
 int16_t rssi;
 int peak = -150;
 char sig[8];
@@ -89,7 +88,6 @@ void setup() {
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
   
-  Wire.begin();
   Serial.begin(9600);
   Serial.print("Radio status: ");
   int result = radio.testConnection();

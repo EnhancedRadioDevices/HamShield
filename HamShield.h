@@ -188,7 +188,7 @@
 #define A1846S_VOX_FLAG_BIT        0  // vox out from dsp
 
 // Bitfields for A1846S_RSSI_REG
-#define A1846S_RSSI_BIT            15  // RSSI readings <9:0>
+#define A1846S_RSSI_BIT            15  // RSSI readings <7:0>
 #define A1846S_RSSI_LENGTH         8
 
 // Bitfields for A1846S_VSSI_REG

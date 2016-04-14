@@ -3,7 +3,6 @@
 #define DDS_DEBUG_SERIAL
 
 #include <HamShield.h>
-#include <Wire.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -26,7 +25,7 @@ void setup() {
   digitalWrite(RESET_PIN, HIGH);
   
   Serial.begin(9600);
-  Wire.begin();
+
   radio.initialize();
   radio.setRfPower(0);
   radio.setFrequency(145050);

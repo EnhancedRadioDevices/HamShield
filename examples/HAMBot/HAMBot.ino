@@ -1,15 +1,14 @@
 /* Simple DTMF controlled HAM Radio Robot */
 
 #include <ArduinoRobot.h> // include the robot library
-#include <HAMShield.h>
-#include <Wire.h>
+#include <HamShield.h>
 #include <SPI.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
 #define SWITCH_PIN 2
 
-HAMShield radio;
+HamShield radio;
 
 void setup() {
   // NOTE: if not using PWM out, it should be held low to avoid tx noise
@@ -24,7 +23,7 @@ void setup() {
   digitalWrite(RESET_PIN, HIGH);
   
   Robot.begin();
-  Wire.begin();
+
   radio.initialize();
   radio.frequency(145510);
 }

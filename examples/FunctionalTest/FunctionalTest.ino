@@ -1,7 +1,6 @@
 /* HamShield Functional Test */
 
 #include <HamShield.h>
-#include <Wire.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -21,7 +20,6 @@ void setup() {
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
   
-  Wire.begin();
   Serial.begin(9600);
   Serial.println("If the sketch freezes at radio status, there is something wrong with power or the shield");
   Serial.print("Radio status: ");

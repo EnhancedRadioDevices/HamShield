@@ -2,7 +2,6 @@
 #define DDS_REFCLK_DEFAULT (34965/2)
 
 #include <HamShield.h>
-#include <Wire.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -31,8 +30,8 @@ void setup() {
   digitalWrite(RESET_PIN, HIGH);
   
   Serial.begin(9600);
-  Wire.begin();
-    // Query the HamShield for status information
+
+  // Query the HamShield for status information
   Serial.print("Radio status: ");
   int result = 0;
   result = radio.testConnection();

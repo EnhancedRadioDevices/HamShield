@@ -13,10 +13,9 @@ Sends an SSTV test pattern
 
 /* Standard libraries and variable init */
 
-#include <HAMShield.h>
-#include <Wire.h>
+#include <HamShield.h>
 
-HAMShield radio;
+HamShield radio;
 int16_t rssi;
 
 /* get our radio ready */
@@ -33,7 +32,6 @@ void setup() {
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
   
-  Wire.begin();
   Serial.begin(9600);
   Serial.print("Radio status: ");
   int result = radio.testConnection();

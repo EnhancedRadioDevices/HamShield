@@ -1,5 +1,4 @@
 #include <HamShield.h>
-#include <Wire.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -22,7 +21,7 @@ void setup() {
   digitalWrite(RESET_PIN, HIGH);
   
   Serial.begin(9600);
-  Wire.begin();
+
   Serial.println(F("Radio test connection"));
   Serial.println(radio.testConnection(), DEC);
   Serial.println(F("Initialize"));

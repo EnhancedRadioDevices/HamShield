@@ -1,5 +1,4 @@
 #include <HamShield.h>
-#include <Wire.h>
 #include <KISS.h>
 
 HamShield radio;
@@ -30,7 +29,6 @@ void setup() {
   // let the AU ot of reset
   digitalWrite(RESET_PIN, HIGH);
   
-  Wire.begin();
   radio.initialize();
   radio.setSQOff();
   radio.setFrequency(144390);

@@ -6,8 +6,7 @@ A bit robotic and weird
 
 */
 
-#include <HAMShield.h>
-#include <Wire.h>
+#include <HamShield.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -16,7 +15,7 @@ A bit robotic and weird
 #define RATE 500
 #define SIZE 1500
 
-HAMShield radio;
+HamShield radio;
 
 char sound[SIZE];
 unsigned int sample1;
@@ -36,7 +35,6 @@ void setup() {
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
   
-  Wire.begin();
   // int result = radio.testConnection();
   radio.initialize();
   radio.setFrequency(446000);

@@ -1,9 +1,5 @@
 // Hamshield 
 
-// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
-// is used in I2Cdev.h
-#include "Wire.h"
-
 #include <HamShield.h>
 
 // create object for radio
@@ -47,9 +43,6 @@ void setup() {
   digitalWrite(RESET_PIN, HIGH);
   
   Serial.println("beginning radio setup");
-  
-  // join I2C bus (I2Cdev library doesn't do this automatically)
-   Wire.begin();
 
   // verify connection
   Serial.println("Testing device connections...");

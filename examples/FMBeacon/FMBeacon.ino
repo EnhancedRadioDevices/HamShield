@@ -5,9 +5,8 @@ Test beacon will transmit and wait 30 seconds.
 Beacon will check to see if the channel is clear before it will transmit.
 */
 
-// Include the HamSheild and Wire (I2C) libraries
+// Include the HamSheild
 #include <HamShield.h>
-#include <Wire.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -34,9 +33,6 @@ void setup() {
   
   // Send a quick serial string
   Serial.println("HamShield FM Beacon Example Sketch");
-  
-  // Start the Wire (I2C) library
-  Wire.begin();
 
   // Query the HamShield for status information
   Serial.print("Radio status: ");

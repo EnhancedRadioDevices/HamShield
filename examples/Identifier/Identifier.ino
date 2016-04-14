@@ -7,8 +7,7 @@ Arduino audio overlay example
 */
 
 
-#include <HAMShield.h>
-#include <Wire.h>
+#include <HamShield.h>
 
 #define DOT 100
 
@@ -16,7 +15,7 @@ Arduino audio overlay example
 #define RESET_PIN A3
 #define SWITCH_PIN 2
 
-HAMShield radio;
+HamShield radio;
 
 const char *bascii = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,?'!/()&:;=+-_\"$@",
   *bitu[] = { ".-","-...","-.-.","-..",".","..-.","--.","....","..",".---","-.-",".-..","--","-.","---",".--.","--.-",".-.","...","-","..-","...-",".--","-..-","-.--","--..","-----",".----","..---","...--","....-",".....","-....","--...","---..","----.",".-.-.-","--..--","..--..",".----.","-.-.--","-..-.","-.--.","-.--.-",".-...","---...","-.-.-.","-...-",".-.-.","-....-","..--.-",".-..-.","...-..-",".--.-."
@@ -40,7 +39,7 @@ void setup() {
   
   Serial.begin(9600);
   Serial.println("starting up..");
-  Wire.begin();
+
   Serial.print("Radio status: ");
   int result = radio.testConnection();
   Serial.println(result,DEC);

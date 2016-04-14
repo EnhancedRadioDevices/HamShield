@@ -1,5 +1,4 @@
 #include <HamShield.h>
-#include <Wire.h>
 
 HamShield radio;
 DDS dds;
@@ -13,7 +12,7 @@ DDS dds;
 
 void setup() {
   Serial.begin(9600);
-  Wire.begin();
+
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
   pinMode(6, OUTPUT);

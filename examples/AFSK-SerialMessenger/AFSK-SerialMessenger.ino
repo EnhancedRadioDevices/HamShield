@@ -8,7 +8,6 @@
 #define DDS_REFCLK_DEFAULT 9600
 
 #include <HamShield.h>
-#include <Wire.h>
 #include <avr/wdt.h> 
 
 #define PWM_PIN 3
@@ -37,7 +36,7 @@ void setup() {
   digitalWrite(RESET_PIN, HIGH);
   
   Serial.begin(115200);
-  Wire.begin();
+
   radio.initialize();
   radio.frequency(145570);
   radio.setRfPower(0);

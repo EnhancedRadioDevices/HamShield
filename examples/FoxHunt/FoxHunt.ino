@@ -1,7 +1,6 @@
 /* Fox Hunt */
 
 #include <HamShield.h>
-//#include <Wire.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -27,7 +26,6 @@ void setup() {
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
   
-  //Wire.begin();
   radio.initialize();
   radio.frequency(145510);
   radio.setModeReceive();

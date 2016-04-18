@@ -121,6 +121,11 @@ volatile long bouncer = 0;
 HamShield::HamShield() {
     devAddr = A1846S_DEV_ADDR_SENLOW;
     sHamShield = this;
+	
+    pinMode(A1, OUTPUT);
+    digitalWrite(A1, HIGH);
+    pinMode(A4, OUTPUT);
+    pinMode(A5, OUTPUT);
 }
 
 /** Specific address constructor.
@@ -131,6 +136,11 @@ HamShield::HamShield() {
  */
 HamShield::HamShield(uint8_t address) {
     devAddr = address;
+	
+	pinMode(A1, OUTPUT);
+    digitalWrite(A1, HIGH);
+    pinMode(A4, OUTPUT);
+    pinMode(A5, OUTPUT);
 }
 
 /** Power on and prepare for general usage.
@@ -141,11 +151,6 @@ void HamShield::initialize() {
    // see the A1846S register table and initial settings for more info
    
     uint16_t tx_data;
-  
-    pinMode(A1, OUTPUT);
-    digitalWrite(A1, HIGH);
-    pinMode(A4, OUTPUT);
-    pinMode(A5, OUTPUT);
   
     // reset all registers in A1846S
     softReset();
@@ -485,12 +490,16 @@ bool HamShield::getRX(){
 void HamShield::setModeTransmit(){
     // check to see if we should allow them to do this
     if(restrictions == true) { 
-       if((radio_frequency > 139999) & (radio_frequency < 148001)) { setRX(false); } 
-       if((radio_frequency > 218999) & (radio_frequency < 225001)) { setRX(false); } 
-       if((radio_frequency > 419999) & (radio_frequency < 450001)) { setRX(false); }                     
-    } else { 
-		setTX(true);
-	}
+       if(((radio_frequency > 139999) & (radio_frequency < 148001)) || 
+          ((radio_frequency > 218999) & (radio_frequency < 225001)) || 
+          ((radio_frequency > 419999) & (radio_frequency < 450001)))
+		{ // we're good, so just drop down to the rest of this function
+		} else {
+			setRX(false);
+			return;
+		}			
+    }
+	setTX(true);
 } 
 void HamShield::setModeReceive(){
 	// turn on rx, turn off tx
@@ -995,7 +1004,7 @@ bool HamShield::getPreDeEmphEnabled(){
 int16_t HamShield::readRSSI(){
 	HSreadBitsW(devAddr, A1846S_RSSI_REG, A1846S_RSSI_BIT, A1846S_RSSI_LENGTH, radio_i2c_buf);
 	
-    int16_t rssi = (radio_i2c_buf[0] & 0xFF); // - 137;
+    int16_t rssi = (radio_i2c_buf[0] & 0xFF) - 137;
 	return rssi;
 }
 uint16_t HamShield::readVSSI(){

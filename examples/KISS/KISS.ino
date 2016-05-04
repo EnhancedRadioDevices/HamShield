@@ -31,7 +31,7 @@ void setup() {
   
   radio.initialize();
   radio.setSQOff();
-  radio.setFrequency(144390);
+  radio.frequency(144390);
   //I2Cdev::writeWord(A1846S_DEV_ADDR_SENLOW, 0x44, 0x05FF);
 
   dds.start();

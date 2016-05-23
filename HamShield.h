@@ -242,7 +242,7 @@
 
 
 #define ROBOT8BW 2
-#define SC2-180 55
+#define SC2180 55
 #define MARTIN1 44
 
 // RTTY Frequencies

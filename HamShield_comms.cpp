@@ -1,5 +1,5 @@
 /*
- * Based loosely on I2Cdev by Jeff Rowberg, except for all kludgy bit-banging
+ * Based loosely on I2Cdev by Jeff Rowberg
  */
 
 #include "HamShield_comms.h"
@@ -27,61 +27,36 @@ int8_t HSreadBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t l
 
 int8_t HSreadWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data)
 {
-	//return I2Cdev::readWord(devAddr, regAddr, data);
-	
-	uint8_t temp;
-	uint16_t temp_dat;
-	// bitbang for great justice!
-	*data = 0;
-	cli();
-	DDRC |= ((1<<5) | (1<<4)); // set direction to output
-	sei();
-	regAddr = regAddr | (1 << 7);
-	
-	//cli();
-	digitalWrite(devAddr, 0); //PORTC &= ~(1<<1); //devAddr used as chip select
-	//sei();
-	for (int i = 0; i < 8; i++) {
-		temp = ((regAddr & (0x80 >> i)) != 0);
-		cli();
-		PORTC &= ~(1<<5); //digitalWrite(CLK, 0);
-		sei();
-		//digitalWrite(DAT, regAddr & (0x80 >> i));
-		temp = (PORTC & ~(1<<4)) + (temp << 4);
-		cli();
-		PORTC = temp;
-		sei();
-		delayMicroseconds(9);
-		cli();
-		PORTC |= (1<<5); //digitalWrite(CLK, 1);
-		sei();
-		delayMicroseconds(9);
-	}
-	// change direction of DAT
-	cli();
-	DDRC &= ~(1<<4); //pinMode(DAT, INPUT);
-	sei();
-	for (int i = 15; i >= 0; i--) {
-		cli();
-		PORTC &= ~(1<<5); //digitalWrite(CLK, 0);
-		sei();
-		delayMicroseconds(9);
-		cli();
-		PORTC |= (1<<5); //digitalWrite(CLK, 1);
-		sei();
-		cli();
-		temp_dat = ((PINC & (1<<4)) != 0);
-		sei();
-		temp_dat = temp_dat << i;
-		*data |= temp_dat; // digitalRead(DAT);
-		delayMicroseconds(9);
-	}
-	digitalWrite(devAddr, 1); //PORTC |= (1<<1);// CS
-	
-	cli();	
-	DDRC &= ~((1<<5) | (1<<4)); // set direction all input (for ADC)
-	sei();
-	return 1;
+
+    int8_t count = 0;
+    uint32_t t1 = millis();
+	uint8_t timeout = 1000;
+
+	Wire.beginTransmission(devAddr);
+    Wire.write(regAddr);
+    Wire.endTransmission(false);
+//                Wire.beginTransmission(devAddr);
+    Wire.requestFrom((int)devAddr, 2); // length=words, this wants bytes
+        
+    bool msb = true; // starts with MSB, then LSB
+    for (; Wire.available() && count < 1 && (timeout == 0 || millis() - t1 < timeout);) {
+        if (msb) {
+            // first byte is bits 15-8 (MSb=15)
+            data[0] = Wire.read() << 8;
+        } else {
+            // second byte is bits 7-0 (LSb=0)
+            data[0] |= Wire.read();
+            count++;
+        }
+        msb = !msb;
+    }
+        
+    Wire.endTransmission();
+
+    if (timeout > 0 && millis() - t1 >= timeout && count < 1) count = -1; // timeout
+    
+    return count;
+
 }
 
 
@@ -95,7 +70,7 @@ bool HSwriteBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t data
 
 bool HSwriteBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t data)
 {
-uint16_t w;
+	uint16_t w;
     if (HSreadWord(devAddr, regAddr, &w) != 0) {
         uint16_t mask = ((1 << length) - 1) << (bitStart - length + 1);
         data <<= (bitStart - length + 1); // shift data into correct position
@@ -110,60 +85,14 @@ uint16_t w;
 
 bool HSwriteWord(uint8_t devAddr, uint8_t regAddr, uint16_t data)
 {
-	//return I2Cdev::writeWord(devAddr, regAddr, data);
-	
-	uint8_t temp_reg;
-	uint16_t temp_dat;
-	
-	//digitalWrite(13, HIGH);
-	
-	// bitbang for great justice!
-	cli();
-	DDRC |= ((1<<5) | (1<<4)); // set direction all output
-	//PORTC |= (1<<5) & (1<<4);
-	sei();
-	regAddr = regAddr & ~(1 << 7);
-	
-	//cli();
-	digitalWrite(devAddr, 0); // PORTC &= ~(1<<1); //CS
-	//sei();
-	for (int i = 0; i < 8; i++) {
-		temp_reg = ((regAddr & (0x80 >> i)) != 0);
-		cli();
-		PORTC &= ~(1<<5); //digitalWrite(CLK, 0);
-		sei();
-		//digitalWrite(DAT, regAddr & (0x80 >> i));
-		temp_reg = (PORTC & ~(1<<4)) + (temp_reg << 4);
-		cli();
-		PORTC = temp_reg;
-		sei();
-		delayMicroseconds(8);
-		cli();
-		PORTC |= (1<<5); //digitalWrite(CLK, 1);
-		sei();
-		delayMicroseconds(10);
-	}
-	for (int i = 0; i < 16; i++) {
-		temp_dat = ((data & (0x8000 >> i)) != 0);
-		cli();
-		PORTC &= ~(1<<5); //digitalWrite(CLK, 0);
-		sei();
-		//digitalWrite(DAT, data & (0x80000 >> i));
-		temp_reg = (PORTC & ~(1<<4)) + (temp_dat << 4);
-		cli();
-		PORTC = temp_reg;
-		sei();
-		delayMicroseconds(7);
-		cli();
-		PORTC |= (1<<5); //digitalWrite(CLK, 1);
-		sei();
-		delayMicroseconds(10);
-	}
-	
-	digitalWrite(devAddr, 1); //PORTC |= (1<<1); //CS
-	
-	cli();
-	DDRC &= ~((1<<5) | (1<<4)); // set direction to input for ADC
-	sei();
-	return true;
+    uint8_t status = 0;
+
+	Wire.beginTransmission(devAddr);
+        Wire.write(regAddr); // send address
+
+            Wire.write((uint8_t)(data >> 8));    // send MSB
+            Wire.write((uint8_t)data);         // send LSB
+  
+        status = Wire.endTransmission();
+    return status == 0;
 }

@@ -119,28 +119,24 @@ volatile long bouncer = 0;
  * @see A1846S_DEFAULT_ADDRESS
  */
 HamShield::HamShield() {
-    devAddr = A1; // devAddr is the chip select pin used by the HamShield
+    devAddr = A1846S_DEV_ADDR_SENLOW;
     sHamShield = this;
 	
     pinMode(A1, OUTPUT);
-    digitalWrite(A1, HIGH);
-    pinMode(A4, OUTPUT);
-    pinMode(A5, OUTPUT);
+    digitalWrite(A1, LOW);
 }
 
 /** Specific address constructor.
- * @param chip select pin for HamShield
+ * @param address the I2C address of the HamShield
  * @see A1846S_DEFAULT_ADDRESS
  * @see A1846S_ADDRESS_AD0_LOW
  * @see A1846S_ADDRESS_AD0_HIGH
  */
-HamShield::HamShield(uint8_t cs_pin) {
-    devAddr = cs_pin;
-	
-	pinMode(A1, OUTPUT);
-    digitalWrite(A1, HIGH);
-    pinMode(A4, OUTPUT);
-    pinMode(A5, OUTPUT);
+HamShield::HamShield(uint8_t address) {
+    devAddr = address;
+
+    pinMode(A1, OUTPUT);
+    digitalWrite(A1, LOW);
 }
 
 /** Power on and prepare for general usage.

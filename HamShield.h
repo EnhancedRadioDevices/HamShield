@@ -263,7 +263,7 @@ class HamShield {
         static HamShield *sHamShield; // HamShield singleton, used for ISRs mostly
 		
         HamShield();
-        HamShield(uint8_t cs_pin);
+        HamShield(uint8_t address);
 
         void initialize();
         bool testConnection();

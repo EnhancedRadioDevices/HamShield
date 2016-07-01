@@ -5,11 +5,7 @@
 #define _HAMSHIELD_COMMS_H_
 
 #include "Arduino.h"
-//#include "I2Cdev.h"
-
-#define nSEN A1
-#define CLK A5
-#define DAT A4
+#include "Wire.h"
 
 int8_t HSreadBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t *data);
 int8_t HSreadBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t *data);

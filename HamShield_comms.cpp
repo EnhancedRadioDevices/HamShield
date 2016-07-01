@@ -38,9 +38,9 @@ int8_t HSreadWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data)
 	sei();
 	regAddr = regAddr | (1 << 7);
 	
-	cli();
-	PORTC &= ~(1<<1); //digitalWrite(nSEN, 0);
-	sei();
+	//cli();
+	digitalWrite(devAddr, 0); //PORTC &= ~(1<<1); //devAddr used as chip select
+	//sei();
 	for (int i = 0; i < 8; i++) {
 		temp = ((regAddr & (0x80 >> i)) != 0);
 		cli();
@@ -76,9 +76,9 @@ int8_t HSreadWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data)
 		*data |= temp_dat; // digitalRead(DAT);
 		delayMicroseconds(9);
 	}
-	cli();
-	PORTC |= (1<<1);//digitalWrite(nSEN, 1);
+	digitalWrite(devAddr, 1); //PORTC |= (1<<1);// CS
 	
+	cli();	
 	DDRC &= ~((1<<5) | (1<<4)); // set direction all input (for ADC)
 	sei();
 	return 1;
@@ -124,9 +124,9 @@ bool HSwriteWord(uint8_t devAddr, uint8_t regAddr, uint16_t data)
 	sei();
 	regAddr = regAddr & ~(1 << 7);
 	
-	cli();
-	PORTC &= ~(1<<1); //digitalWrite(nSEN, 0);
-	sei();
+	//cli();
+	digitalWrite(devAddr, 0); // PORTC &= ~(1<<1); //CS
+	//sei();
 	for (int i = 0; i < 8; i++) {
 		temp_reg = ((regAddr & (0x80 >> i)) != 0);
 		cli();
@@ -159,9 +159,10 @@ bool HSwriteWord(uint8_t devAddr, uint8_t regAddr, uint16_t data)
 		sei();
 		delayMicroseconds(10);
 	}
-	cli();
-	PORTC |= (1<<1); //digitalWrite(nSEN, 1);
 	
+	digitalWrite(devAddr, 1); //PORTC |= (1<<1); //CS
+	
+	cli();
 	DDRC &= ~((1<<5) | (1<<4)); // set direction to input for ADC
 	sei();
 	return true;

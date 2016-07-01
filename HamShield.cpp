@@ -119,7 +119,7 @@ volatile long bouncer = 0;
  * @see A1846S_DEFAULT_ADDRESS
  */
 HamShield::HamShield() {
-    devAddr = A1846S_DEV_ADDR_SENLOW;
+    devAddr = A1; // devAddr is the chip select pin used by the HamShield
     sHamShield = this;
 	
     pinMode(A1, OUTPUT);
@@ -129,13 +129,13 @@ HamShield::HamShield() {
 }
 
 /** Specific address constructor.
- * @param address I2C address
+ * @param chip select pin for HamShield
  * @see A1846S_DEFAULT_ADDRESS
  * @see A1846S_ADDRESS_AD0_LOW
  * @see A1846S_ADDRESS_AD0_HIGH
  */
-HamShield::HamShield(uint8_t address) {
-    devAddr = address;
+HamShield::HamShield(uint8_t cs_pin) {
+    devAddr = cs_pin;
 	
 	pinMode(A1, OUTPUT);
     digitalWrite(A1, HIGH);
@@ -720,7 +720,7 @@ void HamShield::setCdcssCode(uint16_t code) {
 uint16_t HamShield::getCdcssCode() {
 	uint32_t oct_code;
 	HSreadWord(devAddr, A1846S_CDCSS_CODE_HI_REG, radio_i2c_buf);
-	oct_code = (radio_i2c_buf[0] << 16);
+	oct_code = ((uint32_t)radio_i2c_buf[0] << 16);
 	HSreadWord(devAddr, A1846S_CDCSS_CODE_LO_REG, radio_i2c_buf);
 	oct_code += radio_i2c_buf[0];
 	
@@ -747,23 +747,25 @@ bool HamShield::getSQState(){
 }
 
 // SQ threshold
-void HamShield::setSQHiThresh(uint16_t sq_hi_threshold){
-	// Sq detect high th, rssi_cmp will be 1 when rssi>th_h_sq, unit 1/8dB
-	HSwriteWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, sq_hi_threshold);
+void HamShield::setSQHiThresh(int16_t sq_hi_threshold){
+	// Sq detect high th, rssi_cmp will be 1 when rssi>th_h_sq, unit 1dB
+	uint16_t sq = 137 + sq_hi_threshold;
+	HSwriteWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, sq);
 } 
-uint16_t HamShield::getSQHiThresh(){
+int16_t HamShield::getSQHiThresh(){
 	HSreadWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, radio_i2c_buf);
 	
-	return radio_i2c_buf[0];
+	return radio_i2c_buf[0] - 137;
 }
-void HamShield::setSQLoThresh(uint16_t sq_lo_threshold){
-	// Sq detect low th, rssi_cmp will be 0 when rssi<th_l_sq && time delay meet, unit 1/8 dB
-	HSwriteWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, sq_lo_threshold);
+void HamShield::setSQLoThresh(int16_t sq_lo_threshold){
+	// Sq detect low th, rssi_cmp will be 0 when rssi<th_l_sq && time delay meet, unit 1 dB
+	uint16_t sq = 137 + sq_lo_threshold;
+	HSwriteWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, sq);
 }
-uint16_t HamShield::getSQLoThresh(){
+int16_t HamShield::getSQLoThresh(){
 	HSreadWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, radio_i2c_buf);
 	
-	return radio_i2c_buf[0];
+	return radio_i2c_buf[0] - 137;
 }
 
 // SQ out select

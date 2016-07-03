@@ -137,7 +137,7 @@ HamShield::HamShield() {
 HamShield::HamShield(uint8_t cs_pin) {
     devAddr = cs_pin;
 	
-	pinMode(A1, OUTPUT);
+    pinMode(devAddr, OUTPUT);
     digitalWrite(A1, HIGH);
     pinMode(A4, OUTPUT);
     pinMode(A5, OUTPUT);

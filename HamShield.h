@@ -8,8 +8,6 @@
 #ifndef _HAMSHIELD_H_
 #define _HAMSHIELD_H_
 
-//#include "I2Cdev_rda.h"
-//#include "I2Cdev.h"
 #include "HamShield_comms.h"
 #include "SimpleFIFO.h"
 #include "AFSK.h"
@@ -29,11 +27,6 @@
 // button modes
 #define PTT_MODE 1
 #define RESET_MODE 2
-
-// Device Constants
-#define A1846S_DEV_ADDR_SENHIGH 0b0101110
-#define A1846S_DEV_ADDR_SENLOW  0b1110001
-
 
 // Device Registers
 #define A1846S_CTL_REG              0x30    // control register

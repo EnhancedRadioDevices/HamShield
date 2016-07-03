@@ -1,5 +1,13 @@
 # HamShield
 
+Please note that I2C communications are not officially supported.
+
+The RF transciever on the HamShield has trouble driving large I2C bus capacitances (over 40pF). What this means is that it works well if the transciever is on the same physical PCB as the microcontroller (assuming good layout), but works poorly as a daughterboard.
+
+We recommend that you use the master branch, which uses a custom communications protocol. That custom protocol does not have the same bus capacitance limitation. You're welcome to play around with I2C if you want, but it may cause instability issues.
+
+## Hardware Changes Necessary
+
 The i2c-comms branch is not intended for use with a stock HamShield.
 
 To use i2c communications with a HamShield 09 or above, you must first make several hardware changes to the board.
@@ -11,6 +19,8 @@ Then make sure that you pull the nCS pin correctly. Changing nCS changes the I2C
 
 - nCS is logic high: A1846S_DEV_ADDR_SENHIGH 0b0101110
 - nCS is logic low: A1846S_DEV_ADDR_SENLOW  0b1110001
+
+
 
 HamShield Arduino Library and Example Sketches
 

@@ -35,7 +35,6 @@ int8_t HSreadWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data)
 	Wire.beginTransmission(devAddr);
     Wire.write(regAddr);
     Wire.endTransmission(false);
-//                Wire.beginTransmission(devAddr);
     Wire.requestFrom((int)devAddr, 2); // length=words, this wants bytes
         
     bool msb = true; // starts with MSB, then LSB
@@ -88,11 +87,11 @@ bool HSwriteWord(uint8_t devAddr, uint8_t regAddr, uint16_t data)
     uint8_t status = 0;
 
 	Wire.beginTransmission(devAddr);
-        Wire.write(regAddr); // send address
+    Wire.write(regAddr); // send address
 
-            Wire.write((uint8_t)(data >> 8));    // send MSB
-            Wire.write((uint8_t)data);         // send LSB
+    Wire.write((uint8_t)(data >> 8));    // send MSB
+    Wire.write((uint8_t)data);         // send LSB
   
-        status = Wire.endTransmission();
+    status = Wire.endTransmission();
     return status == 0;
 }

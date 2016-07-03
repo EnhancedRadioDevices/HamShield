@@ -1,6 +1,8 @@
+// Example sketch to show how to transmit arbitrary tones.
+// In this case, the sketch alternates between 1200Hz and 2200Hz at 1s intervals.
+
 #define DDS_REFCLK_DEFAULT 9600
 #include <HamShield.h>
-
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -24,7 +26,7 @@ void setup() {
   
   radio.initialize();
   radio.setRfPower(0);
-  radio.setFrequency(145060);
+  radio.frequency(438000);
   radio.setModeTransmit();
   dds.start();
   dds.playWait(600, 3000);
@@ -48,10 +50,8 @@ ISR(ADC_vect) {
   static unsigned char tcnt = 0;
   TIFR1 = _BV(ICF1); // Clear the timer flag
   if(++tcnt == 4) {
-    //digitalWrite(2, HIGH);
     tcnt = 0;
   }
   dds.clockTick();
-  //digitalWrite(2, LOW);
 }
 #endif

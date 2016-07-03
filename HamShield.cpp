@@ -1290,10 +1290,13 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
     if(buffer[i] == ' ') {
       // We delay by 4 here, if we previously sent a symbol. Otherwise 7.
       // This could probably just be always 7 and go relatively unnoticed.
-      if(prev == 0 || prev == ' ')
+      if(prev == 0 || prev == ' '){
+        tone(HAMSHIELD_PWM_PIN, 6000, HAMSHIELD_MORSE_DOT * 7);
         delay(HAMSHIELD_MORSE_DOT*7);
-      else
+      } else {
+        tone(HAMSHIELD_PWM_PIN, 6000, HAMSHIELD_MORSE_DOT * 4);
         delay(HAMSHIELD_MORSE_DOT*4);
+      }
       continue;
     }
     // Otherwise, lookup our character symbol
@@ -1301,17 +1304,19 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
     if(bits) { // If it is a valid character...
       do {
         if(bits & 1) {
-          tone(HAMSHIELD_PWM_PIN, 1000, HAMSHIELD_MORSE_DOT * 3);
+          tone(HAMSHIELD_PWM_PIN, 600, HAMSHIELD_MORSE_DOT * 3);
           delay(HAMSHIELD_MORSE_DOT*3);
         } else {
-          tone(HAMSHIELD_PWM_PIN, 1000, HAMSHIELD_MORSE_DOT);
+          tone(HAMSHIELD_PWM_PIN, 600, HAMSHIELD_MORSE_DOT);
           delay(HAMSHIELD_MORSE_DOT);
         }
+	tone(HAMSHIELD_PWM_PIN, 6000, HAMSHIELD_MORSE_DOT);
         delay(HAMSHIELD_MORSE_DOT);
         bits >>= 1; // Shift into the next symbol
       } while(bits != 1); // Wait for 1 termination to be all we have left
     }
     // End of character
+    tone(HAMSHIELD_PWM_PIN, 6000, HAMSHIELD_MORSE_DOT * 3);
     delay(HAMSHIELD_MORSE_DOT * 3);
   }
   return;

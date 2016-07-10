@@ -9,9 +9,9 @@
 #define _HAMSHIELD_H_
 
 #include "HamShield_comms.h"
-#include "SimpleFIFO.h"
-#include "AFSK.h"
-#include "DDS.h"
+//#include "SimpleFIFO.h"
+//#include "AFSK.h"
+//#include "DDS.h"
 #include <avr/pgmspace.h>
 
 // HamShield constants
@@ -491,15 +491,17 @@ class HamShield {
         void toneWait(uint16_t freq, long timer);
         void toneWaitU(uint16_t freq, long timer);
         bool parityCalc(int code);
-		// void AFSKOut(char buffer[80]); 
-
+		
+		
+		
+		//TODO: split AFSK out so it can be left out
 		// AFSK routines
-		bool AFSKStart();
-		bool AFSKEnabled() { return afsk.enabled(); }
-		bool AFSKStop();
-		bool AFSKOut(const char *);
+		//bool AFSKStart();
+		//bool AFSKEnabled() { return afsk.enabled(); }
+		//bool AFSKStop();
+		//bool AFSKOut(const char *);
        
-		class AFSK afsk;
+		//class AFSK afsk;
        
     private:
         uint8_t devAddr;

@@ -1,3 +1,14 @@
+/* Hamshield
+ * Example: QPSK63Transmit
+ * This is a simple example to demonstrate HamShield QPSK63 
+ * transmit functionality.
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. Connect the Arduino to wall 
+ * power and then to your computer via USB. After uploading 
+ * this program to your adruino, tune a QPSK63 receiver and 
+ * wait to receive the message "Why hello there, friend. 
+ * Nice to meet you. Welcome to QPSK63. 73, VE6SLP sk"
+*/
 #include <HamShield.h>
 #include "varicode.h"
 
@@ -46,7 +57,7 @@ void sendChar(uint8_t c) {
   //PORTD &= ~_BV(2); // Diagnostic pin (D2)
 }
 
-char *string = "Why hello there, friend. Nice to meet you. Welcome to PSK31. 73, VE6SLP sk\r\n";
+char *string = "Why hello there, friend. Nice to meet you. Welcome to QPSK63. 73, VE6SLP sk\r\n";
 void loop() {
   int i;
   // put your main code here, to run repeatedly:

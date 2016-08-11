@@ -1,3 +1,14 @@
+/* Hamshield
+ * Example: KISS
+ * This is a example configures the HamShield to be used as 
+ * a TNC/KISS device. You will need a KISS device to input 
+ * commands to the HamShield
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. Connect the Arduino to wall 
+ * power and then to your computer via USB. Issue commands 
+ * via the KISS equipment.
+*/
+
 #include <HamShield.h>
 #include <KISS.h>
 

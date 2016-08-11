@@ -1,4 +1,16 @@
-/* HamShield Functional Test */
+/* Hamshield
+ * Example: Functional Test
+ * This is a simple example to demonstrate HamShield receive
+ * and transmit functionality.
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. Plug a pair of headphones into 
+ * the HamShield. Connect the Arduino to wall power and then 
+ * to your computer via USB. After uploading this program to 
+ * your adruino, open the Serial Monitor. Serial Monitor will 
+ * describe what you should be expecting to hear from your 
+ * headphones. Tune a HandytTalkie to 446MHz to hear morse 
+ * code example.
+*/
 
 #include <HamShield.h>
 

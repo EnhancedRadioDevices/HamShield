@@ -1,8 +1,16 @@
-/* Serial glue to send messages over APRS 
- *  
- *  To do: add message receive code
- *  
- */
+/* Hamshield
+ * Example: AFSK Serial Messenger
+ * Serial glue to send messages over APRS. You will need a 
+ * seperate AFSK receiver to test the output of this example.
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. After uploading this program 
+ * to your adruino, open the Serial Monitor to monitor. Type 
+ * a message under 254 characters into the bar at the top of 
+ * the monitor. Click the "Send" button. Check for output on 
+ * AFSK receiver.
+
+ *  NOTE: add message receive code
+*/
 
 
 #define DDS_REFCLK_DEFAULT 9600
@@ -35,7 +43,7 @@ void setup() {
   // turn on the radio
   digitalWrite(RESET_PIN, HIGH);
   
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   radio.initialize();
   radio.frequency(145570);

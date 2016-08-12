@@ -29,7 +29,6 @@ void setup() {
   radio.initialize();
   radio.frequency(145010);
   radio.setSQOff();
-  I2Cdev::writeWord(A1846S_DEV_ADDR_SENLOW, 0x44, 0b11111111);
   Serial.println(F("Frequency"));
   delay(100);
   Serial.print(F("Squelch(H/L): "));
@@ -37,8 +36,6 @@ void setup() {
   Serial.print(F(" / "));
   Serial.println(radio.getSQLoThresh());
   radio.setModeReceive();
-  Serial.print(F("RX? "));
-  Serial.println(radio.getRX());
   Serial.println(F("DDS Start"));
   delay(100);
   dds.start();

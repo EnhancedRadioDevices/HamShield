@@ -28,7 +28,7 @@ void setup() {
   Serial.println("Setting radio to its defaults..");
   radio.initialize();
   radio.setRfPower(0);
-  radio.setChanMode(3);
+  //radio.setChanMode(3);
 }
 
 void loop() {

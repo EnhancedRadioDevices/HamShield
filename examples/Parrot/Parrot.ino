@@ -37,7 +37,7 @@ void setup() {
   
   // int result = radio.testConnection();
   radio.initialize();
-  radio.setFrequency(446000);
+  radio.frequency(446000);
   setPwmFrequency(9, 1);
 }
 

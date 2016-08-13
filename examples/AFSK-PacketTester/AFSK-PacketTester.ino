@@ -1,7 +1,15 @@
-/* Serial glue to send messages over APRS 
- *  
- *  To do: add message receive code
- *  
+/* Hamshield
+ * Example: AFSK Packet Tester
+ * This example sends AFSK test data. You will need a seperate 
+ * AFSK receiver to test the output of this example.
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. Connect the Arduino to wall 
+ * power and then to your computer via USB. After uploading 
+ * this program to your adruino, open the Serial Monitor to 
+ * monitor the process of the HamShield. Check for output on 
+ * AFSK receiver.
+
+ *  Note: add message receive code
  */
 
 #define DDS_REFCLK_DEFAULT 9600

@@ -41,7 +41,7 @@ void setup() {
   int result = radio.testConnection();
   Serial.println(result,DEC); 
   radio.initialize();
-  radio.setFrequency(446000);
+  radio.frequency(446000);
   radio.setModeReceive();
   Serial.println("Entering gauges...");
   tone(9,1000);

@@ -28,7 +28,7 @@ void setup() {
 
   radio.initialize();
   radio.setRfPower(0);
-  radio.setFrequency(145050);
+  radio.frequency(145050);
   
   dds.start();
   dds.setFrequency(1200);

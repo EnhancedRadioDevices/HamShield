@@ -1,5 +1,14 @@
-// Example sketch to show how to transmit arbitrary tones.
-// In this case, the sketch alternates between 1200Hz and 2200Hz at 1s intervals.
+/* Hamshield
+ * Example: DDS
+ * This is a simple example to show hot to transmit arbitrary 
+ * tones. In this case, the sketh alternates between 1200Hz 
+ * and 2200Hz at 1s intervals.
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. Connect the Arduino to wall 
+ * power and then to your computer via USB. Upload this program 
+ * to your Arduino. To test, set a HandyTalkie to 438MHz. You 
+ * should hear two alternating tones.
+*/
 
 #define DDS_REFCLK_DEFAULT 9600
 #include <HamShield.h>

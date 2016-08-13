@@ -1,3 +1,15 @@
+/* Hamshield
+ * Example: PSK31Transmit
+ * This is a simple example to demonstrate HamShield PSK31 
+ * transmit functionality.
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. Connect the Arduino to wall 
+ * power and then to your computer via USB. After uploading 
+ * this program to your adruino, tune a PSK31 receiver and 
+ * wait to receive the message "Why hello there, friend. 
+ * Nice to meet you. Welcome to PSK31. 73, VE6SLP sk"
+*/
+
 #include <HamShield.h>
 #include "varicode.h"
 

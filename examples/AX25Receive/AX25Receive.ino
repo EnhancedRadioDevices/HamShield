@@ -37,8 +37,6 @@ void setup() {
   Serial.print(F(" / "));
   Serial.println(radio.getSQLoThresh());
   radio.setModeReceive();
-  Serial.print(F("RX? "));
-  Serial.println(radio.getRX());
   Serial.println(F("DDS Start"));
   delay(100);
   dds.start();

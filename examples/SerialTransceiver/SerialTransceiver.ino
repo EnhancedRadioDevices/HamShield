@@ -1,6 +1,13 @@
-/*
-
-SerialTransceiver is TTL Serial port "glue" to allow desktop or laptop control of the HamShield
+/* Hamshield
+ * Example: Serial Tranceiver
+ * SerialTransceiver is TTL Serial port "glue" to allow 
+ * desktop or laptop control of the HamShield.
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. Plug a pair of headphones into 
+ * the HamShield. Connect the Arduino to wall power and then 
+ * to your computer via USB. After uploading this program to 
+ * your adruino, open the Serial Monitor. Use the bar at the 
+ * top of the serial monitor to enter commands as seen below.
 
 Commands:
 

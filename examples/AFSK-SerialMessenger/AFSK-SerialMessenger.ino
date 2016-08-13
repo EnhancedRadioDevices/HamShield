@@ -43,7 +43,7 @@ void setup() {
   // turn on the radio
   digitalWrite(RESET_PIN, HIGH);
   
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   radio.initialize();
   radio.frequency(145570);

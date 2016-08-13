@@ -35,7 +35,7 @@ void setup() {
   digitalWrite(RESET_PIN, HIGH);
   
   analogReference(DEFAULT);
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   Serial.print("Radio status: ");
   int result = radio.testConnection();

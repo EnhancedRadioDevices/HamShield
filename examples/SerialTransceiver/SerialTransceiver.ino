@@ -89,7 +89,7 @@ void setup() {
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
   
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.print(";;;;;;;;;;;;;;;;;;;;;;;;;;");
 
   int result = radio.testConnection();

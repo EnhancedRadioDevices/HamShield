@@ -58,7 +58,7 @@ void sendChar(uint8_t c) {
   //PORTD &= ~_BV(2); // Diagnostic pin (D2)
 }
 
-char *string = "Why hello there, friend. Nice to meet you. Welcome to PSK31. 73, VE6SLP sk\r\n";
+char *string = "Why hello there, friend. Nice to meet you. Welcome to QPSK63. 73, VE6SLP sk\r\n";
 void loop() {
   int i;
   // put your main code here, to run repeatedly:

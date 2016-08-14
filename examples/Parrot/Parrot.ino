@@ -1,9 +1,15 @@
-/* 
-
-Record sound and then plays it back a few times.
-Very low sound quality @ 2KHz 0.75 seconds
-A bit robotic and weird
-
+/* Hamshield
+ * Example: Parrot
+ * Record sound and then plays it back a few times. Very low 
+ * sound quality @ 2KHz 0.75 seconds. A bit robotic and weird. 
+ * You will need a HandyTalkie (HT) to test the output of this 
+ * example.
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. Plug a pair of headphones with 
+ * built-in mic into the HamShield. Connect the Arduino to 
+ * wall power and then to your computer via USB. To test the 
+ * output, tune you HT to 446MHz. Recording should be repeated 
+ * ten times.
 */
 
 #include <HamShield.h>

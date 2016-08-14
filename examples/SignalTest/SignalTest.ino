@@ -1,9 +1,19 @@
-/* 
-
-Plays back the current signal strength level and morses out it's call sign at the end.
-
-
-*/
+/* Hamshield
+ * Example: Signal Test
+ * Plays back the current signal strength level and morses out 
+ * it's call sign at the end. You will need a HandyTalkie (HT)
+ * to test the output of this example.
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. Plug a pair of headphones into 
+ * the HamShield. Connect the Arduino to wall power and then 
+ * to your computer via USB. After uploading this program to 
+ * your adruino, open the Serial Monitor. HamShield will print 
+ * the results of its signal test to the Serial Monitor. To 
+ * test with another HandyTalkie (HT), tune in to 446MHz and 
+ * listen for the call sign. Then key up on your HT and make 
+ * sure you can hear it through the headphones attached to the 
+ * HamShield.
+*/ 
 
 #define DOT 100
 #define CALLSIGN "1ZZ9ZZ/B"

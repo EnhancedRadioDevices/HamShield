@@ -1,7 +1,7 @@
 /* Hamshield
  * Example: SSTV M1 Static 
  * This program will transmit a static image. You will need 
- * SSTV receive equipment to test the output.
+ * SSTV equipment to test the output.
  * Connect the HamShield to your Arduino. Screw the antenna 
  * into the HamShield RF jack. Connect the Arduino to wall 
  * power and then to your computer via USB. After uploading 

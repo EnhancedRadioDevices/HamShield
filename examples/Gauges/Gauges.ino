@@ -1,10 +1,19 @@
-/* 
-
-Gauges
-
-Simple gauges for the radio receiver.
-
-
+/* Hamshield
+ * Example: Gauges
+ * This example prints Signal, Audio In, and Audio Rx ADC 
+ * Peak strength to the Serial Monitor in a graphical manner.
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. Plug a pair of headphones into 
+ * the HamShield. Connect the Arduino to wall power and then 
+ * to your computer via USB. After uploading this program to 
+ * your adruino, open the Serial Monitor. You will see a 
+ * repeating display of different signal strengths. Ex: 
+ *
+ * [....|....] -73       
+ * Signal 
+ *
+ * Uncheck the "Autoscroll" box at the bottom of the Serial 
+ * Monitor to manually control the view of the Serial Monitor.
 */
 
 #include <HamShield.h>
@@ -35,7 +44,7 @@ void setup() {
   digitalWrite(RESET_PIN, HIGH);
   
   analogReference(DEFAULT);
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   Serial.print("Radio status: ");
   int result = radio.testConnection();

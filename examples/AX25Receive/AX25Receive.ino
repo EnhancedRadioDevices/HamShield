@@ -1,3 +1,17 @@
+/* Hamshield
+ * Example: AX25 Receive
+ * This example receives AFSK test data. You will need seperate 
+ * AFSK equipment to send data for this example.
+ * Connect the HamShield to your Arduino. Screw the antenna 
+ * into the HamShield RF jack. Plug a pair of headphones into 
+ * the HamShield. Connect the Arduino to wall power and then to 
+ * your computer via USB. After uploading this program to your 
+ * adruino, open the Serial Monitor so you will see the AFSK 
+ * packet. Send AFSK packet from AFSK equipment at 145.01MHz.
+
+ *  Note: add message receive code
+ */
+
 #include <HamShield.h>
 
 #define PWM_PIN 3

@@ -13,6 +13,8 @@
  */
 
 #include <HamShield.h>
+#include <DDS.h>
+#include <AFSK.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -20,6 +22,7 @@
 
 HamShield radio;
 DDS dds;
+AFSK afsk;
 
 void setup() {
   // NOTE: if not using PWM out, it should be held low to avoid tx noise
@@ -55,7 +58,7 @@ void setup() {
   dds.start();
   Serial.println(F("AFSK start"));
   delay(100);
-  radio.afsk.start(&dds);
+  afsk.start(&dds);
   Serial.println(F("Starting..."));
   delay(100);
   dds.setAmplitude(255);
@@ -63,11 +66,11 @@ void setup() {
 
 uint32_t last = 0;
 void loop() {
-   if(radio.afsk.decoder.read() || radio.afsk.rxPacketCount()) {
+   if(afsk.decoder.read() || afsk.rxPacketCount()) {
       // A true return means something was put onto the packet FIFO
       // If we actually have data packets in the buffer, process them all now
-      while(radio.afsk.rxPacketCount()) {
-        AFSK::Packet *packet = radio.afsk.getRXPacket();
+      while(afsk.rxPacketCount()) {
+        AFSK::Packet *packet = afsk.getRXPacket();
         Serial.print(F("Packet: "));
         if(packet) {
           packet->printPacket(&Serial);
@@ -83,6 +86,6 @@ ISR(ADC_vect) {
   TIFR1 = _BV(ICF1); // Clear the timer flag
   //PORTD |= _BV(2); // Diagnostic pin (D2)
   //dds.clockTick();
-  radio.afsk.timer();
+  afsk.timer();
   //PORTD &= ~(_BV(2)); // Pin D2 off again
 }

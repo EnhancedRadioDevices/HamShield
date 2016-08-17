@@ -51,7 +51,7 @@ void setup() {
 
 
 void loop() {
-     if(radio.waitForChannel(1000,2000, rssi)) {        // Wait forever for calling frequency to open, then wait 2 seconds for breakers 
+     if(radio.waitForChannel(1000,2000, -90)) {        // Wait forever for calling frequency to open, then wait 2 seconds for breakers 
        radio.setModeTransmit();                   // Turn on the transmitter
        delay(250);                               // Wait a moment
        radio.SSTVTestPattern(MARTIN1);            // send a MARTIN1 test pattern

@@ -11,6 +11,7 @@
 */
 
 #include <HamShield.h>
+#include <DDS.h>
 #include "varicode.h"
 
 #define PWM_PIN 3

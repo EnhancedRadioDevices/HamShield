@@ -15,6 +15,7 @@
 #define DDS_DEBUG_SERIAL
 
 #include <HamShield.h>
+#include <DDS.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3

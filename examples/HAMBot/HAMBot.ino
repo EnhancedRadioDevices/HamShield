@@ -12,7 +12,7 @@
  * '6' => turn robot right
  * '2' => move robot forward
  * '5' => tell robot to send morse code identity 
-/* 
+*/ 
 
 #include <ArduinoRobot.h> // include the robot library
 #include <HamShield.h>

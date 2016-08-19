@@ -22,8 +22,6 @@
 #define HAMSHIELD_PWM_PIN                 3    // Pin assignment for PWM output
 #define HAMSHIELD_EMPTY_CHANNEL_RSSI   -110    // Default threshold where channel is considered "clear"
 
-#define HAMSHIELD_AFSK_RX_FIFO_LEN 16
-
 // button modes
 #define PTT_MODE 1
 #define RESET_MODE 2

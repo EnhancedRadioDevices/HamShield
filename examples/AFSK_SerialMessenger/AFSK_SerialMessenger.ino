@@ -17,7 +17,7 @@
 
 #include <HamShield.h>
 #include <DDS.h>
-#include <AFSK.h>
+#include <packet.h>
 #include <avr/wdt.h> 
 
 #define PWM_PIN 3

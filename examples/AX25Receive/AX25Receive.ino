@@ -14,7 +14,7 @@
 
 #include <HamShield.h>
 #include <DDS.h>
-#include <AFSK.h>
+#include <packet.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3

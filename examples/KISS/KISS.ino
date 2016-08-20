@@ -11,7 +11,7 @@
 
 #include <HamShield.h>
 #include <KISS.h>
-#include <AFSK.h>
+#include <packet.h>
 
 HamShield radio;
 DDS dds;

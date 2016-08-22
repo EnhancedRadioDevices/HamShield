@@ -118,7 +118,7 @@ void loop() {
   }
   while(Serial.available()) {
     char c = Serial.read();
-    Serial.print(c);
+    Serial.println(c);
     switch(c) {
       case 'h':
         Serial.println(F("Commands:"));

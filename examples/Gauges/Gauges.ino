@@ -24,13 +24,6 @@
 
 HamShield radio;
 
-void clr() { 
-/* Serial.write(27);
-  Serial.print("[2J");     // cursor to home command  */
- Serial.write(27);
-  Serial.print("[H");     // cursor to home command 
-}
-
 void setup() {
   // NOTE: if not using PWM out, it should be held low to avoid tx noise
   pinMode(PWM_PIN, OUTPUT);
@@ -68,7 +61,6 @@ int txc = 0;
 int mode = 0;
 
 void loop() {
-   clr();
    int16_t rssi = radio.readRSSI();
    gauge = map(rssi,-123,-50,0,8);
    Serial.print("[");

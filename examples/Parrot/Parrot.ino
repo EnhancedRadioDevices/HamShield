@@ -56,16 +56,16 @@ void loop() {
      if(x == -1) { 
        for(x = 0; x < SIZE; x++) {
        if(mode == 4) { 
-       sample1 = analogRead(0);
+       sample1 = analogRead(2);
        sound[x] = sample1 >> 4;
        delayMicroseconds(RATE); x++;
-       sample1 = analogRead(0); 
+       sample1 = analogRead(2); 
        sound[x] = (sample1 & 0xF0) | sound[x];
        delayMicroseconds(RATE);
        } else {
-       sound[x] = analogRead(0);
+       sound[x] = analogRead(2);
        delayMicroseconds(RATE); x++;
-       sound[x] = analogRead(0);
+       sound[x] = analogRead(2);
        delayMicroseconds(RATE);
        }
       }

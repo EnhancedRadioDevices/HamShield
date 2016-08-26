@@ -21,28 +21,14 @@ Mode           ASCII       Description                                          
 -------------- ----------- -------------------------------------------------------------------------------------------------------------------------------------------- -----------------
 Transmit       space       Space must be received at least every 500 mS                                                                                                 Yes
 Receive        not space   If space is not received and/or 500 mS timeout of space occurs, unit will go into receive mode                                               Yes
-CTCSS In       A<tone>;    <tone> must be a numerical ascii value with decimal point indicating CTCSS receive tone required to unsquelch                                No
-CTCSS Out      B<tone>;    <tone> must be a numerical ascii value with decimal point indicating CTCSS transmit tone                                                     No
-CTCSS Enable   C<state>;   Turns on CTCSS mode (analog tone) with 1, off with 0.                                                                                        No
-CDCSS Enable   D<state>;   Turns on CDCSS mode (digital tone) with 1, off with 0.                                                                                       No
 Bandwidth      E<mode>;    for 12.5KHz mode is 0, for 25KHz, mode is 1                                                                                                  No
 Frequency      F<freq>;    Set the receive frequency in KHz, if offset is disabled, this is the transmit frequency                                                      No
-CDCSS In       G<code>;    <code> must be a valid CDCSS code                                                                                                            No
-CDCSS Out      H<code>;    <code> must be a valid CDCSS code                                                                                                            No
-Print tones    I           Prints out all configured tones and codes, coma delimited in format: CTCSS In, CTCSS Out, CDCSS In, CDCSS Out                                No
 Morse Out      M<text>;    A small buffer for morse code (32 chars)
 Power level    P<level>;   Set the power amp level, 0 = lowest, 15 = highest                                                                                           No
 Enable Offset  R<state>;   1 turns on repeater offset mode, 0 turns off repeater offset mode                                                                            No
 Squelch        S<level>;   Set the squelch level                                                                                                                        No
 TX Offset      T<freq>;    The absolute frequency of the repeater offset to transmit on in KHz                                                                          No
-Volume         V<level>;   Set the volume level of the receiver                                                                                                         No
-Reset          X           Reset all settings to default                                                                                                                No
-Sleep          Z           Sleep radio                                                                                                                                  No
-Filters        @<state>;   Set bit to enable, clear bit to disable: 0 = pre/de-emphasis, 1 = high pass filter, 2 = low pass filter (default:  ascii 7, all enabled)     No
-Vox mode       $<state>;   0 = vox off, >= 1 audio sensitivity. lower value more sensitive                                                                              No
-Mic Channel    *<state>;   Set the voice channel. 0 = signal from mic or arduino, 1 = internal tone generator                                                           No
 RSSI           ?           Respond with the current receive level in - dBm (no sign provided on numerical response)                                                     No
-Tone Gen       % (notes)   To send a tone, use the following format: Single tone: %1,<freq>,<length>; Dual tone: %2,<freq>,<freq>,<length>; DTMF: %3,<key>,<length>;    No
 Voice Level    ^           Respond with the current voice level (VSSI)
 
 

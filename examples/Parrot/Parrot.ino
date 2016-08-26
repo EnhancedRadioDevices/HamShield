@@ -8,7 +8,11 @@
  * into the HamShield RF jack. Plug a pair of headphones into 
  * the HamShield. Connect the Arduino to wall power and then to 
  * your computer via USB. To test the output, tune you HT to 
+<<<<<<< HEAD
  * 446MHz. The HamShield should make a recording of the next 
+=======
+ * 446MHz. The HamShield should make a recording ofthe next 
+>>>>>>> 8b8fd7a9a141e015aceecf604357ecf277df0c1f
  * broadcast on that frequncy. The recording should then be 
  * repeated ten times by the HamShield.
 */
@@ -56,16 +60,16 @@ void loop() {
      if(x == -1) { 
        for(x = 0; x < SIZE; x++) {
        if(mode == 4) { 
-       sample1 = analogRead(0);
+       sample1 = analogRead(2);
        sound[x] = sample1 >> 4;
        delayMicroseconds(RATE); x++;
-       sample1 = analogRead(0); 
+       sample1 = analogRead(2); 
        sound[x] = (sample1 & 0xF0) | sound[x];
        delayMicroseconds(RATE);
        } else {
-       sound[x] = analogRead(0);
+       sound[x] = analogRead(2);
        delayMicroseconds(RATE); x++;
-       sound[x] = analogRead(0);
+       sound[x] = analogRead(2);
        delayMicroseconds(RATE);
        }
       }

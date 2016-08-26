@@ -122,10 +122,12 @@ HamShield::HamShield() {
     devAddr = A1; // devAddr is the chip select pin used by the HamShield
     sHamShield = this;
 	
-    pinMode(A1, OUTPUT);
-    digitalWrite(A1, HIGH);
-    pinMode(A4, OUTPUT);
-    pinMode(A5, OUTPUT);
+    pinMode(devAddr, OUTPUT);
+    digitalWrite(devAddr, HIGH);
+    pinMode(CLK, OUTPUT);
+	digitalWrite(CLK, HIGH);
+    pinMode(DAT, OUTPUT);
+	digitalWrite(DAT, HIGH);
 }
 
 /** Specific address constructor.
@@ -138,9 +140,11 @@ HamShield::HamShield(uint8_t cs_pin) {
     devAddr = cs_pin;
 	
     pinMode(devAddr, OUTPUT);
-    digitalWrite(A1, HIGH);
-    pinMode(A4, OUTPUT);
-    pinMode(A5, OUTPUT);
+    digitalWrite(devAddr, HIGH);
+    pinMode(CLK, OUTPUT);
+	digitalWrite(CLK, HIGH);
+    pinMode(DAT, OUTPUT);
+	digitalWrite(DAT, HIGH);
 }
 
 /** Power on and prepare for general usage.

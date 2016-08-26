@@ -11,10 +11,12 @@
 
 #include <HamShield.h>
 #include <KISS.h>
+#include <packet.h>
 
 HamShield radio;
 DDS dds;
 KISS kiss(&Serial, &radio, &dds);
+AFSK afsk;
 
 //TODO: move these into library
 #define PWM_PIN 3
@@ -46,7 +48,7 @@ void setup() {
   //I2Cdev::writeWord(A1846S_DEV_ADDR_SENLOW, 0x44, 0x05FF);
 
   dds.start();
-  radio.afsk.start(&dds);
+  afsk.start(&dds);
 }
 
 void loop() {

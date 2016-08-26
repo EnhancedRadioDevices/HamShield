@@ -44,7 +44,7 @@ void setup() {
 void loop() {
   radio.setModeReceive();
   radio.setSQLoThresh(0);
-  radio.setSQOn();
+  radio.setSQOff();
   radio.setVolume1(0xF);
   radio.setVolume2(0xF);
   delay(1000);

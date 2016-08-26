@@ -15,6 +15,7 @@
 #define DDS_DEBUG_SERIAL
 
 #include <HamShield.h>
+#include <DDS.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -117,7 +118,7 @@ void loop() {
   }
   while(Serial.available()) {
     char c = Serial.read();
-    Serial.print(c);
+    Serial.println(c);
     switch(c) {
       case 'h':
         Serial.println(F("Commands:"));

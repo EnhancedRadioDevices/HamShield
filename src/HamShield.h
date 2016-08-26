@@ -9,9 +9,9 @@
 #define _HAMSHIELD_H_
 
 #include "HamShield_comms.h"
-#include "SimpleFIFO.h"
-#include "AFSK.h"
-#include "DDS.h"
+//#include "SimpleFIFO.h"
+//#include "AFSK.h"
+//#include "DDS.h"
 #include <avr/pgmspace.h>
 
 // HamShield constants
@@ -21,8 +21,6 @@
 #define HAMSHIELD_AUX_BUTTON              2    // Pin assignment for AUX button
 #define HAMSHIELD_PWM_PIN                 3    // Pin assignment for PWM output
 #define HAMSHIELD_EMPTY_CHANNEL_RSSI   -110    // Default threshold where channel is considered "clear"
-
-#define HAMSHIELD_AFSK_RX_FIFO_LEN 16
 
 // button modes
 #define PTT_MODE 1
@@ -491,15 +489,17 @@ class HamShield {
         void toneWait(uint16_t freq, long timer);
         void toneWaitU(uint16_t freq, long timer);
         bool parityCalc(int code);
-		// void AFSKOut(char buffer[80]); 
-
+		
+		
+		
+		//TODO: split AFSK out so it can be left out
 		// AFSK routines
-		bool AFSKStart();
-		bool AFSKEnabled() { return afsk.enabled(); }
-		bool AFSKStop();
-		bool AFSKOut(const char *);
+		//bool AFSKStart();
+		//bool AFSKEnabled() { return afsk.enabled(); }
+		//bool AFSKStop();
+		//bool AFSKOut(const char *);
        
-		class AFSK afsk;
+		//class AFSK afsk;
        
     private:
         uint8_t devAddr;
@@ -507,11 +507,11 @@ class HamShield {
 		bool tx_active;
 		bool rx_active;
         uint32_t radio_frequency;
-        uint32_t FRS[];
+/*        uint32_t FRS[];
         uint32_t GMRS[];
         uint32_t MURS[];
         uint32_t WX[];
-		
+*/		
 		// private utility functions
 		// these functions should not be called in the Arduino sketch
 		// just use the above public functions to do everything

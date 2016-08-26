@@ -9,7 +9,9 @@
  * wait to receive the message "Why hello there, friend. 
  * Nice to meet you. Welcome to QPSK63. 73, VE6SLP sk"
 */
+
 #include <HamShield.h>
+#include <DDS.h>
 #include "varicode.h"
 
 #define PWM_PIN 3

@@ -8,6 +8,12 @@
  * to your computer via USB. After uploading this program to 
  * your adruino, open the Serial Monitor. Use the bar at the 
  * top of the serial monitor to enter commands as seen below.
+ * 
+ * EXAMPLE: To change the repeater offset to 144.425MHz, 
+ * enable offset, then key in, use the following commands:
+ * T144425;
+ * R1;
+ * [Just a space]
 
 Commands:
 
@@ -90,14 +96,14 @@ void setup() {
   digitalWrite(RESET_PIN, HIGH);
   
   Serial.begin(9600);
-  Serial.print(";;;;;;;;;;;;;;;;;;;;;;;;;;");
+  Serial.println(";;;;;;;;;;;;;;;;;;;;;;;;;;");
 
   int result = radio.testConnection();
   Serial.print("*");
   Serial.print(result,DEC);
-  Serial.print(";");
+  Serial.println(";");
   radio.initialize(); // initializes automatically for UHF 12.5kHz channel
-  Serial.print("*START;");  
+  Serial.println("*START;");  
   radio.frequency(freq);
   radio.setVolume1(0xF);
   radio.setVolume2(0xF);
@@ -127,14 +133,14 @@ void loop() {
                if(repeater == 1) { radio.frequency(tx); } 
                radio.setModeTransmit();
                state = 10;
-               Serial.print("#TX,ON;");
+               Serial.println("#TX,ON;");
                timer = millis();
                break;
            
            case 63: // ? - RSSI
                Serial.print(":");
                Serial.print(radio.readRSSI(),DEC);
-               Serial.print(";");
+               Serial.println(";");
                break;
              
            case 65: // A - CTCSS In
@@ -155,7 +161,7 @@ void loop() {
            case 70: // F - frequency
                getValue();
                freq = atol(cmdbuff);
-               if(radio.frequency(freq) == true) { Serial.print("@"); Serial.print(freq,DEC); Serial.print(";!;"); } else { Serial.print("X1;"); } 
+               if(radio.frequency(freq) == true) { Serial.print("@"); Serial.print(freq,DEC); Serial.println(";!;"); } else { Serial.println("X1;"); } 
                break;
 
            case 'M':
@@ -194,14 +200,14 @@ void loop() {
            case 94: // ^ - VSSI (voice) level
                Serial.print(":");
                Serial.print(radio.readVSSI(),DEC); 
-               Serial.print(";");
+               Serial.println(";");
          }
         break;
      }
 
   }
       if(state == 10) { 
-    if(millis() > (timer + 500)) { Serial.print("#TX,OFF;");radio.setModeReceive(); if(repeater == 1) { radio.frequency(freq); }  state = 0; txcount = 0; }
+    if(millis() > (timer + 500)) { Serial.println("#TX,OFF;");radio.setModeReceive(); if(repeater == 1) { radio.frequency(freq); }  state = 0; txcount = 0; }
     }
 }
 
@@ -212,7 +218,8 @@ void getValue() {
      if(Serial.available()) { 
         temp = Serial.read();
         if(temp == 59) { cmdbuff[p] = 0; Serial.print("@");
-           for(int x = 0; x < 32; x++) {  Serial.print(cmdbuff[x]); }
+           for(int x = 0; x < 32; x++) {  Serial.print(cmdbuff[x]);}
+		   Serial.println();
          return;
         }
         cmdbuff[p] = temp;
@@ -220,12 +227,12 @@ void getValue() {
         if(p == 32) { 
          Serial.print("@");
            for(int x = 0; x < 32; x++) { 
-             Serial.print(cmdbuff[x]);
+             Serial.println(cmdbuff[x]);
            } 
           
           cmdbuff[0] = 0; 
 
-        Serial.print("X0;"); return; }      // some sort of alignment issue? lets not feed junk into whatever takes this string in
+        Serial.println("X0;"); return; }      // some sort of alignment issue? lets not feed junk into whatever takes this string in
      }
   }
 }

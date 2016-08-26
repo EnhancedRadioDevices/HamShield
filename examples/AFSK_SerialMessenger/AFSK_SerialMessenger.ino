@@ -16,6 +16,8 @@
 #define DDS_REFCLK_DEFAULT 9600
 
 #include <HamShield.h>
+#include <DDS.h>
+#include <packet.h>
 #include <avr/wdt.h> 
 
 #define PWM_PIN 3
@@ -24,6 +26,7 @@
 
 HamShield radio;
 DDS dds;
+AFSK afsk;
 String messagebuff = "";
 String origin_call = "";
 String destination_call = "";
@@ -49,7 +52,7 @@ void setup() {
   radio.frequency(145570);
   radio.setRfPower(0);
   dds.start();
-  radio.afsk.start(&dds);
+  afsk.start(&dds);
   delay(100);
   Serial.println("HELLO");
 }
@@ -91,13 +94,13 @@ void prepMessage() {
 
     textmessage = "";
     
-    bool ret = radio.afsk.putTXPacket(packet);
+    bool ret = afsk.putTXPacket(packet);
 
-    if(radio.afsk.txReady()) {
+    if(afsk.txReady()) {
       Serial.println(F("txReady"));
       //radio.setModeTransmit();
       //delay(100);
-      if(radio.afsk.txStart()) {
+      if(afsk.txStart()) {
         Serial.println(F("txStart"));
       } else {
         radio.setModeReceive();
@@ -108,7 +111,7 @@ void prepMessage() {
     // Wait up to 2.5 seconds to finish sending, and stop transmitter.
     // TODO: This is hackery.
     for(int i = 0; i < 500; i++) {
-      if(radio.afsk.encoder.isDone())
+      if(afsk.encoder.isDone())
          break;
       delay(50);
     }
@@ -136,8 +139,8 @@ ISR(ADC_vect) {
   //PORTD |= _BV(2); // Diagnostic pin (D2)
   dds.clockTick();
   if(++tcnt == 1) {
-    if(radio.afsk.encoder.isSending()) {
-      radio.afsk.timer();
+    if(afsk.encoder.isSending()) {
+      afsk.timer();
     }
     tcnt = 0;
   }

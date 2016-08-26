@@ -12,6 +12,7 @@
 
 #define DDS_REFCLK_DEFAULT 9600
 #include <HamShield.h>
+#include <DDS.h>
 
 #define PWM_PIN 3
 #define RESET_PIN A3

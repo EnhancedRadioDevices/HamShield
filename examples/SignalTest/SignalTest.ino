@@ -2,7 +2,9 @@
  * Example: Signal Test
  * Plays back the current signal strength level and morses out 
  * it's call sign at the end. You will need a HandyTalkie (HT)
- * to test the output of this example.
+ * to test the output of this example. You will also need to 
+ * download the PCM library from 
+ * https://github.com/damellis/PCM
  * Connect the HamShield to your Arduino. Screw the antenna 
  * into the HamShield RF jack. Plug a pair of headphones into 
  * the HamShield. Connect the Arduino to wall power and then 
@@ -16,7 +18,7 @@
 */ 
 
 #define DOT 100
-#define CALLSIGN "1ZZ9ZZ/B"
+char CALLSIGN[] = "1ZZ9ZZ/B";
 
 /* Standard libraries and variable init */
 

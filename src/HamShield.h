@@ -507,11 +507,11 @@ class HamShield {
 		bool tx_active;
 		bool rx_active;
         uint32_t radio_frequency;
-        uint32_t FRS[];
+/*        uint32_t FRS[];
         uint32_t GMRS[];
         uint32_t MURS[];
         uint32_t WX[];
-		
+*/		
 		// private utility functions
 		// these functions should not be called in the Arduino sketch
 		// just use the above public functions to do everything

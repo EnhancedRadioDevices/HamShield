@@ -6,7 +6,7 @@
  * into the HamShield RF jack. Plug a pair of headphones into 
  * the HamShield. Connect the Arduino to wall power and then 
  * to your computer via USB. After uploading this program to 
- * your adruino, open the Serial Monitor. Use the bar at the 
+ * your Arduino, open the Serial Monitor. Use the bar at the 
  * top of the serial monitor to enter commands as seen below.
  * 
  * EXAMPLE: To change the repeater offset to 144.425MHz, 

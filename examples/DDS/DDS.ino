@@ -1,6 +1,6 @@
 /* Hamshield
  * Example: DDS
- * This is a simple example to show hot to transmit arbitrary 
+ * This is a simple example to show how to transmit arbitrary 
  * tones. In this case, the sketh alternates between 1200Hz 
  * and 2200Hz at 1s intervals.
  * Connect the HamShield to your Arduino. Screw the antenna 

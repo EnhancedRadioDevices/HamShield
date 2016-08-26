@@ -6,7 +6,7 @@
  * into the HamShield RF jack. Plug a pair of headphones into 
  * the HamShield. Connect the Arduino to wall power and then to 
  * your computer via USB. After uploading this program to your 
- * adruino, open the Serial Monitor so you will see the AFSK 
+ * Arduino, open the Serial Monitor so you will see the AFSK 
  * packet. Send AFSK packet from AFSK equipment at 145.01MHz.
 
  *  Note: add message receive code

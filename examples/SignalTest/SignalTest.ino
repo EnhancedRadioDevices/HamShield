@@ -9,7 +9,7 @@
  * into the HamShield RF jack. Plug a pair of headphones into 
  * the HamShield. Connect the Arduino to wall power and then 
  * to your computer via USB. After uploading this program to 
- * your adruino, open the Serial Monitor. HamShield will print 
+ * your Arduino, open the Serial Monitor. HamShield will print 
  * the results of its signal test to the Serial Monitor. To 
  * test with another HandyTalkie (HT), tune in to 446MHz and 
  * listen for the call sign. Then key up on your HT and make 

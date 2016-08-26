@@ -4,9 +4,10 @@
  * will check to see if the channel is clear before it will 
  * transmit.
  * Connect the HamShield to your Arduino. Screw the antenna 
- * into the HamShield RF jack. Connect the Arduino to wall power and then 
- * to your computer via USB. To test, set a HandyTalkie 
- * to 438MHz. You should hear a one-minute tone every 10-13 minutes.
+ * into the HamShield RF jack. Connect the Arduino to wall 
+ * power and then to your computer via USB. To test, set a 
+ * HandyTalkie to 438MHz. You should hear a one-minute tone 
+ * followed by a callsign every 10-13 minutes.
 */
 
 #include <HamShield.h>

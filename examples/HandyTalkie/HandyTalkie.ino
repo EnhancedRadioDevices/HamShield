@@ -6,7 +6,7 @@
  * into the HamShield RF jack. Plug a pair of headphones into 
  * the HamShield. Connect the Arduino to wall power and then 
  * to your computer via USB. After uploading this program to 
- * your adruino, open the Serial Monitor. Press the button on 
+ * your Arduino, open the Serial Monitor. Press the button on 
  * the HamShield to begin setup. After setup is complete, type 
  * your desired Tx/Rx frequency, in hertz, into the bar at the 
  * top of the Serial Monitor and click the "Send" button. 

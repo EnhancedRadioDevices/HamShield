@@ -54,7 +54,7 @@ void DDS::start() {
 #endif
 
   // Configure the ADC here to automatically run and be triggered off Timer1
-  ADMUX = _BV(REFS0) | _BV(ADLAR) | 0; // Channel 0, shift result left (ADCH used)
+  ADMUX = _BV(REFS0) | _BV(ADLAR) | 2; // Channel 2, shift result left (ADCH used)
   DDRC &= ~_BV(0);
   PORTC &= ~_BV(0);
   DIDR0 |= _BV(0);

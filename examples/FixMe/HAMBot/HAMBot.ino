@@ -6,7 +6,7 @@
  * Connect the HamShield to your Arduino. Screw the antenna 
  * into the HamShield RF jack. Connect the Arduino to wall 
  * power and then to your computer via USB. After uploading 
- * this program to your adruino, you can send commands from 
+ * this program to your Arduino, you can send commands from 
  * your DTMF equipment using the following list: 
  * '4' => turn robot left
  * '6' => turn robot right

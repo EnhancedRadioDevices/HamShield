@@ -5,7 +5,7 @@
  * Connect the HamShield to your Arduino. Screw the antenna 
  * into the HamShield RF jack. Connect the Arduino to wall 
  * power and then to your computer via USB. After uploading 
- * this program to your adruino, open the Serial Monitor. 
+ * this program to your Arduino, open the Serial Monitor. 
  * Type 'h' into the bar at the top of the Serial Monitor 
  * and click the  "Send" button for more instructions.
 */

@@ -4,7 +4,7 @@
  * seperate AFSK receiver to test the output of this example.
  * Connect the HamShield to your Arduino. Screw the antenna 
  * into the HamShield RF jack. After uploading this program 
- * to your adruino, open the Serial Monitor to monitor. Type 
+ * to your Arduino, open the Serial Monitor to monitor. Type 
  * a message under 254 characters into the bar at the top of 
  * the monitor. Click the "Send" button. Check for output on 
  * AFSK receiver.

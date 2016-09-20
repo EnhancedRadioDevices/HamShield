@@ -47,6 +47,7 @@ void setup() {
   radio.frequency(145010);
   radio.setSQOff();
   Serial.println(F("Frequency"));
+  Serial.println(radio.getFrequency());
   delay(100);
   Serial.print(F("Squelch(H/L): "));
   Serial.print(radio.getSQHiThresh());

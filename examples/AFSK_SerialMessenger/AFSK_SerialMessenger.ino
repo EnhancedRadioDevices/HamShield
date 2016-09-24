@@ -51,9 +51,15 @@ void setup() {
   radio.initialize();
   radio.frequency(145570);
   radio.setRfPower(0);
+  radio.setVolume1(0xFF);
+  radio.setVolume2(0xFF);
+  radio.setSQHiThresh(-100);
+  radio.setSQLoThresh(-100);
+  radio.setSQOn();
   dds.start();
   afsk.start(&dds);
   delay(100);
+  radio.setModeReceive();
   Serial.println("HELLO");
 }
 
@@ -70,7 +76,21 @@ void loop() {
         msgptr++;
       }
     }
-    if(msgptr > 254) { messagebuff = ""; Serial.print("X!"); } 
+    if(msgptr > 254) { messagebuff = ""; Serial.print("X!"); }
+    
+   if(afsk.decoder.read() || afsk.rxPacketCount()) {
+      Serial.println("got pkt");
+      // A true return means something was put onto the packet FIFO
+      // If we actually have data packets in the buffer, process them all now
+      while(afsk.rxPacketCount()) {
+        AFSK::Packet *packet = afsk.getRXPacket();
+        Serial.print(F("Packet: "));
+        if(packet) {
+          packet->printPacket(&Serial);
+          AFSK::PacketBuffer::freePacket(packet);
+        }
+      }
+    }
 }
     
 
@@ -85,6 +105,7 @@ void prepMessage() {
     AFSK::Packet *packet = AFSK::PacketBuffer::makePacket(22 + 32);
 
     packet->start();
+    packet->appendFCS(HDLC_FRAME);
     packet->appendCallsign(origin_call.c_str(),0);
     packet->appendCallsign(destination_call.c_str(),15,true);   
     packet->appendFCS(0x03);
@@ -139,12 +160,12 @@ ISR(ADC_vect) {
   //PORTD |= _BV(2); // Diagnostic pin (D2)
   dds.clockTick();
   if(++tcnt == 1) {
-    if(afsk.encoder.isSending()) {
+    //if(afsk.encoder.isSending())
+    {
       afsk.timer();
     }
     tcnt = 0;
   }
   //PORTD &= ~(_BV(2)); // Pin D2 off again
 }
-
 

@@ -18,7 +18,6 @@ DDS dds;
 KISS kiss(&Serial, &radio, &dds);
 AFSK afsk;
 
-//TODO: move these into library
 #define PWM_PIN 3
 #define RESET_PIN A3
 #define SWITCH_PIN 2
@@ -45,7 +44,6 @@ void setup() {
   radio.initialize();
   radio.setSQOff();
   radio.frequency(144390);
-  //I2Cdev::writeWord(A1846S_DEV_ADDR_SENLOW, 0x44, 0x05FF);
 
   dds.start();
   afsk.start(&dds);

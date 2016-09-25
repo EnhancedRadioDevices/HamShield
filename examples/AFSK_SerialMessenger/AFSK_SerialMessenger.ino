@@ -13,7 +13,6 @@
 */
 
 
-#define DDS_REFCLK_DEFAULT 9600
 
 #include <HamShield.h>
 #include <DDS.h>
@@ -63,14 +62,15 @@ void setup() {
   Serial.println("HELLO");
 }
 
-String temp[1] = "";
-
-
 void loop() {
     if(Serial.available()) { 
       char temp = (char)Serial.read();
       if(temp == '`') { 
-       prepMessage(); msgptr = 0; Serial.print("!!"); } 
+       //Serial.println(messagebuff);
+       prepMessage(); 
+       msgptr = 0; 
+       Serial.print("!!");
+      } 
       else { 
         messagebuff += temp;
         msgptr++;
@@ -79,7 +79,6 @@ void loop() {
     if(msgptr > 254) { messagebuff = ""; Serial.print("X!"); }
     
    if(afsk.decoder.read() || afsk.rxPacketCount()) {
-      Serial.println("got pkt");
       // A true return means something was put onto the packet FIFO
       // If we actually have data packets in the buffer, process them all now
       while(afsk.rxPacketCount()) {
@@ -96,60 +95,54 @@ void loop() {
 
 void prepMessage() { 
    radio.setModeTransmit();
-   delay(500);
-   origin_call = messagebuff.substring(0,messagebuff.indexOf(','));        // get originating callsign
-   destination_call = messagebuff.substring(messagebuff.indexOf(',')+1,
-              messagebuff.indexOf(',',messagebuff.indexOf(',')+1)); // get the destination call
-   textmessage = messagebuff.substring(messagebuff.indexOf(":"));
+  delay(1000);
+  origin_call = messagebuff.substring(0,messagebuff.indexOf(','));                                          // get originating callsign
+  destination_call = messagebuff.substring(messagebuff.indexOf(',')+1,messagebuff.indexOf(',',messagebuff.indexOf(',')+1)); // get the destination call
+  textmessage = messagebuff.substring(messagebuff.indexOf(":")+1);
   
-    AFSK::Packet *packet = AFSK::PacketBuffer::makePacket(22 + 32);
+ // Serial.print("From: "); Serial.print(origin_call); Serial.print(" To: "); Serial.println(destination_call); Serial.println("Text: "); Serial.println(textmessage);
 
-    packet->start();
-    packet->appendFCS(HDLC_FRAME);
-    packet->appendCallsign(origin_call.c_str(),0);
-    packet->appendCallsign(destination_call.c_str(),15,true);   
-    packet->appendFCS(0x03);
-    packet->appendFCS(0xf0);
-    packet->print(textmessage);
-    packet->finish();
+  AFSK::Packet *packet = AFSK::PacketBuffer::makePacket(22 + 32);
 
-    textmessage = "";
-    
-    bool ret = afsk.putTXPacket(packet);
+  packet->start();
+  packet->appendCallsign(origin_call.c_str(),0);
+  packet->appendCallsign(destination_call.c_str(),15,true);   
+  packet->appendFCS(0x03);
+  packet->appendFCS(0xf0);
+  packet->print(textmessage);
+  packet->finish();
 
-    if(afsk.txReady()) {
-      Serial.println(F("txReady"));
-      //radio.setModeTransmit();
-      //delay(100);
-      if(afsk.txStart()) {
-        Serial.println(F("txStart"));
-      } else {
-        radio.setModeReceive();
-      }
+  bool ret = afsk.putTXPacket(packet);
+
+  if(afsk.txReady()) {
+    Serial.println(F("txReady"));
+    radio.setModeTransmit();
+    //delay(100);
+    if(afsk.txStart()) {
+      Serial.println(F("txStart"));
+    } else {
+      radio.setModeReceive();
     }
-    // Wait 2 seconds before we send our beacon again.
-    Serial.println("tick");
-    // Wait up to 2.5 seconds to finish sending, and stop transmitter.
-    // TODO: This is hackery.
-    for(int i = 0; i < 500; i++) {
-      if(afsk.encoder.isDone())
-         break;
-      delay(50);
-    }
-    Serial.println("Done sending");
-    delay(3000);
-    radio.setModeReceive();
+  }
+  // Wait 2 seconds before we send our beacon again.
+  Serial.println("tick");
+  // Wait up to 2.5 seconds to finish sending, and stop transmitter.
+  // TODO: This is hackery.
+  for(int i = 0; i < 500; i++) {
+    if(afsk.encoder.isDone())
+       break;
+    delay(50);
+  }
+  Serial.println("Done sending");
+  radio.setModeReceive();
 } 
  
 
-// TODO: d2 is now our switch, so don't write to that
 ISR(TIMER2_OVF_vect) {
   TIFR2 = _BV(TOV2);
   static uint8_t tcnt = 0;
   if(++tcnt == 8) {
-  //digitalWrite(2, HIGH);
-  dds.clockTick();
-  //digitalWrite(2, LOW);
+    dds.clockTick();
     tcnt = 0;
   }
 }
@@ -157,15 +150,9 @@ ISR(TIMER2_OVF_vect) {
 ISR(ADC_vect) {
   static uint8_t tcnt = 0;
   TIFR1 = _BV(ICF1); // Clear the timer flag
-  //PORTD |= _BV(2); // Diagnostic pin (D2)
   dds.clockTick();
   if(++tcnt == 1) {
-    //if(afsk.encoder.isSending())
-    {
-      afsk.timer();
-    }
+    afsk.timer();
     tcnt = 0;
   }
-  //PORTD &= ~(_BV(2)); // Pin D2 off again
 }
-

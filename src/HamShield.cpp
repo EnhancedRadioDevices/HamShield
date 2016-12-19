@@ -26,6 +26,7 @@ const uint32_t WX[] PROGMEM = {0,162550,162400,162475,162425,162450,162500,16252
 
 
 unsigned int morse_freq = 600;
+unsigned int morse_dot_millis = 100;
 
 /* morse code lookup table */
 // This is the Morse table in reverse binary format.
@@ -1298,6 +1299,18 @@ void HamShield::setMorseFreq(unsigned int morse_freq_hz) {
 	morse_freq = morse_freq_hz;
 }
 
+// Get current duration of a morse dot (shorter is more WPM)
+
+unsigned int HamShield::getMorseDotMillis() {
+	return morse_dot_millis;
+}
+
+// Set current duration of a morse dot (shorter is more WPM)
+
+void HamShield::setMorseDotMillis(unsigned int morse_dot_dur_millis) {
+	morse_dot_millis = morse_dot_dur_millis;
+}
+
 /* Morse code out, blocking */
 
 void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) { 
@@ -1309,11 +1322,11 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
       // We delay by 4 here, if we previously sent a symbol. Otherwise 7.
       // This could probably just be always 7 and go relatively unnoticed.
       if(prev == 0 || prev == ' '){
-        tone(HAMSHIELD_PWM_PIN, 6000, HAMSHIELD_MORSE_DOT * 7);
-        delay(HAMSHIELD_MORSE_DOT*7);
+        tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 7);
+        delay(morse_dot_millis*7);
       } else {
-        tone(HAMSHIELD_PWM_PIN, 6000, HAMSHIELD_MORSE_DOT * 4);
-        delay(HAMSHIELD_MORSE_DOT*4);
+        tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 4);
+        delay(morse_dot_millis*4);
       }
       continue;
     }
@@ -1322,20 +1335,20 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
     if(bits) { // If it is a valid character...
       do {
         if(bits & 1) {
-          tone(HAMSHIELD_PWM_PIN, morse_freq, HAMSHIELD_MORSE_DOT * 3);
-          delay(HAMSHIELD_MORSE_DOT*3);
+          tone(HAMSHIELD_PWM_PIN, morse_freq, morse_dot_millis * 3);
+          delay(morse_dot_millis*3);
         } else {
-          tone(HAMSHIELD_PWM_PIN, morse_freq, HAMSHIELD_MORSE_DOT);
-          delay(HAMSHIELD_MORSE_DOT);
+          tone(HAMSHIELD_PWM_PIN, morse_freq, morse_dot_millis);
+          delay(morse_dot_millis);
         }
-	tone(HAMSHIELD_PWM_PIN, 6000, HAMSHIELD_MORSE_DOT);
-        delay(HAMSHIELD_MORSE_DOT);
+	tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis);
+        delay(morse_dot_millis);
         bits >>= 1; // Shift into the next symbol
       } while(bits != 1); // Wait for 1 termination to be all we have left
     }
     // End of character
-    tone(HAMSHIELD_PWM_PIN, 6000, HAMSHIELD_MORSE_DOT * 3);
-    delay(HAMSHIELD_MORSE_DOT * 3);
+    tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 3);
+    delay(morse_dot_millis * 3);
   }
   return;
 }

@@ -16,7 +16,6 @@
 
 // HamShield constants
 
-#define HAMSHIELD_MORSE_DOT             100    // Morse code dot length (smaller is faster WPM)
 #define HAMSHIELD_MORSE_BUFFER_SIZE      80    // Char buffer size for morse code text
 #define HAMSHIELD_AUX_BUTTON              2    // Pin assignment for AUX button
 #define HAMSHIELD_PWM_PIN                 3    // Pin assignment for PWM output
@@ -483,6 +482,8 @@ class HamShield {
         static void isr_reset();
 		unsigned int getMorseFreq();
 		void setMorseFreq(unsigned int morse_freq_hz);
+		unsigned int getMorseDotMillis();
+		void setMorseDotMillis(unsigned int morse_dot_dur_millis);
 		void morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]);
 		uint8_t morseLookup(char letter);
         bool waitForChannel(long timeout, long breakwindow, int setRSSI);

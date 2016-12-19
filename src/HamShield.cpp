@@ -24,6 +24,9 @@ const uint32_t MURS[] PROGMEM = {0,151820,151880,151940,154570,154600};
 
 const uint32_t WX[] PROGMEM = {0,162550,162400,162475,162425,162450,162500,162525};
 
+
+unsigned int morse_freq = 600;
+
 /* morse code lookup table */
 // This is the Morse table in reverse binary format.
 // It will occupy 108 bytes of memory (or program memory if defined)
@@ -1283,6 +1286,17 @@ bool HamShield::waitForChannel(long timeout = 0, long breakwindow = 0, int setRS
     return false;
 }
 
+// Get current morse code tone frequency (in Hz)
+
+unsigned int HamShield::getMorseFreq() {
+	return morse_freq;
+}
+
+// Set current morse code tone frequency (in Hz)
+
+void HamShield::setMorseFreq(unsigned int morse_freq_hz) {
+	morse_freq = morse_freq_hz;
+}
 
 /* Morse code out, blocking */
 
@@ -1308,10 +1322,10 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
     if(bits) { // If it is a valid character...
       do {
         if(bits & 1) {
-          tone(HAMSHIELD_PWM_PIN, 600, HAMSHIELD_MORSE_DOT * 3);
+          tone(HAMSHIELD_PWM_PIN, morse_freq, HAMSHIELD_MORSE_DOT * 3);
           delay(HAMSHIELD_MORSE_DOT*3);
         } else {
-          tone(HAMSHIELD_PWM_PIN, 600, HAMSHIELD_MORSE_DOT);
+          tone(HAMSHIELD_PWM_PIN, morse_freq, HAMSHIELD_MORSE_DOT);
           delay(HAMSHIELD_MORSE_DOT);
         }
 	tone(HAMSHIELD_PWM_PIN, 6000, HAMSHIELD_MORSE_DOT);

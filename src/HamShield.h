@@ -481,6 +481,8 @@ class HamShield {
         void buttonMode(uint8_t mode);
         static void isr_ptt();
         static void isr_reset();
+		unsigned int getMorseFreq();
+		void setMorseFreq(unsigned int morse_freq_hz);
 		void morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]);
 		uint8_t morseLookup(char letter);
         bool waitForChannel(long timeout, long breakwindow, int setRSSI);

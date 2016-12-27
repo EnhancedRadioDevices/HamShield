@@ -7,6 +7,16 @@
  * into the HamShield RF jack. Connect the Arduino to wall 
  * power and then to your computer via USB. Issue commands 
  * via the KISS equipment.
+ *
+ * To use the KISS example with YAAC:
+ * 1. open the configure YAAC wizard
+ * 2. follow the prompts and enter in your details until you get to the "Add and Configure Interfaces" window
+ * 3. Choose "Add Serial KISS TNC Port"
+ * 4. Choose the COM port for your Arduino
+ * 5. set baud rate to 9600 (default)
+ * 6. set it to KISS-only: with no command to enter KISS mode (just leave the box empty)
+ * 7. Use APRS protocol (default)
+ * 8. hit the next button and follow directions to finish configuration
 */
 
 #include <HamShield.h>

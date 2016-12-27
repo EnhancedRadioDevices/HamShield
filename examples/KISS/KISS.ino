@@ -11,12 +11,14 @@
 
 #include <HamShield.h>
 #include <KISS.h>
+#include <DDS.h>
 #include <packet.h>
+#include <avr/wdt.h>
 
 HamShield radio;
 DDS dds;
-KISS kiss(&Serial, &radio, &dds);
 AFSK afsk;
+KISS kiss(&Serial, &radio, &dds, &afsk);
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -32,27 +34,44 @@ void setup() {
   
   // set up the reset control pin
   pinMode(RESET_PIN, OUTPUT);
-  digitalWrite(RESET_PIN, LOW);
+  digitalWrite(RESET_PIN, HIGH);
   
   Serial.begin(9600);
   
-  while (digitalRead(SWITCH_PIN));
-  
-  // let the AU ot of reset
-  digitalWrite(RESET_PIN, HIGH);
-  
   radio.initialize();
-  radio.setSQOff();
+  //radio.setSQOff();
+  radio.setVolume1(0xFF);
+  radio.setVolume2(0xFF);
+  radio.setSQHiThresh(-100);
+  radio.setSQLoThresh(-100);
+  radio.setSQOn();
   radio.frequency(144390);
 
   dds.start();
   afsk.start(&dds);
+  delay(100);
+  radio.setModeReceive();
 }
 
 void loop() {
   kiss.loop();
 }
 
+ISR(TIMER2_OVF_vect) {
+  TIFR2 = _BV(TOV2);
+  static uint8_t tcnt = 0;
+  if(++tcnt == 8) {
+    dds.clockTick();
+    tcnt = 0;
+  }
+}
+
 ISR(ADC_vect) {
-  kiss.isr();
+  static uint8_t tcnt = 0;
+  TIFR1 = _BV(ICF1); // Clear the timer flag
+  dds.clockTick();
+  if(++tcnt == 1) {
+    afsk.timer();
+    tcnt = 0;
+  }
 }

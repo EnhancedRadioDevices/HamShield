@@ -28,8 +28,8 @@ Power level    P<level>;   Set the power amp level, 0 = lowest, 15 = highest    
 Enable Offset  R<state>;   1 turns on repeater offset mode, 0 turns off repeater offset mode                                                                            No
 Squelch        S<level>;   Set the squelch level                                                                                                                        No
 TX Offset      T<freq>;    The absolute frequency of the repeater offset to transmit on in KHz                                                                          No
-RSSI           ?           Respond with the current receive level in - dBm (no sign provided on numerical response)                                                     No
-Voice Level    ^           Respond with the current voice level (VSSI)
+RSSI           ?;          Respond with the current receive level in - dBm (no sign provided on numerical response)                                                     No
+Voice Level    ^;          Respond with the current voice level (VSSI)
 
 
 Responses:

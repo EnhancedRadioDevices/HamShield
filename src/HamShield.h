@@ -255,7 +255,10 @@ class HamShield {
         HamShield();
         HamShield(uint8_t cs_pin);
 
-        void initialize();
+        void initialize();  // defaults to 12.5kHz
+		void initialize(bool narrowBand); // select 12.5kHz if true or 25kHz if false
+		void setupWideBand();
+		void setupNarrowBand();
         bool testConnection();
         
         // read control reg

@@ -151,10 +151,19 @@ HamShield::HamShield(uint8_t cs_pin) {
 	digitalWrite(DAT, HIGH);
 }
 
+
+
 /** Power on and prepare for general usage.
  * 
  */
 void HamShield::initialize() {  
+	initialize(true);
+}
+
+/** Power on and prepare for general usage.
+ * 
+ */
+void HamShield::initialize(bool narrowBand) {  
    // Note: these initial settings are for UHF 12.5kHz channel
    // see the A1846S register table and initial settings for more info
    
@@ -183,7 +192,99 @@ void HamShield::initialize() {
 	tx_data = 0x0AF2; //
     HSwriteWord(devAddr, 0x33, tx_data); // agc number
 	
-	// AGC table
+	tx_data = 0x067F; //0x0601; //0x470F;
+    HSwriteWord(devAddr, 0x41, tx_data); // voice gain tx [6:0]
+	tx_data = 0x02FF; // using 0x04FF to avoid tx voice delay
+    HSwriteWord(devAddr, 0x44, tx_data); // tx gain [11:8]
+	tx_data = 0x7F2F;
+    HSwriteWord(devAddr, 0x47, tx_data);
+	tx_data = 0x2C62;
+    HSwriteWord(devAddr, 0x4F, tx_data);
+	tx_data = 0x0094;
+    HSwriteWord(devAddr, 0x53, tx_data); // compressor update time (bits 6:0, 5.12ms per unit)
+	tx_data = 0x2A18;
+    HSwriteWord(devAddr, 0x54, tx_data);
+	tx_data = 0x0081;
+    HSwriteWord(devAddr, 0x55, tx_data);
+	tx_data = 0x0B22;
+    HSwriteWord(devAddr, 0x56, tx_data); // sq detect time
+	tx_data = 0x1C00;
+    HSwriteWord(devAddr, 0x57, tx_data);
+	tx_data = 0x800D;
+    HSwriteWord(devAddr, 0x58, tx_data); 
+	tx_data = 0x0EDD;
+    HSwriteWord(devAddr, 0x5A, tx_data); // sq and noise detect times
+	tx_data = 0x3FFF;
+    HSwriteWord(devAddr, 0x63, tx_data); // pre-emphasis bypass
+	
+	// calibration
+	tx_data = 0x00A4;
+    HSwriteWord(devAddr, 0x30, tx_data);
+	delay(100);
+	tx_data = 0x00A6;
+    HSwriteWord(devAddr, 0x30, tx_data);
+	delay(100);
+	tx_data = 0x0006;
+    HSwriteWord(devAddr, 0x30, tx_data);
+	delay(100);
+
+
+	// set band width
+	if (narrowBand) {
+		setupNarrowBand();
+	} else {
+		setupWideBand();
+	}
+	
+    delay(100);
+	
+	/*
+    // setup default values
+    frequency(446000);
+    //setVolume1(0xF);
+    //setVolume2(0xF);
+    setModeReceive();
+    setTxSourceMic();
+	setRfPower(0);
+    setSQLoThresh(80);
+    setSQOn();
+	*/
+}
+
+
+/** Set up the AU1846 in Narrow Band mode (12.5kHz).
+ */
+void HamShield::setupNarrowBand() {
+    uint16_t tx_data;
+	// setup for 12.5kHz channel width
+	tx_data = 0x3D37;
+    HSwriteWord(devAddr, 0x11, tx_data);	
+	tx_data = 0x0100;
+    HSwriteWord(devAddr, 0x12, tx_data);	
+	tx_data = 0x1100;
+    HSwriteWord(devAddr, 0x15, tx_data);
+	tx_data = 0x4495;
+    HSwriteWord(devAddr, 0x32, tx_data); // agc target power [11:6]
+	tx_data = 0x2B8E;
+    HSwriteWord(devAddr, 0x34, tx_data);
+	tx_data = 0x40C3;
+    HSwriteWord(devAddr, 0x3A, tx_data); // modu_det_sel sq setting
+	tx_data = 0x0407;
+    HSwriteWord(devAddr, 0x3C, tx_data); // pk_det_th sq setting [8:7]
+	tx_data = 0x28D0;
+    HSwriteWord(devAddr, 0x3F, tx_data); // rssi3_th sq setting
+	tx_data = 0x203E;
+    HSwriteWord(devAddr, 0x48, tx_data);
+	tx_data = 0x1BB7;
+    HSwriteWord(devAddr, 0x60, tx_data);
+	tx_data = 0x0A10; // use 0x1425 if there's an LNA
+    HSwriteWord(devAddr, 0x62, tx_data);
+	tx_data = 0x2494;
+    HSwriteWord(devAddr, 0x65, tx_data);
+	tx_data = 0xEB2E;
+    HSwriteWord(devAddr, 0x66, tx_data);
+
+		// AGC table
 	tx_data = 0x0001;
     HSwriteWord(devAddr, 0x7F, tx_data);
 	tx_data = 0x000C;
@@ -224,84 +325,80 @@ void HamShield::initialize() {
     HSwriteWord(devAddr, 0x7F, tx_data);
 	// end AGC table
 
-	tx_data = 0x067F; //0x0601; //0x470F;
-    HSwriteWord(devAddr, 0x41, tx_data); // voice gain tx [6:0]
-	tx_data = 0x02FF; // using 0x04FF to avoid tx voice delay
-    HSwriteWord(devAddr, 0x44, tx_data); // tx gain [11:8]
-	tx_data = 0x7F2F;
-    HSwriteWord(devAddr, 0x47, tx_data);
-	tx_data = 0x2C62;
-    HSwriteWord(devAddr, 0x4F, tx_data);
-	tx_data = 0x0094;
-    HSwriteWord(devAddr, 0x53, tx_data); // compressor update time (bits 6:0, 5.12ms per unit)
-	tx_data = 0x2A18;
-    HSwriteWord(devAddr, 0x54, tx_data);
-	tx_data = 0x0081;
-    HSwriteWord(devAddr, 0x55, tx_data);
-	tx_data = 0x0B22;
-    HSwriteWord(devAddr, 0x56, tx_data); // sq detect time
-	tx_data = 0x1C00;
-    HSwriteWord(devAddr, 0x57, tx_data);
-	tx_data = 0x800D;
-    HSwriteWord(devAddr, 0x58, tx_data); 
-	tx_data = 0x0EDD;
-    HSwriteWord(devAddr, 0x5A, tx_data); // sq and noise detect times
-	tx_data = 0x3FFF;
-    HSwriteWord(devAddr, 0x63, tx_data); // pre-emphasis bypass
-	
-	// calibration
-	tx_data = 0x00A4;
-    HSwriteWord(devAddr, 0x30, tx_data);
-	delay(100);
-	tx_data = 0x00A6;
-    HSwriteWord(devAddr, 0x30, tx_data);
-	delay(100);
-	tx_data = 0x0006;
-    HSwriteWord(devAddr, 0x30, tx_data);
-	delay(100);
+}
 
-
-	// setup for 12.5kHz channel width
+/** Set up the AU1846 in Wide Band mode (25kHz).
+ */
+void HamShield::setupWideBand() {
+    uint16_t tx_data;
+	// setup for 25kHz channel width
 	tx_data = 0x3D37;
     HSwriteWord(devAddr, 0x11, tx_data);	
 	tx_data = 0x0100;
     HSwriteWord(devAddr, 0x12, tx_data);	
-	tx_data = 0x1100;
+	tx_data = 0x1F00;
     HSwriteWord(devAddr, 0x15, tx_data);
-	tx_data = 0x4495;
+	tx_data = 0x7564;
     HSwriteWord(devAddr, 0x32, tx_data); // agc target power [11:6]
 	tx_data = 0x2B8E;
     HSwriteWord(devAddr, 0x34, tx_data);
-	tx_data = 0x40C3;
+	tx_data = 0x44C3;
     HSwriteWord(devAddr, 0x3A, tx_data); // modu_det_sel sq setting
-	tx_data = 0x0407;
+	tx_data = 0x1930;
     HSwriteWord(devAddr, 0x3C, tx_data); // pk_det_th sq setting [8:7]
-	tx_data = 0x28D0;
+	tx_data = 0x29D2;
     HSwriteWord(devAddr, 0x3F, tx_data); // rssi3_th sq setting
-	tx_data = 0x203E;
+	tx_data = 0x21C0;
     HSwriteWord(devAddr, 0x48, tx_data);
-	tx_data = 0x1BB7;
+	tx_data = 0x101E;
     HSwriteWord(devAddr, 0x60, tx_data);
-	tx_data = 0x0A10; // use 0x1425 if there's an LNA
+	tx_data = 0x3767; // use 0x1425 if there's an LNA
     HSwriteWord(devAddr, 0x62, tx_data);
-	tx_data = 0x2494;
+	tx_data = 0x248A;
     HSwriteWord(devAddr, 0x65, tx_data);
-	tx_data = 0xEB2E;
-    HSwriteWord(devAddr, 0x66, tx_data);
-	
-    delay(100);
-	
-	/*
-    // setup default values
-    frequency(446000);
-    //setVolume1(0xF);
-    //setVolume2(0xF);
-    setModeReceive();
-    setTxSourceMic();
-	setRfPower(0);
-    setSQLoThresh(80);
-    setSQOn();
-	*/
+	tx_data = 0xFFAE;
+    HSwriteWord(devAddr, 0x66, tx_data);	
+
+		// AGC table
+	tx_data = 0x0001;
+    HSwriteWord(devAddr, 0x7F, tx_data);
+	tx_data = 0x000C;
+    HSwriteWord(devAddr, 0x05, tx_data);
+	tx_data = 0x0024;
+    HSwriteWord(devAddr, 0x06, tx_data);
+	tx_data = 0x0214;
+    HSwriteWord(devAddr, 0x07, tx_data);
+	tx_data = 0x0224;
+    HSwriteWord(devAddr, 0x08, tx_data);
+	tx_data = 0x0314;
+    HSwriteWord(devAddr, 0x09, tx_data);
+	tx_data = 0x0324;
+    HSwriteWord(devAddr, 0x0A, tx_data);
+	tx_data = 0x0344;
+    HSwriteWord(devAddr, 0x0B, tx_data);
+	tx_data = 0x0384;
+    HSwriteWord(devAddr, 0x0C, tx_data);
+	tx_data = 0x1384;
+    HSwriteWord(devAddr, 0x0D, tx_data);
+	tx_data = 0x1B84;
+    HSwriteWord(devAddr, 0x0E, tx_data);
+	tx_data = 0x3F84;
+    HSwriteWord(devAddr, 0x0F, tx_data);
+	tx_data = 0xE0EB;
+    HSwriteWord(devAddr, 0x12, tx_data);
+	tx_data = 0xF2FE;
+    HSwriteWord(devAddr, 0x13, tx_data);
+	tx_data = 0x0A16;
+    HSwriteWord(devAddr, 0x14, tx_data);
+	tx_data = 0x2424;
+    HSwriteWord(devAddr, 0x15, tx_data);
+	tx_data = 0x2424;
+    HSwriteWord(devAddr, 0x16, tx_data);
+	tx_data = 0x2424;
+    HSwriteWord(devAddr, 0x17, tx_data);
+	tx_data = 0x0000;
+    HSwriteWord(devAddr, 0x7F, tx_data);
+	// end AGC table
 }
 
 /** Verify the I2C connection.

@@ -855,20 +855,20 @@ bool HamShield::getSQState(){
 void HamShield::setSQHiThresh(int16_t sq_hi_threshold){
 	// Sq detect high th, rssi_cmp will be 1 when rssi>th_h_sq, unit 1dB
 	uint16_t sq = 137 + sq_hi_threshold;
-	HSwriteWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, sq);
+	HSwriteBitsW(devAddr, A1846S_SQ_OPEN_THRESH_REG, A1846S_SQ_OPEN_THRESH_BIT, A1846S_SQ_OPEN_THRESH_LENGTH, sq);
 } 
 int16_t HamShield::getSQHiThresh(){
-	HSreadWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, radio_i2c_buf);
+	HSreadBitsW(devAddr, A1846S_SQ_OPEN_THRESH_REG, A1846S_SQ_OPEN_THRESH_BIT, A1846S_SQ_OPEN_THRESH_LENGTH, radio_i2c_buf);
 	
 	return radio_i2c_buf[0] - 137;
 }
 void HamShield::setSQLoThresh(int16_t sq_lo_threshold){
 	// Sq detect low th, rssi_cmp will be 0 when rssi<th_l_sq && time delay meet, unit 1 dB
 	uint16_t sq = 137 + sq_lo_threshold;
-	HSwriteWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, sq);
+	HSwriteBitsW(devAddr, A1846S_SQ_SHUT_THRESH_REG, A1846S_SQ_SHUT_THRESH_BIT, A1846S_SQ_SHUT_THRESH_LENGTH, sq);
 }
 int16_t HamShield::getSQLoThresh(){
-	HSreadWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, radio_i2c_buf);
+	HSreadBitsW(devAddr, A1846S_SQ_SHUT_THRESH_REG, A1846S_SQ_SHUT_THRESH_BIT, A1846S_SQ_SHUT_THRESH_LENGTH, radio_i2c_buf);
 	
 	return radio_i2c_buf[0] - 137;
 }

@@ -42,7 +42,7 @@
 #define A1846S_FM_DEV_REG           0x43    // register holds fm deviation settings
 #define A1846S_RX_VOLUME_REG        0x44    // register holds RX volume settings
 #define A1846S_SUBAUDIO_REG         0x45    // sub audio register
-#define A1846S_SQ_OPEN_THRESH_REG   0x48    // see sq
+#define A1846S_SQ_OPEN_THRESH_REG   0x49    // see sq
 #define A1846S_SQ_SHUT_THRESH_REG   0x49    // see sq
 #define A1846S_CTCSS_FREQ_REG       0x4A    // ctcss_freq<15:0>
 #define A1846S_CDCSS_CODE_HI_REG    0x4B    // cdcss_code<23:16>
@@ -154,13 +154,13 @@
 #define A1846S_C_MODE_BIT          2  // c_mode<2:0>
 #define A1846S_C_MODE_LENGTH       3
 
-// Bitfields for A1846S_SQ_THRESH_REG
-#define A1846S_SQ_OPEN_THRESH_BIT     9  // sq open threshold <9:0>
-#define A1846S_SQ_OPEN_THRESH_LENGTH 10
+// Bitfields for A1846S_SQ_OPEN_THRESH_REG
+#define A1846S_SQ_OPEN_THRESH_BIT    13 // sq open threshold <13:7>
+#define A1846S_SQ_OPEN_THRESH_LENGTH 7
 
 // Bitfields for A1846S_SQ_SHUT_THRESH_REG
-#define A1846S_SQ_SHUT_THRESH_BIT     9  // sq shut threshold <9:0>
-#define A1846S_SQ_SHUT_THRESH_LENGTH 10
+#define A1846S_SQ_SHUT_THRESH_BIT    6  // sq shut threshold <6:0>
+#define A1846S_SQ_SHUT_THRESH_LENGTH 7
 
 // Bitfields for A1846S_SQ_OUT_SEL_REG
 #define A1846S_SQ_OUT_SEL_BIT      7  // sq_out_sel

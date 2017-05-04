@@ -1060,6 +1060,10 @@ uint16_t HamShield::getGpioMode(uint16_t gpio){
     return radio_i2c_buf[0];
 }
 
+void HamShield::setGpios(uint16_t mode){
+    HSwriteWord(devAddr, A1846S_GPIO_MODE_REG, mode);
+}
+
 uint16_t HamShield::getGpios(){
 	HSreadWord(devAddr, A1846S_GPIO_MODE_REG, radio_i2c_buf);
     return radio_i2c_buf[0];

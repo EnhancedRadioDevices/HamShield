@@ -440,6 +440,7 @@ class HamShield {
 		void setGpioLow(uint16_t gpio);
 		void setGpioHi(uint16_t gpio);
 		uint16_t getGpioMode(uint16_t gpio);
+		void setGpios(uint16_t mode);
 		uint16_t getGpios();
 		
 		// Int

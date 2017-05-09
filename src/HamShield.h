@@ -47,6 +47,7 @@
 #define A1846S_CTCSS_FREQ_REG       0x4A    // ctcss_freq<15:0>
 #define A1846S_CDCSS_CODE_HI_REG    0x4B    // cdcss_code<23:16>
 #define A1846S_CDCSS_CODE_LO_REG    0x4C    // cdccs_code<15:0>
+#define A1846S_CTCSS_FREQ_PRG       0x4e    // copies CTCSS value from A1846S_CTCSS_FREQ_REG into CTCSS encoder
 #define A1846S_SQ_OUT_SEL_REG       0x54    // see sq
 #define A1846S_EMPH_FILTER_REG      0x58
 #define A1846S_FLAG_REG             0x5C    // holds flags for different statuses

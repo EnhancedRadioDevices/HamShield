@@ -1,4 +1,4 @@
-// HamShield library collection
+﻿// HamShield library collection
 // Based on Programming Manual rev. 2.0, 5/19/2011 (RM-MPU-6000A-00)
 // 11/22/2013 by Morgan Redfield <redfieldm@gmail.com>
 // 04/26/2015 various changes Casey Halverson <spaceneedle@gmail.com>
@@ -105,11 +105,11 @@ const uint16_t asciiMorseProgmem[] PROGMEM = {
 };
 #endif // MORSE_TABLE_PROGMEM
 
-/* 2200 Hz */
+/* 2200 Hz -- This lookup table should be deprecated */
 
 const unsigned char AFSK_mark[] PROGMEM = { 154, 249, 91, 11, 205, 216, 25, 68, 251, 146, 0, 147, 250, 68, 24, 218, 203, 13, 88, 254, 128, 1, 167, 242, 52, 37, 231, 186, 5, 108, 255, 108, 5, 186, 231, 37, 52, 242, 167, 1, 128, 254, 88, 13, 203, 218, 24, 69, 250, 147, 0, 147, 250, 69, 24, 218, 203, 13, 88, 255, 127, 2, 165, 245, 48 };
 
-/* 1200 Hz */
+/* 1200 Hz -- This lookup table should be deprecated */
 
 const unsigned char AFSK_space[] PROGMEM = { 140, 228, 250, 166, 53, 0, 53, 166, 249, 230, 128, 24, 7, 88, 203, 255, 203, 88, 7, 24, 128, 230, 249, 167, 53, 0, 53, 167, 249, 230, 128, 24, 6, 88, 202, 255, 202, 88, 6, 24, 127, 231, 249, 167, 52, 0, 52, 167, 248, 231, 127, 25, 6, 89, 202, 255, 202, 89, 6, 25, 127, 231, 248, 167, 53, 0, 54, 165, 251, 227, 133, 14}; 
 
@@ -672,6 +672,35 @@ uint16_t HamShield::getPABiasVoltage(){
 }
 */
 // Subaudio settings
+
+
+// recommended function for placing CTCSS tone on channel -- schedule remainder for deprecation
+
+
+// ctcss freq encoder
+void HamShield::setCtcssEncoder(float freq) {
+       int dfreq = freq * 100;   // Convert float into whole number (ctcss freq * 100)
+        setCtcssFreq(dfreq);     // program CTCSS frequency buffer  
+        HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 10, 1);    // program CTCSS frequency buffer into CTCSS encoder (step 1)
+        HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 9, 1);     // program CTCSS frequency buffer into CTCSS encoder (step 2) 
+}
+
+// recommended function for detecting (and requiring) CTCSS to be on channel before audio is unmuted -- schedule remainder for deprecation
+
+// ctcss freq decoder
+void HamShield::setCtcssDecoder(float freq) {
+       int dfreq = freq * 100;   // Convert float into whole number (ctcss freq * 100)
+        setCtcssFreq(dfreq);     // program CTCSS frequency buffer  
+        HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 10, 1);    // program CTCSS frequency buffer into CTCSS encoder (step 1)
+        HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 9, 1);     // program CTCSS frequency buffer into CTCSS encoder (step 2) 
+}
+
+
+
+
+
+
+
 // TX and RX code
 /*
 	Set code mode:

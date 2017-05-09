@@ -2,7 +2,7 @@
 // Based on Programming Manual rev. 2.0, 5/19/2011 (RM-MPU-6000A-00)
 // 11/22/2013 by Morgan Redfield <redfieldm@gmail.com>
 // 04/26/2015 various changes Casey Halverson <spaceneedle@gmail.com>
-
+// 05/08/2017 CTCSS code added
 
 
 #ifndef _HAMSHIELD_H_
@@ -310,6 +310,15 @@ class HamShield {
 		uint16_t getPABiasVoltage();
 		
 		// Subaudio settings
+		
+                // Recommended user function for setting and receiving CTCSS does
+		// TODO: set others to private and/or deprecate 
+
+                void setCtcssEncoder(float freq);   // generate sub audio tone on channel when transmitting
+                void setCtcssDecoder(float freq);   // unmute audio on tone present when receiving channel
+
+
+
 		
 		//   Ctcss/cdcss mode sel
 		//      x00=disable,

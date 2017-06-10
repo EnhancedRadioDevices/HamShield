@@ -36,6 +36,7 @@ void setup() {
   radio.initialize();
   radio.setRfPower(0);
   radio.frequency(146520);
+  radio.setModeReceive();
 }
 
 void loop() {

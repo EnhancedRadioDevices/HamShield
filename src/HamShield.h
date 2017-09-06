@@ -53,14 +53,9 @@
 #define A1846S_FLAG_REG             0x5C    // holds flags for different statuses
 #define A1846S_RSSI_REG             0x1B    // holds RSSI (unit 1dB)
 #define A1846S_VSSI_REG             0x1A    // holds VSSI (unit mV)
-#define A1846S_DTMF_CTL_REG         0x63    // see dtmf
-#define A1846S_DTMF_C01_REG         0x66    // holds frequency value for c0 and c1
-#define A1846S_DTMF_C23_REG         0x67    // holds frequency value for c2 and c3
-#define A1846S_DTMF_C45_REG         0x68    // holds frequency value for c4 and c5
-#define A1846S_DTMF_C67_REG         0x69    // holds frequency value for c6 and c7
-#define A1846S_DTMF_RX_REG          0x6C    // received dtmf signal
 
-// NOTE: could add registers and bitfields for dtmf tones, is this necessary?
+#define A1846S_DTMF_ENABLE_REG      0x7A    // holds dtmf_enable
+#define A1846S_DTMF_CODE_REG        0x7E    // holds dtmf_sample and dtmf_code
 
 
 // Device Bit Fields
@@ -116,7 +111,6 @@
 #define A1846S_CSS_CMP_INT_BIT          9  // css_cmp_uint16_t enable
 #define A1846S_RXON_RF_INT_BIT          8  // rxon_rf_uint16_t enable
 #define A1846S_TXON_RF_INT_BIT          7  // txon_rf_uint16_t enable
-#define A1846S_DTMF_IDLE_INT_BIT        6  // dtmf_idle_uint16_t enable
 #define A1846S_CTCSS_PHASE_INT_BIT      5  // ctcss phase shift detect uint16_t enable
 #define A1846S_IDLE_TIMEOUT_INT_BIT     4  // idle state time out uint16_t enable
 #define A1846S_RXON_RF_TIMeOUT_INT_BIT  3  // rxon_rf timerout uint16_t enable
@@ -170,7 +164,6 @@
 #define A1846S_EMPH_FILTER_EN      3
 
 // Bitfields for A1846S_FLAG_REG
-#define A1846S_DTMF_IDLE_FLAG_BIT 12  // dtmf idle flag
 #define A1846S_RXON_RF_FLAG_BIT   10  // 1 when rxon is enabled
 #define A1846S_TXON_RF_FLAG_BIT    9  // 1 when txon is enabled
 #define A1846S_INVERT_DET_FLAG_BIT 7  // ctcss phase shift detect
@@ -186,48 +179,14 @@
 #define A1846S_VSSI_BIT           14  // voice signal strength indicator <14:0> (unit mV)
 #define A1846S_VSSI_LENGTH        15
 
-// Bitfields for A1846S_DTMF_CTL_REG
-#define A1846S_DTMF_MODE_BIT       9  // 
-#define A1846S_DTMF_MODE_LENGTH    2
-#define A1846S_DTMF_EN_BIT         8  // enable dtmf
-#define A1846S_DTMF_TIME1_BIT      7  // dtmf time 1 <3:0>
-#define A1846S_DTMF_TIME1_LENGTH   4
-#define A1846S_DTMF_TIME2_BIT      3  // dtmf time 2 <3:0>
-#define A1846S_DTMF_TIME2_LENGTH   4
+// Bitfields for A1846S_DTMF_ENABLE_REG
+#define A1846S_DTMF_ENABLE_BIT    15
 
-// Bitfields for A1846S_DTMF_RX_REG
-#define A1846S_DTMF_INDEX_BIT         10  // dtmf index <5:3> - tone 1 detect index, <2:0> - tone 2 detect index
-#define A1846S_DTMF_INDEX_LENGTH       6
-#define A1846S_DTMF_TONE1_IND_BIT     10
-#define A1846S_DTMF_TONE1_IND_LENGTH   3
-#define A1846S_DTMF_TONE2_IND_BIT      7
-#define A1846S_DTMF_TONE2_IND_LENGTH   3
-#define A1846S_DTMF_FLAG_BIT           4
-#define A1846S_DTMF_CODE_BIT           3  // dtmf code out <3:0>
-#define A1846S_DTMF_CODE_LENGTH        4
-// dtmf code out
-//  1:f0+f4, 2:f0+f5, 3:f0+f6, A:f0+f7,
-//  4:f1+f4, 5:f1+f5, 6:f1+f6, B:f1+f7,
-//  7:f2+f4, 8:f2+f5, 9:f2+f6, C:f2+f7,
-//  E(*):f3+f4, 0:f3+f5, F(#):f3+f6, D:f3+f7
+// Bitfields for A1846S_DTMF_SAMPLE_REG
+#define A1846S_DTMF_SAMPLE_BIT    4
+#define A1846S_DTMF_CODE_BIT      3
+#define A1846S_DTMF_CODE_LEN      4
 
-// Bitfields for DTMF registers
-#define A1846S_DTMF_C0_BIT             15
-#define A1846S_DTMF_C0_LENGTH           8
-#define A1846S_DTMF_C1_BIT              7
-#define A1846S_DTMF_C1_LENGTH           8
-#define A1846S_DTMF_C2_BIT             15
-#define A1846S_DTMF_C2_LENGTH           8
-#define A1846S_DTMF_C3_BIT              7
-#define A1846S_DTMF_C3_LENGTH           8
-#define A1846S_DTMF_C4_BIT             15
-#define A1846S_DTMF_C4_LENGTH           8
-#define A1846S_DTMF_C5_BIT              7
-#define A1846S_DTMF_C5_LENGTH           8
-#define A1846S_DTMF_C6_BIT             15
-#define A1846S_DTMF_C6_LENGTH           8
-#define A1846S_DTMF_C7_BIT              7
-#define A1846S_DTMF_C7_LENGTH           8
 
 // SSTV VIS Codes
 
@@ -414,23 +373,17 @@ class HamShield {
 		uint16_t getShiftSelect();
 		
 		// DTMF
-		void setDTMFC0(uint16_t freq);
-		uint16_t getDTMFC0();
-		void setDTMFC1(uint16_t freq);
-		uint16_t getDTMFC1();	
-		void setDTMFC2(uint16_t freq);
-		uint16_t getDTMFC2();
-		void setDTMFC3(uint16_t freq);
-		uint16_t getDTMFC3();
-		void setDTMFC4(uint16_t freq);
-		uint16_t getDTMFC4();
-		void setDTMFC5(uint16_t freq);
-		uint16_t getDTMFC5();
-		void setDTMFC6(uint16_t freq);
-		uint16_t getDTMFC6();
-		void setDTMFC7(uint16_t freq);
-		uint16_t getDTMFC7();
-		
+		//   Reading a single DTMF code:
+		//     enableDTMFReceive()
+		//     while (getDTMFSample() == 0) { delay(10); }
+		//     uint16_t code = getDTMFCode();
+		//     while (getDTMFSample() == 1) { delay(10); }
+		//     disableDTMF();
+		void enableDTMFReceive();
+		uint16_t disableDTMF();
+		uint16_t getDTMFSample();
+		uint16_t getDTMFCode();
+
 		// TX FM deviation
 		void setFMVoiceCssDeviation(uint16_t deviation);
 		uint16_t getFMVoiceCssDeviation();
@@ -472,8 +425,6 @@ class HamShield {
 		// Read Only Status Registers
 		int16_t readRSSI();
 		uint16_t readVSSI();
-		uint16_t readDTMFIndex(); // may want to split this into two (index1 and index2)
-		uint16_t readDTMFCode();
 
         // set output power of radio
         void setRfPower(uint8_t pwr);

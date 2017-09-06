@@ -216,7 +216,7 @@ void HamShield::initialize(bool narrowBand) {
     HSwriteWord(devAddr, 0x5A, tx_data); // sq and noise detect times
 	tx_data = 0x3FFF;
     HSwriteWord(devAddr, 0x63, tx_data); // pre-emphasis bypass
-	
+
 	// calibration
 	tx_data = 0x00A4;
     HSwriteWord(devAddr, 0x30, tx_data);
@@ -973,62 +973,34 @@ uint16_t HamShield::getShiftSelect(){
 }
 
 // DTMF
-void HamShield::setDTMFC0(uint16_t freq) {
-    HSwriteBitsW(devAddr, A1846S_DTMF_C01_REG, A1846S_DTMF_C0_BIT, A1846S_DTMF_C0_LENGTH, freq);
+void HamShield::enableDTMFReceive(){
+  uint16_t tx_data;
+
+  tx_data = 0x2264;
+  HSwriteWord(devAddr, 0x77, tx_data);
+  tx_data = 0xD984;
+  HSwriteWord(devAddr, 0x78, tx_data);
+  tx_data = 0x1E3C;
+  HSwriteWord(devAddr, 0x79, tx_data);
+
+  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, 7, 8, 0x18);
+  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 1, 1);
 }
-uint16_t HamShield::getDTMFC0() {
-    HSreadBitsW(devAddr, A1846S_DTMF_C01_REG, A1846S_DTMF_C0_BIT, A1846S_DTMF_C0_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
+
+uint16_t HamShield::disableDTMF(){
+  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 1, 0);
 }
-void HamShield::setDTMFC1(uint16_t freq) {
-    HSwriteBitsW(devAddr, A1846S_DTMF_C01_REG, A1846S_DTMF_C1_BIT, A1846S_DTMF_C1_LENGTH, freq);
+
+uint16_t HamShield::getDTMFSample(){
+  HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_SAMPLE_BIT, 1, radio_i2c_buf);
+  return radio_i2c_buf[0];
 }
-uint16_t HamShield::getDTMFC1()	 {
-    HSreadBitsW(devAddr, A1846S_DTMF_C01_REG, A1846S_DTMF_C1_BIT, A1846S_DTMF_C1_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
+
+uint16_t HamShield::getDTMFCode(){
+  HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_CODE_BIT, A1846S_DTMF_CODE_LEN, radio_i2c_buf);
+  return radio_i2c_buf[0];
 }
-void HamShield::setDTMFC2(uint16_t freq) {
-    HSwriteBitsW(devAddr, A1846S_DTMF_C23_REG, A1846S_DTMF_C2_BIT, A1846S_DTMF_C2_LENGTH, freq);
-}
-uint16_t HamShield::getDTMFC2() {
-    HSreadBitsW(devAddr, A1846S_DTMF_C23_REG, A1846S_DTMF_C2_BIT, A1846S_DTMF_C2_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
-}
-void HamShield::setDTMFC3(uint16_t freq) {
-    HSwriteBitsW(devAddr, A1846S_DTMF_C23_REG, A1846S_DTMF_C3_BIT, A1846S_DTMF_C3_LENGTH, freq);
-}
-uint16_t HamShield::getDTMFC3() {
-    HSreadBitsW(devAddr, A1846S_DTMF_C23_REG, A1846S_DTMF_C3_BIT, A1846S_DTMF_C3_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
-}
-void HamShield::setDTMFC4(uint16_t freq) {
-    HSwriteBitsW(devAddr, A1846S_DTMF_C45_REG, A1846S_DTMF_C4_BIT, A1846S_DTMF_C4_LENGTH, freq);
-}
-uint16_t HamShield::getDTMFC4() {
-    HSreadBitsW(devAddr, A1846S_DTMF_C45_REG, A1846S_DTMF_C4_BIT, A1846S_DTMF_C4_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
-}
-void HamShield::setDTMFC5(uint16_t freq) {
-    HSwriteBitsW(devAddr, A1846S_DTMF_C45_REG, A1846S_DTMF_C5_BIT, A1846S_DTMF_C5_LENGTH, freq);
-}
-uint16_t HamShield::getDTMFC5() {
-    HSreadBitsW(devAddr, A1846S_DTMF_C45_REG, A1846S_DTMF_C5_BIT, A1846S_DTMF_C5_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
-}
-void HamShield::setDTMFC6(uint16_t freq) {
-    HSwriteBitsW(devAddr, A1846S_DTMF_C67_REG, A1846S_DTMF_C6_BIT, A1846S_DTMF_C6_LENGTH, freq);
-}
-uint16_t HamShield::getDTMFC6() {
-    HSreadBitsW(devAddr, A1846S_DTMF_C67_REG, A1846S_DTMF_C6_BIT, A1846S_DTMF_C6_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
-}
-void HamShield::setDTMFC7(uint16_t freq) {
-    HSwriteBitsW(devAddr, A1846S_DTMF_C67_REG, A1846S_DTMF_C7_BIT, A1846S_DTMF_C7_LENGTH, freq);
-}
-uint16_t HamShield::getDTMFC7() {
-    HSreadBitsW(devAddr, A1846S_DTMF_C67_REG, A1846S_DTMF_C7_BIT, A1846S_DTMF_C7_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
-}
+
 
 // TX FM deviation
 void HamShield::setFMVoiceCssDeviation(uint16_t deviation){
@@ -1147,19 +1119,6 @@ uint16_t HamShield::readVSSI(){
 	HSreadWord(devAddr, A1846S_VSSI_REG, radio_i2c_buf);
 	
 	return radio_i2c_buf[0] & 0x7FF; // only need lowest 10 bits
-}
-uint16_t HamShield::readDTMFIndex(){
-// TODO: may want to split this into two (index1 and index2)
-    HSreadBitsW(devAddr, A1846S_DTMF_RX_REG, A1846S_DTMF_INDEX_BIT, A1846S_DTMF_INDEX_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
-} 
-uint16_t HamShield::readDTMFCode(){
-//  1:f0+f4, 2:f0+f5, 3:f0+f6, A:f0+f7,
-//  4:f1+f4, 5:f1+f5, 6:f1+f6, B:f1+f7,
-//  7:f2+f4, 8:f2+f5, 9:f2+f6, C:f2+f7,
-//  E(*):f3+f4, 0:f3+f5, F(#):f3+f6, D:f3+f7
-    HSreadBitsW(devAddr, A1846S_DTMF_RX_REG, A1846S_DTMF_CODE_BIT, A1846S_DTMF_CODE_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
 }
 
 

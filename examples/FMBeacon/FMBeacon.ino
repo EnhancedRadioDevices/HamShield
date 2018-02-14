@@ -1,5 +1,6 @@
 /* Hamshield
  * Example: Morse Code Beacon
+ * 
  * Test beacon will transmit and wait 30 seconds. 
  * Beacon will check to see if the channel is clear before it 
  * will transmit.
@@ -8,12 +9,8 @@
  * power and then to your computer via USB. After uploading 
  * this program to your Arduino, open the Serial Monitor to 
  * monitor the status of the beacon. To test, set a HandyTalkie 
- * to 438MHz. You should hear the message " KC7IBT HAMSHIELD"
+ * to 438MHz. You should hear the message " CALLSIGN HAMSHIELD" 
  * in morse code.
-
- * NOTE: Radio chip audio AGC too slow in responding to tones, 
- * worked around by playing a 6khz tone between actual dits/dahs.
- * Should work on adjusting AGC to not require this.
 */
 
 #define DDS_REFCLK_DEFAULT 9600
@@ -51,12 +48,15 @@ void setup() {
   
   // Tell the HamShield to start up
   radio.initialize();
+
+  // Set the transmit power level (0-8)
   radio.setRfPower(0);
-  
+
+  // Set the morse code characteristics
   radio.setMorseFreq(600);
   radio.setMorseDotMillis(100);
 
-  // Configure the HamShield to transmit and recieve on 446.000MHz
+  // Configure the HamShield to operate on 438.000MHz
   radio.frequency(438000);
   
   Serial.println("Radio Configured.");
@@ -74,7 +74,7 @@ void loop() {
     radio.setModeTransmit();
     
     // Send a message out in morse code
-    radio.morseOut(" KC7IBT HAMSHIELD");
+    radio.morseOut(" CALLSIGN HAMSHIELD");
     
     // We're done sending the message, set the radio back into recieve mode.
     radio.setModeReceive();
@@ -85,6 +85,6 @@ void loop() {
     Serial.println(radio.readRSSI());
   }
 
-  // Wait 10 seconds before we send our beacon again.
+  // Wait 30 seconds before we send our beacon again.
   delay(30000);
 }

@@ -8,8 +8,8 @@
  * power and then to your computer via USB. After uploading 
  * this program to your Arduino, open the Serial Monitor to 
  * monitor the status of the beacon. To test, set a HandyTalkie 
- * to 438MHz. You should hear the message " KC7IBT ARDUINO 
- * HAMSHIELD" in morse code.
+ * to 438MHz. You should hear the message " KC7IBT HAMSHIELD"
+ * in morse code.
 
  * NOTE: Radio chip audio AGC too slow in responding to tones, 
  * worked around by playing a 6khz tone between actual dits/dahs.
@@ -53,8 +53,8 @@ void setup() {
   radio.initialize();
   radio.setRfPower(0);
   
-  radio.setMorseFreq(400);
-  radio.setMorseDotMillis(200);
+  radio.setMorseFreq(600);
+  radio.setMorseDotMillis(100);
 
   // Configure the HamShield to transmit and recieve on 446.000MHz
   radio.frequency(438000);
@@ -74,20 +74,17 @@ void loop() {
     radio.setModeTransmit();
     
     // Send a message out in morse code
-    radio.morseOut(" KC7IBT ARDUINO HAMSHIELD");
+    radio.morseOut(" KC7IBT HAMSHIELD");
     
     // We're done sending the message, set the radio back into recieve mode.
     radio.setModeReceive();
     Serial.println("Done.");
-    
-    // Wait a second before we send our beacon again.
-    delay(1000);    
   } else {
     // If we get here, the channel is busy. Let's also print out the RSSI.
     Serial.print("The channel was busy. Waiting 10 seconds. RSSI: ");
     Serial.println(radio.readRSSI());
-    
-    // Wait 10 seconds and check the channel again.
-    delay(10000);
-  } 
+  }
+
+  // Wait 10 seconds before we send our beacon again.
+  delay(30000);
 }

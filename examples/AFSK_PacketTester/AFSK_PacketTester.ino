@@ -57,7 +57,6 @@ void setup() {
 }
 
 void loop() {
-  messagebuff = "KC7IBT,KC7IBT,:HAMSHIELD TEST";
   prepMessage();
   delay(10000);
 } 
@@ -65,17 +64,17 @@ void loop() {
 void prepMessage() { 
   radio.setModeTransmit();
   delay(500);
-  origin_call = messagebuff.substring(0,messagebuff.indexOf(','));                                          // get originating callsign
-  destination_call = messagebuff.substring(messagebuff.indexOf(',')+1,messagebuff.indexOf(',',messagebuff.indexOf(',')+1)); // get the destination call
-  textmessage = messagebuff.substring(messagebuff.indexOf(":")+1);
+  origin_call = "KC7IBT"; // get originating callsign
+  destination_call = "KC7IBT"; // get the destination call
+  textmessage = ":HAMSHIELD TEST";
   
-  Serial.print("From: "); Serial.print(origin_call); Serial.print(" To: "); Serial.println(destination_call); Serial.println("Text: "); Serial.println(textmessage);
+  Serial.print("From: "); Serial.print(origin_call); Serial.print(" To: "); Serial.println(destination_call); Serial.println("Text: "); Serial.print(textmessage);
 
   AFSK::Packet *packet = AFSK::PacketBuffer::makePacket(22 + 32);
 
   packet->start();
-  packet->appendCallsign(origin_call.c_str(),0);
-  packet->appendCallsign(destination_call.c_str(),15,true);   
+  packet->appendCallsign(destination_call.c_str(),0);
+  packet->appendCallsign(origin_call.c_str(),15,true);   
   packet->appendFCS(0x03);
   packet->appendFCS(0xf0);
   packet->print(textmessage);
@@ -84,17 +83,15 @@ void prepMessage() {
   bool ret = afsk.putTXPacket(packet);
 
   if(afsk.txReady()) {
-    Serial.println(F("txReady"));
+    Serial.println(F("TX"));
     radio.setModeTransmit();
     //delay(100);
     if(afsk.txStart()) {
-      Serial.println(F("txStart"));
     } else {
       radio.setModeReceive();
     }
   }
   // Wait 2 seconds before we send our beacon again.
-  Serial.println("tick");
   // Wait up to 2.5 seconds to finish sending, and stop transmitter.
   // TODO: This is hackery.
   for(int i = 0; i < 500; i++) {
@@ -102,7 +99,7 @@ void prepMessage() {
        break;
     delay(50);
   }
-  Serial.println("Done sending");
+  Serial.println("RX");
   radio.setModeReceive();
 }
  

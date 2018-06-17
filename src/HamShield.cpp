@@ -985,6 +985,20 @@ void HamShield::enableDTMFReceive(){
 
   HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, 7, 8, 0x18);
   HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 1, 1);
+  
+  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A18462_DTMF_DET_TIME_BIT, A18462_DTMF_DET_TIME_LEN, 24);
+  
+  // idle time
+  HSwriteBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DTMF_IDLE_TIME_BIT, A1846S_DTMF_IDLE_TIME_LEN, 50);
+  
+  HSreadWord(devAddr, 0x6F, radio_i2c_buf);
+  Serial.println(radio_i2c_buf[0]);
+  
+  // tx time
+  HSwriteBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DUALTONE_TX_TIME_BIT, A1846S_DUALTONE_TX_TIME_LEN, 50);
+  
+  HSwriteBitsW(devAddr, 0x57, 0, 1, 1); // send dtmf to speaker out
+  
 }
 
 uint16_t HamShield::disableDTMF(){
@@ -996,11 +1010,53 @@ uint16_t HamShield::getDTMFSample(){
   return radio_i2c_buf[0];
 }
 
+uint16_t HamShield::getDTMFTxActive(){
+  HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_TX_IDLE_BIT, 1, radio_i2c_buf);
+  return radio_i2c_buf[0];
+}
+
 uint16_t HamShield::getDTMFCode(){
   HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_CODE_BIT, A1846S_DTMF_CODE_LEN, radio_i2c_buf);
   return radio_i2c_buf[0];
 }
 
+void HamShield::setDTMFCode(uint16_t code){
+  uint16_t tone1, tone2;
+
+  /*
+   *     F4    F5    F6    F7
+   * F0   1     2     3     A
+   * F1   4     5     6     B
+   * F2   7     8     9     C
+   * F3   E(*)  0   F(#)    D
+   */
+
+  // determine tone 1
+  if ((code >= 1 && code <= 3) || code == 0xA) {
+      tone1 = 697*10;
+  } else if ((code >= 4 && code <= 6) || code == 0xB) {
+      tone1 = 770*10;
+  } else if ((code >= 7 && code <= 9) || code == 0xC) {
+      tone1 = 852*10;
+  } else if (code >= 0xD) {
+      tone1 = 941*10;
+  }
+
+  // determine tone 2
+  if (code == 1 || code == 4 || code == 7 || code == 0xE) {
+      tone2 = 1209*10;
+  } else if (code == 2 || code == 5 || code == 8 || code == 0) {
+      tone2 = 1336*10;
+  } else if (code == 3 || code == 6 || code == 9 || code == 0xF) {
+      tone2 = 1477*10;
+  } else if (code >= 0xA && code <= 0xD) {
+      tone2 = 1633*10;
+  }
+  
+  HSwriteWord(devAddr, A1846S_TONE1_FREQ, tone1);
+  HSwriteWord(devAddr, A1846S_TONE2_FREQ, tone2);
+
+}
 
 // TX FM deviation
 void HamShield::setFMVoiceCssDeviation(uint16_t deviation){

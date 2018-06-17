@@ -56,7 +56,9 @@
 
 #define A1846S_DTMF_ENABLE_REG      0x7A    // holds dtmf_enable
 #define A1846S_DTMF_CODE_REG        0x7E    // holds dtmf_sample and dtmf_code
-
+#define A1846S_TONE1_FREQ           0x35    // holds frequency of tone 1 (in 0.1Hz increments)
+#define A1846S_TONE2_FREQ           0x36    // holds frequency of tone 2 (in 0.1Hz increments)
+#define A1846S_DTMF_TIME_REG        0x7B    // holds time intervals for DTMF
 
 // Device Bit Fields
 
@@ -181,12 +183,20 @@
 
 // Bitfields for A1846S_DTMF_ENABLE_REG
 #define A1846S_DTMF_ENABLE_BIT    15
+#define A18462_DTMF_DET_TIME_BIT   7
+#define A18462_DTMF_DET_TIME_LEN   8
 
 // Bitfields for A1846S_DTMF_SAMPLE_REG
 #define A1846S_DTMF_SAMPLE_BIT    4
 #define A1846S_DTMF_CODE_BIT      3
 #define A1846S_DTMF_CODE_LEN      4
+#define A1846S_DTMF_TX_IDLE_BIT   5
 
+// Bitfields for A1846S_DTMF_TIME_REG
+#define A1846S_DUALTONE_TX_TIME_BIT 5 // duration of dual tone TX (via DTMF) in 2.5ms increments
+#define A1846S_DUALTONE_TX_TIME_LEN 6 
+#define A1846S_DTMF_IDLE_TIME_BIT 11
+#define A1846S_DTMF_IDLE_TIME_LEN 6
 
 // SSTV VIS Codes
 
@@ -379,10 +389,15 @@ class HamShield {
 		//     uint16_t code = getDTMFCode();
 		//     while (getDTMFSample() == 1) { delay(10); }
 		//     disableDTMF();
+        //   Writing a single DTMF code:
+        //     setDTMFCode(code); // code is a uint16_t from 0x0 to 0xF
 		void enableDTMFReceive();
 		uint16_t disableDTMF();
 		uint16_t getDTMFSample();
 		uint16_t getDTMFCode();
+        uint16_t getDTMFTxActive();
+        void setDTMFCode(uint16_t code);
+        
 
 		// TX FM deviation
 		void setFMVoiceCssDeviation(uint16_t deviation);
@@ -460,15 +475,6 @@ class HamShield {
 		
 		
 		
-		//TODO: split AFSK out so it can be left out
-		// AFSK routines
-		//bool AFSKStart();
-		//bool AFSKEnabled() { return afsk.enabled(); }
-		//bool AFSKStop();
-		//bool AFSKOut(const char *);
-       
-		//class AFSK afsk;
-       
     private:
         uint8_t devAddr;
         uint16_t radio_i2c_buf[4];

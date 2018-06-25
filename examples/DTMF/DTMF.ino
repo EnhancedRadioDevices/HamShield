@@ -1,20 +1,17 @@
 /* Hamshield
- * Example: HandyTalkie
- * This is a simple example to demonstrate HamShield receive
- * and transmit functionality.
+ * Example: DTMF
+ * This is a simple example to demonstrate how to ues DTMF.
+ *
  * Connect the HamShield to your Arduino. Screw the antenna 
- * into the HamShield RF jack. Plug a pair of headphones into 
- * the HamShield. Connect the Arduino to wall power and then 
- * to your computer via USB. After uploading this program to 
- * your Arduino, open the Serial Monitor. Press the button on 
- * the HamShield to begin setup. After setup is complete, type 
- * your desired Tx/Rx frequency, in hertz, into the bar at the 
- * top of the Serial Monitor and click the "Send" button. 
- * To test with another HandyTalkie (HT), key up on your HT 
- * and make sure you can hear it through the headphones 
- * attached to the HamShield. Key up on the HamShield by 
- * holding the button.
-*/
+ * into the HamShield RF jack. 
+ * Connect the Arduino to wall power and then to your computer
+ * via USB. After uploading this program to your Arduino, open
+ * the Serial Monitor. Press the button on the HamShield to 
+ * begin setup. After setup is complete, type in a DTMF value
+ * (0-9, A, B, C, D, *, #) and hit enter. The corresponding
+ * DTMF tones will be transmitted. The sketch will also print
+ * any received DTMF tones to the screen.
+**/
 
 #include <HamShield.h>
 
@@ -55,16 +52,13 @@ void setup() {
 
   // verify connection
   Serial.println("Testing device connections...");
-  Serial.println(radio.testConnection() ? "RDA radio connection successful" : "RDA radio connection failed");
+  Serial.println(radio.testConnection() ? "HamShield connection successful" : "HamShield connection failed");
 
   // initialize device
-  Serial.println("Initializing I2C devices...");
   radio.initialize(); // initializes automatically for UHF 12.5kHz channel
 
   Serial.println("setting default Radio configuration");
-  radio.dangerMode();
 
-  // set frequency
   Serial.println("setting squelch");
 
   radio.setSQHiThresh(-10);
@@ -76,20 +70,16 @@ void setup() {
   radio.setSQOn();
   //radio.setSQOff();
 
-  // set frequency
   Serial.println("changing frequency");
-  freq = 415000;
+  freq = 420000;
   radio.frequency(freq);
   
   // set RX volume to minimum to reduce false positives on DTMF rx
-  radio.setVolume1(0);
+  radio.setVolume1(4);
   radio.setVolume2(0);
   
   // set to receive
   radio.setModeReceive();
-  Serial.print("config register is: ");
-  Serial.println(radio.readCtlReg());
-  Serial.println(radio.readRSSI());
   
   radio.setRfPower(0);
     
@@ -97,7 +87,7 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
 
   // set up DTMF
-  radio.enableDTMFReceive(); // enabled DTMF
+  radio.enableDTMFReceive();
   Serial.println("ready");
 }
 
@@ -117,8 +107,11 @@ void loop() {
     } else {
       Serial.println('?'); // invalid code
     }
-    while (radio.getDTMFSample() == 1) {
-      // wait until this code is done
+    int j = 0;
+    while (j < 4) {
+      if (radio.getDTMFSample() == 0) {
+        j++;
+      }
       delay(10);
     }
   }
@@ -130,7 +123,7 @@ void loop() {
     if (c == '#') {
       code = 0xF;
     } else if (c=='*') {
-      code == 0xE;
+      code = 0xE;
     } else if (c >= 'A' && c <= 'D') {
       code = c - 'A' + 0xA;
     } else if (c >= '0' && c <= '9') {
@@ -141,24 +134,22 @@ void loop() {
       return;
     }
     
-    // set tones
-    radio.setDTMFCode(code);
     // start transmitting
+    radio.setDTMFCode(code); // set first
     radio.setTxSourceTones();
     radio.setModeTransmit();
-    // TODO: may need to set DTMF enable again
+    delay(300); // wait for TX to come to full power
     
-    // wait until done
+    // wait until ready
     while (radio.getDTMFTxActive() != 1) {
       // wait until we're ready for a new code
       delay(10);
     }
     radio.setDTMFCode(code);
-    // TODO: fix timing
-    //while (radio.getDTMFTxActive() != 0) {
+    while (radio.getDTMFTxActive() != 0) {
       // wait until this code is done
-      delay(1000);
-    //}
+      delay(10);
+    }
 
     // done with tone
     radio.setModeReceive();

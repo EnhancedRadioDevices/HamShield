@@ -983,7 +983,6 @@ void HamShield::enableDTMFReceive(){
   tx_data = 0x1E3C;
   HSwriteWord(devAddr, 0x79, tx_data);
 
-  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, 7, 8, 0x18);
   HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 1, 1);
   
   HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A18462_DTMF_DET_TIME_BIT, A18462_DTMF_DET_TIME_LEN, 24);
@@ -991,13 +990,13 @@ void HamShield::enableDTMFReceive(){
   // idle time
   HSwriteBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DTMF_IDLE_TIME_BIT, A1846S_DTMF_IDLE_TIME_LEN, 50);
   
-  HSreadWord(devAddr, 0x6F, radio_i2c_buf);
-  Serial.println(radio_i2c_buf[0]);
-  
   // tx time
-  HSwriteBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DUALTONE_TX_TIME_BIT, A1846S_DUALTONE_TX_TIME_LEN, 50);
+  HSwriteBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DUALTONE_TX_TIME_BIT, A1846S_DUALTONE_TX_TIME_LEN, 60);
   
-  HSwriteBitsW(devAddr, 0x57, 0, 1, 1); // send dtmf to speaker out
+  //HSwriteBitsW(devAddr, 0x57, 0, 1, 1); // send dtmf to speaker out
+  
+  // turn on pre/de-emphasis
+  HSwriteBitsW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_EMPH_FILTER_EN, 1, 1);
   
 }
 
@@ -1038,7 +1037,7 @@ void HamShield::setDTMFCode(uint16_t code){
       tone1 = 770*10;
   } else if ((code >= 7 && code <= 9) || code == 0xC) {
       tone1 = 852*10;
-  } else if (code >= 0xD) {
+  } else if (code >= 0xD || code == 0) {
       tone1 = 941*10;
   }
 

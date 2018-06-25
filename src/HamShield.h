@@ -163,7 +163,7 @@
 #define A1846S_SQ_OUT_SEL_BIT      7  // sq_out_sel
 
 // Bitfields for A1846S_EMPH_FILTER_REG
-#define A1846S_EMPH_FILTER_EN      3
+#define A1846S_EMPH_FILTER_EN      7
 
 // Bitfields for A1846S_FLAG_REG
 #define A1846S_RXON_RF_FLAG_BIT   10  // 1 when rxon is enabled

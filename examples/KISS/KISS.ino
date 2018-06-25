@@ -22,13 +22,13 @@
 #include <HamShield.h>
 #include <KISS.h>
 #include <DDS.h>
-#include <AX25.h>
+#include <packet.h>
 #include <avr/wdt.h>
 
 HamShield radio;
 DDS dds;
-AX25 ax25;
-KISS kiss(&Serial, &radio, &dds, &ax25);
+AFSK afsk;
+KISS kiss(&Serial, &radio, &dds, &afsk);
 
 #define PWM_PIN 3
 #define RESET_PIN A3
@@ -58,7 +58,7 @@ void setup() {
   radio.frequency(144390);
 
   dds.start();
-  ax25.start(&dds);
+  afsk.start(&dds);
   delay(100);
   radio.setModeReceive();
 }
@@ -81,7 +81,7 @@ ISR(ADC_vect) {
   TIFR1 = _BV(ICF1); // Clear the timer flag
   dds.clockTick();
   if(++tcnt == 1) {
-    ax25.timer();
+    afsk.timer();
     tcnt = 0;
   }
 }

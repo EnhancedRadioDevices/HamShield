@@ -54,6 +54,7 @@ void setup() {
   Serial.print(F(" / "));
   Serial.println(radio.getSQLoThresh());
   radio.setModeReceive();
+  radio.bypassPreDeEmph(); // needed for digital modes
   Serial.println(F("DDS Start"));
   delay(100);
   dds.start();

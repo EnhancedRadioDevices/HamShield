@@ -56,6 +56,7 @@ void setup() {
   radio.setSQLoThresh(-100);
   radio.setSQOn();
   radio.frequency(144390);
+  radio.bypassPreDeEmph();
 
   dds.start();
   afsk.start(&dds);

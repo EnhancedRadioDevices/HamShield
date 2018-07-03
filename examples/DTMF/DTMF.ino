@@ -139,11 +139,13 @@ void loop() {
 
       if (Serial.available()) {
         code = char2code(Serial.read());
+        if (code == 255) code = 0xE; // throw a * in there so we don't break things with an invalid code
         radio.setDTMFCode(code); // set first
       } else {
         dtmf_to_tx = false;
       }
     }
+    delay(20); // make sure the last code is done
     // done with tone
     radio.setModeReceive();
     radio.setTxSourceMic();

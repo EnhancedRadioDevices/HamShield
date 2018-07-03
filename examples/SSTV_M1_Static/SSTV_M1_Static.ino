@@ -54,6 +54,7 @@ void setup() {
   radio.initialize();
   radio.setRfPower(0);
   radio.frequency(145500);
+  radio.bypassPreDeEmph();
   // put your setup code here, to run once:
   //dds.setReferenceClock(34965/4);
   dds.start();

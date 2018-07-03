@@ -8,9 +8,12 @@
  * a message under 254 characters into the bar at the top of 
  * the monitor. Click the "Send" button. Check for output on 
  * AFSK receiver.
-
- *  NOTE: add message receive code
-*/
+ *
+ * To send a message: connect to the Arduino over a Serial link.
+ * Send the following over the serial link:
+ * `from,to,:message
+ * example: * `KG7OGM,KG7OGM,:Hi there
+ */
 
 
 
@@ -55,6 +58,7 @@ void setup() {
   radio.setSQHiThresh(-100);
   radio.setSQLoThresh(-100);
   radio.setSQOn();
+  radio.bypassPreDeEmph();
   dds.start();
   afsk.start(&dds);
   delay(100);

@@ -50,6 +50,7 @@ void setup() {
   radio.initialize();
   radio.frequency(144390);
   radio.setRfPower(0);
+  radio.bypassPreDeEmph(); // needed for digital modes
   dds.start();
   afsk.start(&dds);
   delay(100);

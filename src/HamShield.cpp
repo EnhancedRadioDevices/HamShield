@@ -995,7 +995,7 @@ void HamShield::enableDTMFReceive(){
   
   //HSwriteBitsW(devAddr, 0x57, 0, 1, 1); // send dtmf to speaker out
   
-  // turn on pre/de-emphasis
+  // bypass pre/de-emphasis
   HSwriteBitsW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_EMPH_FILTER_EN, 1, 1);
   
 }

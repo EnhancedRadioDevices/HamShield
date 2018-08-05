@@ -239,6 +239,7 @@ void setup() {
   // set up the reset control pin
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
+  delay(5); // wait for device to come up
   
   Serial.begin(9600);
   Serial.println("If the sketch freezes at radio status, there is something wrong with power or the shield");
@@ -269,7 +270,6 @@ void setup() {
 }
 
 void loop() {
-  //radio.bypassPreDeEmph();
   radio.frequency(144025);
   radio.setModeTransmit();
   for(;;) { }

@@ -31,6 +31,7 @@ void setup() {
   // set up the reset control pin
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
+  delay(5); // wait for device to come up
   
   Serial.begin(9600);
   // put your setup code here, to run once:

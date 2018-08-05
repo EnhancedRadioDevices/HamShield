@@ -44,13 +44,14 @@ void setup() {
   pinMode(RESET_PIN, OUTPUT);
   // turn on pwr to the radio
   digitalWrite(RESET_PIN, HIGH);
+  delay(5); // wait for device to come up
   
   Serial.begin(9600);
   
   radio.initialize();
   radio.frequency(144390);
   radio.setRfPower(0);
-  radio.bypassPreDeEmph(); // needed for digital modes
+  // radio.bypassPreDeEmph();
   dds.start();
   afsk.start(&dds);
   delay(100);

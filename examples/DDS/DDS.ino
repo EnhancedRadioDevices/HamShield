@@ -36,6 +36,7 @@ void setup() {
   pinMode(RESET_PIN, OUTPUT);
   // turn on radio
   digitalWrite(RESET_PIN, HIGH);
+  delay(5); // wait for device to come up
   
   radio.initialize();
   radio.setRfPower(0);

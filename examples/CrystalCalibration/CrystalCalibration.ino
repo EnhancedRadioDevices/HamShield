@@ -38,6 +38,7 @@ void setup() {
   pinMode(RESET_PIN, OUTPUT);
   // turn on radio
   digitalWrite(RESET_PIN, HIGH);
+  delay(5); // wait for device to come up
   
   Serial.begin(9600);
 

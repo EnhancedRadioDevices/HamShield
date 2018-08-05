@@ -24,7 +24,6 @@ HamShield radio;
 #define LED_PIN 13
 #define RSSI_REPORT_RATE_MS 5000
 
-//TODO: move these into library
 #define PWM_PIN 3
 #define RESET_PIN A3
 #define SWITCH_PIN 2
@@ -57,6 +56,7 @@ void setup() {
   
   // let the AU ot of reset
   digitalWrite(RESET_PIN, HIGH);
+  delay(5); // wait for device to come up
   
   Serial.println("beginning radio setup");
 

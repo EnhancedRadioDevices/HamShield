@@ -45,6 +45,7 @@ void setup() {
   // set up the reset control pin
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
+  delay(5); // wait for device to come up
   
   Serial.begin(9600);
   
@@ -56,7 +57,7 @@ void setup() {
   radio.setSQLoThresh(-100);
   radio.setSQOn();
   radio.frequency(144390);
-  radio.bypassPreDeEmph();
+  //radio.bypassPreDeEmph();
 
   dds.start();
   afsk.start(&dds);

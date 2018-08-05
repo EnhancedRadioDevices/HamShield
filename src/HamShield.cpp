@@ -992,8 +992,6 @@ void HamShield::enableDTMFReceive(){
 
   HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 1, 1);
   
-  //HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A18462_DTMF_DET_TIME_BIT, A18462_DTMF_DET_TIME_LEN, 24);
-  
   //HSwriteBitsW(devAddr, 0x57, 0, 1, 1); // send dtmf to speaker out
   
   // bypass pre/de-emphasis
@@ -1197,7 +1195,7 @@ void HamShield::usePreDeEmph(){
 }
 bool HamShield::getPreDeEmphEnabled(){
     HSreadBitW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_EMPH_FILTER_EN, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+    return (radio_i2c_buf[0] == 0);
 }
 
 // Read Only Status Registers

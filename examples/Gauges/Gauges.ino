@@ -35,6 +35,7 @@ void setup() {
   // set up the reset control pin
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
+  delay(5); // wait for device to come up
   
   analogReference(DEFAULT);
   Serial.begin(9600);

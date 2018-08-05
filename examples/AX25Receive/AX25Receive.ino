@@ -36,6 +36,7 @@ void setup() {
   pinMode(RESET_PIN, OUTPUT);
   // turn on radio
   digitalWrite(RESET_PIN, HIGH);
+  delay(5); // wait for device to come up
   
   Serial.begin(9600);
 
@@ -54,7 +55,7 @@ void setup() {
   Serial.print(F(" / "));
   Serial.println(radio.getSQLoThresh());
   radio.setModeReceive();
-  radio.bypassPreDeEmph(); // needed for digital modes
+  //radio.bypassPreDeEmph();
   Serial.println(F("DDS Start"));
   delay(100);
   dds.start();

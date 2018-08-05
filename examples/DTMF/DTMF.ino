@@ -47,6 +47,7 @@ void setup() {
   
   // let the AU ot of reset
   digitalWrite(RESET_PIN, HIGH);
+  delay(5); // wait for device to come up
   
   Serial.println("beginning radio setup");
 
@@ -73,6 +74,8 @@ void setup() {
   Serial.println("changing frequency");
   freq = 420000;
   radio.frequency(freq);
+  Serial.print("new frequency: ");
+  Serial.println(radio.getFrequency());
   
   // set RX volume to minimum to reduce false positives on DTMF rx
   radio.setVolume1(6);
@@ -88,6 +91,16 @@ void setup() {
 
   // set up DTMF
   radio.enableDTMFReceive();
+  
+  /* DTMF timing settings are optional.
+   * These times are set to default values when the device is started.
+   * You may want to change them if you're DTMF receiver isn't detecting
+   * codes from the HamShield (or vice versa).
+   */
+  radio.setDTMFDetectTime(24); // time to detect a DTMF code, units are 2.5ms
+  radio.setDTMFIdleTime(50); // time between transmitted DTMF codes, units are 2.5ms
+  radio.setDTMFTxTime(60); // duration of transmitted DTMF codes, units are 2.5ms
+  
   Serial.println("ready");
 }
 
@@ -145,7 +158,6 @@ void loop() {
         dtmf_to_tx = false;
       }
     }
-    delay(20); // make sure the last code is done
     // done with tone
     radio.setModeReceive();
     radio.setTxSourceMic();

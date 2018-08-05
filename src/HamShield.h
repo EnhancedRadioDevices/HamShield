@@ -240,7 +240,9 @@ class HamShield {
         void safeMode();
 		
 		bool frequency(uint32_t freq_khz);
+        bool frequency(float freq_khz);
 		uint32_t getFrequency();
+		float getFrequency_float();
 			
 		// channel mode
 		// 11 - 25kHz channel
@@ -392,6 +394,12 @@ class HamShield {
         //   Writing a single DTMF code:
         //     setDTMFCode(code); // code is a uint16_t from 0x0 to 0xF
 		void enableDTMFReceive();
+		void setDTMFDetectTime(uint16_t detect_time);
+        uint16_t getDTMFDetectTime();
+        void setDTMFIdleTime(uint16_t idle_time); // idle time is time between DTMF Tone
+        uint16_t getDTMFIdleTime();
+        void setDTMFTxTime(uint16_t tx_time); // tx time is duration of DTMF Tone
+        uint16_t getDTMFTxTime();
 		uint16_t disableDTMF();
 		uint16_t getDTMFSample();
 		uint16_t getDTMFCode();
@@ -480,7 +488,7 @@ class HamShield {
         uint16_t radio_i2c_buf[4];
 		bool tx_active;
 		bool rx_active;
-        uint32_t radio_frequency;
+        float radio_frequency;
 /*        uint32_t FRS[];
         uint32_t GMRS[];
         uint32_t MURS[];

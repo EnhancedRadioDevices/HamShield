@@ -125,13 +125,13 @@ volatile long bouncer = 0;
 HamShield::HamShield() {
     devAddr = A1; // devAddr is the chip select pin used by the HamShield
     sHamShield = this;
-	
+    
     pinMode(devAddr, OUTPUT);
     digitalWrite(devAddr, HIGH);
     pinMode(CLK, OUTPUT);
-	digitalWrite(CLK, HIGH);
+    digitalWrite(CLK, HIGH);
     pinMode(DAT, OUTPUT);
-	digitalWrite(DAT, HIGH);
+    digitalWrite(DAT, HIGH);
 }
 
 /** Specific address constructor.
@@ -142,13 +142,13 @@ HamShield::HamShield() {
  */
 HamShield::HamShield(uint8_t cs_pin) {
     devAddr = cs_pin;
-	
+    
     pinMode(devAddr, OUTPUT);
     digitalWrite(devAddr, HIGH);
     pinMode(CLK, OUTPUT);
-	digitalWrite(CLK, HIGH);
+    digitalWrite(CLK, HIGH);
     pinMode(DAT, OUTPUT);
-	digitalWrite(DAT, HIGH);
+    digitalWrite(DAT, HIGH);
 }
 
 
@@ -157,7 +157,7 @@ HamShield::HamShield(uint8_t cs_pin) {
  * 
  */
 void HamShield::initialize() {  
-	initialize(true);
+    initialize(true);
 }
 
 /** Power on and prepare for general usage.
@@ -171,84 +171,87 @@ void HamShield::initialize(bool narrowBand) {
   
     // reset all registers in A1846S
     softReset();
-	
+    
     //set up clock to ues 12-14MHz
     setClkMode(1);
     
-	// set up GPIO voltage (want 3.3V)
-	tx_data = 0x03AC; // default is 0x32C
+    // set up GPIO voltage (want 3.3V)
+    tx_data = 0x03AC; // default is 0x32C
     HSwriteWord(devAddr, 0x09, tx_data);
 
-	tx_data = 0x47E0; //0x43A0; // 0x7C20; //
+    tx_data = 0x47E0; //0x43A0; // 0x7C20; //
     HSwriteWord(devAddr, 0x0A, tx_data); // pga gain [10:6]
-	tx_data = 0xA100;
+    tx_data = 0xA100;
     HSwriteWord(devAddr, 0x13, tx_data);
-	tx_data = 0x5001;
+    tx_data = 0x5001;
     HSwriteWord(devAddr, 0x1F, tx_data); // GPIO7->VOX, GPIO0->CTC/DCS
-	
-	
-	tx_data = 0x0031;
+    
+    
+    tx_data = 0x0031;
     HSwriteWord(devAddr, 0x31, tx_data);
-	tx_data = 0x0AF2; //
+    tx_data = 0x0AF2; //
     HSwriteWord(devAddr, 0x33, tx_data); // agc number
-	
-	tx_data = 0x067F; //0x0601; //0x470F;
+    
+    tx_data = 0x067F; //0x0601; //0x470F;
     HSwriteWord(devAddr, 0x41, tx_data); // voice gain tx [6:0]
-	tx_data = 0x02FF; // using 0x04FF to avoid tx voice delay
+    tx_data = 0x02FF; // using 0x04FF to avoid tx voice delay
     HSwriteWord(devAddr, 0x44, tx_data); // tx gain [11:8]
-	tx_data = 0x7F2F;
+    tx_data = 0x7F2F;
     HSwriteWord(devAddr, 0x47, tx_data);
-	tx_data = 0x2C62;
+    tx_data = 0x2C62;
     HSwriteWord(devAddr, 0x4F, tx_data);
-	tx_data = 0x0094;
+    tx_data = 0x0094;
     HSwriteWord(devAddr, 0x53, tx_data); // compressor update time (bits 6:0, 5.12ms per unit)
-	tx_data = 0x2A18;
+    tx_data = 0x2A18;
     HSwriteWord(devAddr, 0x54, tx_data);
-	tx_data = 0x0081;
+    tx_data = 0x0081;
     HSwriteWord(devAddr, 0x55, tx_data);
-	tx_data = 0x0B22;
+    tx_data = 0x0B22;
     HSwriteWord(devAddr, 0x56, tx_data); // sq detect time
-	tx_data = 0x1C00;
+    tx_data = 0x1C00;
     HSwriteWord(devAddr, 0x57, tx_data);
-	tx_data = 0x800D;
+    tx_data = 0x800D;
     HSwriteWord(devAddr, 0x58, tx_data); 
-	tx_data = 0x0EDD;
+    tx_data = 0x0EDD;
     HSwriteWord(devAddr, 0x5A, tx_data); // sq and noise detect times
-	tx_data = 0x3FFF;
+    tx_data = 0x3FFF;
     HSwriteWord(devAddr, 0x63, tx_data); // pre-emphasis bypass
 
-	// calibration
-	tx_data = 0x00A4;
+    // calibration
+    tx_data = 0x00A4;
     HSwriteWord(devAddr, 0x30, tx_data);
-	delay(100);
-	tx_data = 0x00A6;
-    HSwriteWord(devAddr, 0x30, tx_data);
-	delay(100);
-	tx_data = 0x0006;
-    HSwriteWord(devAddr, 0x30, tx_data);
-	delay(100);
-
-
-	// set band width
-	if (narrowBand) {
-		setupNarrowBand();
-	} else {
-		setupWideBand();
-	}
-	
     delay(100);
-	
-	/*
+    tx_data = 0x00A6;
+    HSwriteWord(devAddr, 0x30, tx_data);
+    delay(100);
+    tx_data = 0x0006;
+    HSwriteWord(devAddr, 0x30, tx_data);
+    delay(100);
+
+
+    // set band width
+    if (narrowBand) {
+        setupNarrowBand();
+    } else {
+        setupWideBand();
+    }
+    
+    delay(100);
+    
+    /*
     // setup default values
     frequency(446000);
     //setVolume1(0xF);
     //setVolume2(0xF);
     setModeReceive();
     setTxSourceMic();
-	setRfPower(0);
+    setRfPower(0);
     setSQLoThresh(80);
     setSQOn();
-	*/
+    */
+    setDTMFIdleTime(50);
+    setDTMFTxTime(60);
+    setDTMFDetectTime(24);
 }
 
 
@@ -256,74 +259,74 @@ void HamShield::initialize(bool narrowBand) {
  */
 void HamShield::setupNarrowBand() {
     uint16_t tx_data;
-	// setup for 12.5kHz channel width
-	tx_data = 0x3D37;
-    HSwriteWord(devAddr, 0x11, tx_data);	
-	tx_data = 0x0100;
-    HSwriteWord(devAddr, 0x12, tx_data);	
-	tx_data = 0x1100;
+    // setup for 12.5kHz channel width
+    tx_data = 0x3D37;
+    HSwriteWord(devAddr, 0x11, tx_data);    
+    tx_data = 0x0100;
+    HSwriteWord(devAddr, 0x12, tx_data);    
+    tx_data = 0x1100;
     HSwriteWord(devAddr, 0x15, tx_data);
-	tx_data = 0x4495;
+    tx_data = 0x4495;
     HSwriteWord(devAddr, 0x32, tx_data); // agc target power [11:6]
-	tx_data = 0x2B8E;
+    tx_data = 0x2B8E;
     HSwriteWord(devAddr, 0x34, tx_data);
-	tx_data = 0x40C3;
+    tx_data = 0x40C3;
     HSwriteWord(devAddr, 0x3A, tx_data); // modu_det_sel sq setting
-	tx_data = 0x0407;
+    tx_data = 0x0407;
     HSwriteWord(devAddr, 0x3C, tx_data); // pk_det_th sq setting [8:7]
-	tx_data = 0x28D0;
+    tx_data = 0x28D0;
     HSwriteWord(devAddr, 0x3F, tx_data); // rssi3_th sq setting
-	tx_data = 0x203E;
+    tx_data = 0x203E;
     HSwriteWord(devAddr, 0x48, tx_data);
-	tx_data = 0x1BB7;
+    tx_data = 0x1BB7;
     HSwriteWord(devAddr, 0x60, tx_data);
-	tx_data = 0x0A10; // use 0x1425 if there's an LNA
+    tx_data = 0x0A10; // use 0x1425 if there's an LNA
     HSwriteWord(devAddr, 0x62, tx_data);
-	tx_data = 0x2494;
+    tx_data = 0x2494;
     HSwriteWord(devAddr, 0x65, tx_data);
-	tx_data = 0xEB2E;
+    tx_data = 0xEB2E;
     HSwriteWord(devAddr, 0x66, tx_data);
 
-		// AGC table
-	tx_data = 0x0001;
+        // AGC table
+    tx_data = 0x0001;
     HSwriteWord(devAddr, 0x7F, tx_data);
-	tx_data = 0x000C;
+    tx_data = 0x000C;
     HSwriteWord(devAddr, 0x05, tx_data);
-	tx_data = 0x020C;
+    tx_data = 0x020C;
     HSwriteWord(devAddr, 0x06, tx_data);
-	tx_data = 0x030C;
+    tx_data = 0x030C;
     HSwriteWord(devAddr, 0x07, tx_data);
-	tx_data = 0x0324;
+    tx_data = 0x0324;
     HSwriteWord(devAddr, 0x08, tx_data);
-	tx_data = 0x1344;
+    tx_data = 0x1344;
     HSwriteWord(devAddr, 0x09, tx_data);
-	tx_data = 0x3F44;
+    tx_data = 0x3F44;
     HSwriteWord(devAddr, 0x0A, tx_data);
-	tx_data = 0x3F44;
+    tx_data = 0x3F44;
     HSwriteWord(devAddr, 0x0B, tx_data);
-	tx_data = 0x3F44;
+    tx_data = 0x3F44;
     HSwriteWord(devAddr, 0x0C, tx_data);
-	tx_data = 0x3F44;
+    tx_data = 0x3F44;
     HSwriteWord(devAddr, 0x0D, tx_data);
-	tx_data = 0x3F44;
+    tx_data = 0x3F44;
     HSwriteWord(devAddr, 0x0E, tx_data);
-	tx_data = 0x3F44;
+    tx_data = 0x3F44;
     HSwriteWord(devAddr, 0x0F, tx_data);
-	tx_data = 0xE0ED;
+    tx_data = 0xE0ED;
     HSwriteWord(devAddr, 0x12, tx_data);
-	tx_data = 0xF2FE;
+    tx_data = 0xF2FE;
     HSwriteWord(devAddr, 0x13, tx_data);
-	tx_data = 0x0A16;
+    tx_data = 0x0A16;
     HSwriteWord(devAddr, 0x14, tx_data);
-	tx_data = 0x2424;
+    tx_data = 0x2424;
     HSwriteWord(devAddr, 0x15, tx_data);
-	tx_data = 0x2424;
+    tx_data = 0x2424;
     HSwriteWord(devAddr, 0x16, tx_data);
-	tx_data = 0x2424;
+    tx_data = 0x2424;
     HSwriteWord(devAddr, 0x17, tx_data);
-	tx_data = 0x0000;
+    tx_data = 0x0000;
     HSwriteWord(devAddr, 0x7F, tx_data);
-	// end AGC table
+    // end AGC table
 
 }
 
@@ -331,74 +334,74 @@ void HamShield::setupNarrowBand() {
  */
 void HamShield::setupWideBand() {
     uint16_t tx_data;
-	// setup for 25kHz channel width
-	tx_data = 0x3D37;
-    HSwriteWord(devAddr, 0x11, tx_data);	
-	tx_data = 0x0100;
-    HSwriteWord(devAddr, 0x12, tx_data);	
-	tx_data = 0x1F00;
+    // setup for 25kHz channel width
+    tx_data = 0x3D37;
+    HSwriteWord(devAddr, 0x11, tx_data);    
+    tx_data = 0x0100;
+    HSwriteWord(devAddr, 0x12, tx_data);    
+    tx_data = 0x1F00;
     HSwriteWord(devAddr, 0x15, tx_data);
-	tx_data = 0x7564;
+    tx_data = 0x7564;
     HSwriteWord(devAddr, 0x32, tx_data); // agc target power [11:6]
-	tx_data = 0x2B8E;
+    tx_data = 0x2B8E;
     HSwriteWord(devAddr, 0x34, tx_data);
-	tx_data = 0x44C3;
+    tx_data = 0x44C3;
     HSwriteWord(devAddr, 0x3A, tx_data); // modu_det_sel sq setting
-	tx_data = 0x1930;
+    tx_data = 0x1930;
     HSwriteWord(devAddr, 0x3C, tx_data); // pk_det_th sq setting [8:7]
-	tx_data = 0x29D2;
+    tx_data = 0x29D2;
     HSwriteWord(devAddr, 0x3F, tx_data); // rssi3_th sq setting
-	tx_data = 0x21C0;
+    tx_data = 0x21C0;
     HSwriteWord(devAddr, 0x48, tx_data);
-	tx_data = 0x101E;
+    tx_data = 0x101E;
     HSwriteWord(devAddr, 0x60, tx_data);
-	tx_data = 0x3767; // use 0x1425 if there's an LNA
+    tx_data = 0x3767; // use 0x1425 if there's an LNA
     HSwriteWord(devAddr, 0x62, tx_data);
-	tx_data = 0x248A;
+    tx_data = 0x248A;
     HSwriteWord(devAddr, 0x65, tx_data);
-	tx_data = 0xFFAE;
-    HSwriteWord(devAddr, 0x66, tx_data);	
+    tx_data = 0xFFAE;
+    HSwriteWord(devAddr, 0x66, tx_data);    
 
-		// AGC table
-	tx_data = 0x0001;
+        // AGC table
+    tx_data = 0x0001;
     HSwriteWord(devAddr, 0x7F, tx_data);
-	tx_data = 0x000C;
+    tx_data = 0x000C;
     HSwriteWord(devAddr, 0x05, tx_data);
-	tx_data = 0x0024;
+    tx_data = 0x0024;
     HSwriteWord(devAddr, 0x06, tx_data);
-	tx_data = 0x0214;
+    tx_data = 0x0214;
     HSwriteWord(devAddr, 0x07, tx_data);
-	tx_data = 0x0224;
+    tx_data = 0x0224;
     HSwriteWord(devAddr, 0x08, tx_data);
-	tx_data = 0x0314;
+    tx_data = 0x0314;
     HSwriteWord(devAddr, 0x09, tx_data);
-	tx_data = 0x0324;
+    tx_data = 0x0324;
     HSwriteWord(devAddr, 0x0A, tx_data);
-	tx_data = 0x0344;
+    tx_data = 0x0344;
     HSwriteWord(devAddr, 0x0B, tx_data);
-	tx_data = 0x0384;
+    tx_data = 0x0384;
     HSwriteWord(devAddr, 0x0C, tx_data);
-	tx_data = 0x1384;
+    tx_data = 0x1384;
     HSwriteWord(devAddr, 0x0D, tx_data);
-	tx_data = 0x1B84;
+    tx_data = 0x1B84;
     HSwriteWord(devAddr, 0x0E, tx_data);
-	tx_data = 0x3F84;
+    tx_data = 0x3F84;
     HSwriteWord(devAddr, 0x0F, tx_data);
-	tx_data = 0xE0EB;
+    tx_data = 0xE0EB;
     HSwriteWord(devAddr, 0x12, tx_data);
-	tx_data = 0xF2FE;
+    tx_data = 0xF2FE;
     HSwriteWord(devAddr, 0x13, tx_data);
-	tx_data = 0x0A16;
+    tx_data = 0x0A16;
     HSwriteWord(devAddr, 0x14, tx_data);
-	tx_data = 0x2424;
+    tx_data = 0x2424;
     HSwriteWord(devAddr, 0x15, tx_data);
-	tx_data = 0x2424;
+    tx_data = 0x2424;
     HSwriteWord(devAddr, 0x16, tx_data);
-	tx_data = 0x2424;
+    tx_data = 0x2424;
     HSwriteWord(devAddr, 0x17, tx_data);
-	tx_data = 0x0000;
+    tx_data = 0x0000;
     HSwriteWord(devAddr, 0x7F, tx_data);
-	// end AGC table
+    // end AGC table
 }
 
 /** Verify the I2C connection.
@@ -447,41 +450,45 @@ void HamShield::softReset() {
 
  
 void HamShield::setFrequency(uint32_t freq_khz) {
-    radio_frequency = freq_khz;
+    radio_frequency = (float) freq_khz;
     uint32_t freq_raw = freq_khz << 4; // shift by 4 to multiply by 16 (was shift by 3 in old 1846 chip)
 
-	// turn off tx/rx
-	HSwriteBitsW(devAddr, A1846S_CTL_REG, 6, 2, 0);
-	
-	// if we're using a 12MHz crystal and the frequency is
-	// 136.5M,409.5M and 455M, then we have to do special stuff
+    // turn off tx/rx
+    HSwriteBitsW(devAddr, A1846S_CTL_REG, 6, 2, 0);
+    
+    // if we're using a 12MHz crystal and the frequency is
+    // 136.5M,409.5M and 455M, then we have to do special stuff
     if (radio_frequency == 136500 ||
         radio_frequency == 490500 ||
-		radio_frequency == 455000) {
-		
-		// set up AU1846 for funky freq
-		HSwriteWord(devAddr, 0x05, 0x86D3);
+        radio_frequency == 455000) {
+        
+        // set up AU1846 for funky freq
+        HSwriteWord(devAddr, 0x05, 0x86D3);
 
-	} else {
-		// set up AU1846 for normal freq
-		HSwriteWord(devAddr, 0x05, 0x8763);
-	}
-	
-    // send top 16 bits to A1846S_FREQ_HI_REG	
+    } else {
+        // set up AU1846 for normal freq
+        HSwriteWord(devAddr, 0x05, 0x8763);
+    }
+    
+    // send top 16 bits to A1846S_FREQ_HI_REG    
     uint16_t freq_half = (uint16_t) (0x3FFF & (freq_raw >> 16));
     HSwriteWord(devAddr, A1846S_FREQ_HI_REG, freq_half);
     //  send bottom 16 bits to A1846S_FREQ_LO_REG
     freq_half = (uint16_t) (freq_raw & 0xFFFF);
     HSwriteWord(devAddr, A1846S_FREQ_LO_REG, freq_half);
-	
-   	if (rx_active) {
-		setRX(true);
-	} else if (tx_active) {
-		setTX(true);
-	}
+    
+       if (rx_active) {
+        setRX(true);
+    } else if (tx_active) {
+        setTX(true);
+    }
 }
 
 uint32_t HamShield::getFrequency() {
+  return (uint32_t) radio_frequency;
+}
+
+float HamShield::getFrequency_float() {
   return radio_frequency;
 }
 
@@ -541,27 +548,27 @@ uint16_t HamShield::getChanMode(){
 void HamShield::setTX(bool on_noff){
     // make sure RX is off
     if (on_noff) {
-		tx_active = true;
-		rx_active = false;
-		setRX(false);
-		
-		
-		if((radio_frequency >= 134000) && (radio_frequency <= 174000)) { 
-			setTxBand2m();
-		}
-		if((radio_frequency >= 200000) && (radio_frequency <= 260000)) { 
-			setTxBand1_2m();
-		}
-		if((radio_frequency >= 400000) && (radio_frequency <= 520000)) { 
-			setTxBand70cm();
-		}
-		// FOR HS03
-		//setGpioLow(5); // V2
-		//setGpioHi(4); // V1
+        tx_active = true;
+        rx_active = false;
+        setRX(false);
+        
+        
+        if((radio_frequency >= 134000) && (radio_frequency <= 174000)) { 
+            setTxBand2m();
+        }
+        if((radio_frequency >= 200000) && (radio_frequency <= 260000)) { 
+            setTxBand1_2m();
+        }
+        if((radio_frequency >= 400000) && (radio_frequency <= 520000)) { 
+            setTxBand70cm();
+        }
+        // FOR HS03
+        //setGpioLow(5); // V2
+        //setGpioHi(4); // V1
 
-		
-		delay(50); // delay required by AU1846
-	}
+        
+        delay(50); // delay required by AU1846
+    }
 
     HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, on_noff);
 }
@@ -571,21 +578,21 @@ bool HamShield::getTX(){
 }
 
 void HamShield::setRX(bool on_noff){
-	// make sure TX is off
-	if (on_noff) {
-		tx_active = false;
-		rx_active = true;
-		setTX(false);
-		// FOR HS03
-		//setGpioLow(4); // V1
-		//setGpioHi(5); // V2
-		setGpioLow(4); // V1
-		setGpioLow(5); // V2
-		
-		delay(50); // delay required by AU1846
-	}
+    // make sure TX is off
+    if (on_noff) {
+        tx_active = false;
+        rx_active = true;
+        setTX(false);
+        // FOR HS03
+        //setGpioLow(4); // V1
+        //setGpioHi(5); // V2
+        setGpioLow(4); // V1
+        setGpioLow(5); // V2
+        
+        delay(50); // delay required by AU1846
+    }
   
-	HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, on_noff);
+    HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, on_noff);
 }
 bool HamShield::getRX(){
     HSreadBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, radio_i2c_buf);
@@ -598,30 +605,30 @@ void HamShield::setModeTransmit(){
        if(((radio_frequency > 139999) & (radio_frequency < 148001)) || 
           ((radio_frequency > 218999) & (radio_frequency < 225001)) || 
           ((radio_frequency > 419999) & (radio_frequency < 450001)))
-		{ // we're good, so just drop down to the rest of this function
-		} else {
-			setRX(false);
-			return;
-		}			
+        { // we're good, so just drop down to the rest of this function
+        } else {
+            setRX(false);
+            return;
+        }            
     }
-	setTX(true);
+    setTX(true);
 } 
 void HamShield::setModeReceive(){
-	// turn on rx, turn off tx
-	setRX(true);
+    // turn on rx, turn off tx
+    setRX(true);
 } 
 void HamShield::setModeOff(){
-	// turn off tx/rx
-	HSwriteBitsW(devAddr, A1846S_CTL_REG, 6, 2, 0);
-	
-	// turn off amplifiers
-	setGpioLow(4); // V1
-	setGpioLow(5); // V2
+    // turn off tx/rx
+    HSwriteBitsW(devAddr, A1846S_CTL_REG, 6, 2, 0);
+    
+    // turn off amplifiers
+    setGpioLow(4); // V1
+    setGpioLow(5); // V2
 
-	tx_active = false;
-	rx_active = true;
-	
-	//TODO: set pwr_dwn bit
+    tx_active = false;
+    rx_active = true;
+    
+    //TODO: set pwr_dwn bit
 }
 
 // set tx source
@@ -634,19 +641,19 @@ void HamShield::setTxSource(uint16_t tx_source){
     HSwriteBitsW(devAddr, A1846S_TX_VOICE_REG, A1846S_VOICE_SEL_BIT, A1846S_VOICE_SEL_LENGTH, tx_source);
 }
 void HamShield::setTxSourceMic(){
-	setTxSource(4);
+    setTxSource(4);
 }
 void HamShield::setTxSourceTone1(){
-	setTxSource(1);
+    setTxSource(1);
 }
 void HamShield::setTxSourceTone2(){
-	setTxSource(2);
+    setTxSource(2);
 }
 void HamShield::setTxSourceTones(){
-	setTxSource(3);
+    setTxSource(3);
 }
 void HamShield::setTxSourceNone(){
-	setTxSource(0);
+    setTxSource(0);
 }
 uint16_t HamShield::getTxSource(){
     HSreadBitsW(devAddr, A1846S_TX_VOICE_REG, A1846S_VOICE_SEL_BIT, A1846S_VOICE_SEL_LENGTH, radio_i2c_buf);
@@ -703,18 +710,18 @@ void HamShield::setCtcssDecoder(float freq) {
 
 // TX and RX code
 /*
-	Set code mode:
-	Step1: set 58H[1:0]=11 set voice hpf bypass
-	Step2: set 58H[5:3]=111 set voice lpf bypass and pre/de-emph bypass
-	Step3 set 3CH[15:14]=10 set code mode
-	Step4: set 1FH[3:2]=01 set GPIO code in or code out
+    Set code mode:
+    Step1: set 58H[1:0]=11 set voice hpf bypass
+    Step2: set 58H[5:3]=111 set voice lpf bypass and pre/de-emph bypass
+    Step3 set 3CH[15:14]=10 set code mode
+    Step4: set 1FH[3:2]=01 set GPIO code in or code out
 
-	TX code mode:
-	Step1: 45H[2:0]=010
-	
-	RX code mode:
-	Step1: set 45H[2:0]=001
-	Step2: set 4dH[15:10]=000001
+    TX code mode:
+    Step1: 45H[2:0]=010
+    
+    RX code mode:
+    Step1: set 45H[2:0]=001
+    Step2: set 4dH[15:10]=000001
 */
 
 //   Ctcss/cdcss mode sel
@@ -732,19 +739,19 @@ uint16_t HamShield::getCtcssCdcssMode(){
     return radio_i2c_buf[0];
 }
 void HamShield::setInnerCtcssMode(){
-	setCtcssCdcssMode(1);
+    setCtcssCdcssMode(1);
 }
 void HamShield::setInnerCdcssMode(){
-	setCtcssCdcssMode(2);
+    setCtcssCdcssMode(2);
 }
 void HamShield::setOuterCtcssMode(){
-	setCtcssCdcssMode(5);
+    setCtcssCdcssMode(5);
 }
 void HamShield::setOuterCdcssMode(){
-	setCtcssCdcssMode(6);
+    setCtcssCdcssMode(6);
 }
 void HamShield::disableCtcssCdcss(){
-	setCtcssCdcssMode(0);
+    setCtcssCdcssMode(0);
 }
 
 //   Ctcss_sel
@@ -813,59 +820,59 @@ void HamShield::setCtcss(float freq) {
 }
 
 void HamShield::setCtcssFreq(uint16_t freq){
-	HSwriteWord(devAddr, A1846S_CTCSS_FREQ_REG, freq);
+    HSwriteWord(devAddr, A1846S_CTCSS_FREQ_REG, freq);
 }
 uint16_t HamShield::getCtcssFreq(){
-	HSreadWord(devAddr, A1846S_CTCSS_FREQ_REG, radio_i2c_buf);
-	
-	return radio_i2c_buf[0];
+    HSreadWord(devAddr, A1846S_CTCSS_FREQ_REG, radio_i2c_buf);
+    
+    return radio_i2c_buf[0];
 }
 void HamShield::setCtcssFreqToStandard(){
-	// freq must be 134.4Hz for standard cdcss mode
-	setCtcssFreq(0x2268);
+    // freq must be 134.4Hz for standard cdcss mode
+    setCtcssFreq(0x2268);
 } 
 
 // cdcss codes
 void HamShield::setCdcssCode(uint16_t code) {
-	// note: assuming a well formed code (xyz, where x, y, and z are all 0-7)
+    // note: assuming a well formed code (xyz, where x, y, and z are all 0-7)
 
-	// Set both code registers at once (23 or 24 bit code)
-	// sends 100, c1, c2, c3, 11 bits of crc
-	
-	// TODO: figure out what to do about 24 or 23 bit codes
-	
-	uint32_t cdcss_code = 0x800000; // top three bits are 100
-	uint32_t oct_code = code%10;
-	code = code / 10;
-	cdcss_code += oct_code << 20;
-	oct_code = code % 10;
-	code = code / 10;
-	cdcss_code += oct_code << 17;
-	cdcss_code += (code % 10) << 14;
-	
-	// TODO: CRC
-	
-	// set registers
+    // Set both code registers at once (23 or 24 bit code)
+    // sends 100, c1, c2, c3, 11 bits of crc
+    
+    // TODO: figure out what to do about 24 or 23 bit codes
+    
+    uint32_t cdcss_code = 0x800000; // top three bits are 100
+    uint32_t oct_code = code%10;
+    code = code / 10;
+    cdcss_code += oct_code << 20;
+    oct_code = code % 10;
+    code = code / 10;
+    cdcss_code += oct_code << 17;
+    cdcss_code += (code % 10) << 14;
+    
+    // TODO: CRC
+    
+    // set registers
         uint16_t temp_code = (uint16_t) cdcss_code;
-	HSwriteWord(devAddr, A1846S_CDCSS_CODE_HI_REG, temp_code);
-        temp_code = (uint16_t) (cdcss_code >> 16);	
-	HSwriteWord(devAddr, A1846S_CDCSS_CODE_LO_REG, temp_code);	
+    HSwriteWord(devAddr, A1846S_CDCSS_CODE_HI_REG, temp_code);
+        temp_code = (uint16_t) (cdcss_code >> 16);    
+    HSwriteWord(devAddr, A1846S_CDCSS_CODE_LO_REG, temp_code);    
 }
 uint16_t HamShield::getCdcssCode() {
-	uint32_t oct_code;
-	HSreadWord(devAddr, A1846S_CDCSS_CODE_HI_REG, radio_i2c_buf);
-	oct_code = ((uint32_t)radio_i2c_buf[0] << 16);
-	HSreadWord(devAddr, A1846S_CDCSS_CODE_LO_REG, radio_i2c_buf);
-	oct_code += radio_i2c_buf[0];
-	
-	oct_code = oct_code >> 12;
-	uint16_t code = (oct_code & 0x3);
-	oct_code = oct_code >> 3;
-	code += (oct_code & 0x3)*10;
-	oct_code = oct_code >> 3;
-	code += (oct_code & 0x3)*100;
-	
-	return code;
+    uint32_t oct_code;
+    HSreadWord(devAddr, A1846S_CDCSS_CODE_HI_REG, radio_i2c_buf);
+    oct_code = ((uint32_t)radio_i2c_buf[0] << 16);
+    HSreadWord(devAddr, A1846S_CDCSS_CODE_LO_REG, radio_i2c_buf);
+    oct_code += radio_i2c_buf[0];
+    
+    oct_code = oct_code >> 12;
+    uint16_t code = (oct_code & 0x3);
+    oct_code = oct_code >> 3;
+    code += (oct_code & 0x3)*10;
+    oct_code = oct_code >> 3;
+    code += (oct_code & 0x3)*100;
+    
+    return code;
 }
 
 // SQ
@@ -882,24 +889,24 @@ bool HamShield::getSQState(){
 
 // SQ threshold
 void HamShield::setSQHiThresh(int16_t sq_hi_threshold){
-	// Sq detect high th, rssi_cmp will be 1 when rssi>th_h_sq, unit 1dB
-	uint16_t sq = 137 + sq_hi_threshold;
-	HSwriteWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, sq);
+    // Sq detect high th, rssi_cmp will be 1 when rssi>th_h_sq, unit 1dB
+    uint16_t sq = 137 + sq_hi_threshold;
+    HSwriteWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, sq);
 } 
 int16_t HamShield::getSQHiThresh(){
-	HSreadWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, radio_i2c_buf);
-	
-	return radio_i2c_buf[0] - 137;
+    HSreadWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, radio_i2c_buf);
+    
+    return radio_i2c_buf[0] - 137;
 }
 void HamShield::setSQLoThresh(int16_t sq_lo_threshold){
-	// Sq detect low th, rssi_cmp will be 0 when rssi<th_l_sq && time delay meet, unit 1 dB
-	uint16_t sq = 137 + sq_lo_threshold;
-	HSwriteWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, sq);
+    // Sq detect low th, rssi_cmp will be 0 when rssi<th_l_sq && time delay meet, unit 1 dB
+    uint16_t sq = 137 + sq_lo_threshold;
+    HSwriteWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, sq);
 }
 int16_t HamShield::getSQLoThresh(){
-	HSreadWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, radio_i2c_buf);
-	
-	return radio_i2c_buf[0] - 137;
+    HSreadWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, radio_i2c_buf);
+    
+    return radio_i2c_buf[0] - 137;
 }
 
 // SQ out select
@@ -928,22 +935,22 @@ bool HamShield::getVoxOn(){
 
 // Vox Threshold
 void HamShield::setVoxOpenThresh(uint16_t vox_open_thresh){
-	// When vssi > th_h_vox, then vox will be 1(unit mV )
-	HSwriteWord(devAddr, A1846S_TH_H_VOX_REG, vox_open_thresh);	
+    // When vssi > th_h_vox, then vox will be 1(unit mV )
+    HSwriteWord(devAddr, A1846S_TH_H_VOX_REG, vox_open_thresh);    
 } 
 uint16_t HamShield::getVoxOpenThresh(){
-	HSreadWord(devAddr, A1846S_TH_H_VOX_REG, radio_i2c_buf);
-	
-	return radio_i2c_buf[0];
+    HSreadWord(devAddr, A1846S_TH_H_VOX_REG, radio_i2c_buf);
+    
+    return radio_i2c_buf[0];
 }
 void HamShield::setVoxShutThresh(uint16_t vox_shut_thresh){
-	// When vssi < th_l_vox && time delay meet, then vox will be 0 (unit mV )
-	HSwriteWord(devAddr, A1846S_TH_L_VOX_REG, vox_shut_thresh);	
+    // When vssi < th_l_vox && time delay meet, then vox will be 0 (unit mV )
+    HSwriteWord(devAddr, A1846S_TH_L_VOX_REG, vox_shut_thresh);    
 } 
 uint16_t HamShield::getVoxShutThresh(){
-	HSreadWord(devAddr, A1846S_TH_L_VOX_REG, radio_i2c_buf);
-	
-	return radio_i2c_buf[0];
+    HSreadWord(devAddr, A1846S_TH_L_VOX_REG, radio_i2c_buf);
+    
+    return radio_i2c_buf[0];
 }
 
 // Tail Noise
@@ -965,11 +972,11 @@ bool HamShield::getTailNoiseElimEnabled(){
 //     10 = 240 degree shift
 //     11 = reserved
 void HamShield::setShiftSelect(uint16_t shift_sel){
-    HSwriteBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LENGTH, shift_sel);
+  HSwriteBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LENGTH, shift_sel);
 }
 uint16_t HamShield::getShiftSelect(){
-    HSreadBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
+  HSreadBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LENGTH, radio_i2c_buf);
+  return radio_i2c_buf[0];
 }
 
 // DTMF
@@ -985,19 +992,45 @@ void HamShield::enableDTMFReceive(){
 
   HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 1, 1);
   
-  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A18462_DTMF_DET_TIME_BIT, A18462_DTMF_DET_TIME_LEN, 24);
-  
-  // idle time
-  HSwriteBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DTMF_IDLE_TIME_BIT, A1846S_DTMF_IDLE_TIME_LEN, 50);
-  
-  // tx time
-  HSwriteBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DUALTONE_TX_TIME_BIT, A1846S_DUALTONE_TX_TIME_LEN, 60);
+  //HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A18462_DTMF_DET_TIME_BIT, A18462_DTMF_DET_TIME_LEN, 24);
   
   //HSwriteBitsW(devAddr, 0x57, 0, 1, 1); // send dtmf to speaker out
   
   // bypass pre/de-emphasis
   HSwriteBitsW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_EMPH_FILTER_EN, 1, 1);
   
+}
+
+void HamShield::setDTMFDetectTime(uint16_t detect_time) {
+  if (detect_time > 255) {detect_time = 255;} // maxed out
+  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A18462_DTMF_DET_TIME_BIT, A18462_DTMF_DET_TIME_LEN, detect_time);
+}
+
+uint16_t HamShield::getDTMFDetectTime() {
+  HSreadBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A18462_DTMF_DET_TIME_BIT, A18462_DTMF_DET_TIME_LEN, radio_i2c_buf);
+  return radio_i2c_buf[0]; 
+}
+
+void HamShield::setDTMFIdleTime(uint16_t idle_time) {
+  if (idle_time > 63) {idle_time = 63;} // maxed out
+  // idle time is time between DTMF Tone
+  HSwriteBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DTMF_IDLE_TIME_BIT, A1846S_DTMF_IDLE_TIME_LEN, idle_time);    
+}
+
+uint16_t HamShield::getDTMFIdleTime() {
+  HSreadBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DTMF_IDLE_TIME_BIT, A1846S_DTMF_IDLE_TIME_LEN, radio_i2c_buf);
+  return radio_i2c_buf[0];  
+}
+
+void HamShield::setDTMFTxTime(uint16_t tx_time) {
+  if (tx_time > 63) {tx_time = 63;} // maxed out
+  // tx time is duration of DTMF Tone
+  HSwriteBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DUALTONE_TX_TIME_BIT, A1846S_DUALTONE_TX_TIME_LEN, tx_time);  
+}
+
+uint16_t HamShield::getDTMFTxTime() {
+  HSreadBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DUALTONE_TX_TIME_BIT, A1846S_DUALTONE_TX_TIME_LEN, radio_i2c_buf);
+  return radio_i2c_buf[0];  
 }
 
 uint16_t HamShield::disableDTMF(){
@@ -1091,27 +1124,27 @@ uint16_t HamShield::getVolume2(){
 
 // GPIO
 void HamShield::setGpioMode(uint16_t gpio, uint16_t mode){
-	uint16_t mode_len = 2;
-	uint16_t bit = gpio*2 + 1;
+    uint16_t mode_len = 2;
+    uint16_t bit = gpio*2 + 1;
 
     HSwriteBitsW(devAddr, A1846S_GPIO_MODE_REG, bit, mode_len, mode);
 }
 void HamShield::setGpioHiZ(uint16_t gpio){
-	setGpioMode(gpio, 0);
+    setGpioMode(gpio, 0);
 }
 void HamShield::setGpioFcn(uint16_t gpio){
-	setGpioMode(gpio, 1);
+    setGpioMode(gpio, 1);
 }
 void HamShield::setGpioLow(uint16_t gpio){
-	setGpioMode(gpio, 2);
+    setGpioMode(gpio, 2);
 }
 void HamShield::setGpioHi(uint16_t gpio){
-	setGpioMode(gpio, 3);
+    setGpioMode(gpio, 3);
 }
 uint16_t HamShield::getGpioMode(uint16_t gpio){
-	uint16_t mode_len = 2;
-	uint16_t bit = gpio*2 + 1;
-	
+    uint16_t mode_len = 2;
+    uint16_t bit = gpio*2 + 1;
+    
     HSreadBitsW(devAddr, A1846S_GPIO_MODE_REG, bit, mode_len, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
@@ -1121,7 +1154,7 @@ void HamShield::setGpios(uint16_t mode){
 }
 
 uint16_t HamShield::getGpios(){
-	HSreadWord(devAddr, A1846S_GPIO_MODE_REG, radio_i2c_buf);
+    HSreadWord(devAddr, A1846S_GPIO_MODE_REG, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
 
@@ -1169,34 +1202,34 @@ bool HamShield::getPreDeEmphEnabled(){
 
 // Read Only Status Registers
 int16_t HamShield::readRSSI(){
-	HSreadBitsW(devAddr, A1846S_RSSI_REG, A1846S_RSSI_BIT, A1846S_RSSI_LENGTH, radio_i2c_buf);
-	
+    HSreadBitsW(devAddr, A1846S_RSSI_REG, A1846S_RSSI_BIT, A1846S_RSSI_LENGTH, radio_i2c_buf);
+    
     int16_t rssi = (radio_i2c_buf[0] & 0xFF) - 137;
-	return rssi;
+    return rssi;
 }
 uint16_t HamShield::readVSSI(){
-	HSreadWord(devAddr, A1846S_VSSI_REG, radio_i2c_buf);
-	
-	return radio_i2c_buf[0] & 0x7FF; // only need lowest 10 bits
+    HSreadWord(devAddr, A1846S_VSSI_REG, radio_i2c_buf);
+    
+    return radio_i2c_buf[0] & 0x7FF; // only need lowest 10 bits
 }
 
 
 void HamShield::setRfPower(uint8_t pwr) {
-	int max_pwr = 15;
-	if (pwr > max_pwr) {
-		pwr = max_pwr; 
-	}
+    int max_pwr = 15;
+    if (pwr > max_pwr) {
+        pwr = max_pwr; 
+    }
 
-	// turn off tx/rx
-	HSwriteBitsW(devAddr, A1846S_CTL_REG, 6, 2, 0);
+    // turn off tx/rx
+    HSwriteBitsW(devAddr, A1846S_CTL_REG, 6, 2, 0);
    
-	HSwriteBitsW(devAddr, A1846S_PABIAS_REG, A1846S_PADRV_BIT, A1846S_PADRV_LENGTH, pwr);
+    HSwriteBitsW(devAddr, A1846S_PABIAS_REG, A1846S_PADRV_BIT, A1846S_PADRV_LENGTH, pwr);
 
-   	if (rx_active) {
-		setRX(true);
-	} else if (tx_active) {
-		setTX(true);
-	}
+       if (rx_active) {
+        setRX(true);
+    } else if (tx_active) {
+        setTX(true);
+    }
 }
 
 
@@ -1222,6 +1255,54 @@ bool HamShield::frequency(uint32_t freq_khz) {
   }
   return false;
 }
+
+bool HamShield::frequency(float freq_khz) {
+    
+    if((freq_khz >= 134000) && (freq_khz <= 174000)) { 
+      setTxBand2m();
+    } else if((freq_khz >= 200000) && (freq_khz <= 260000)) { 
+      setTxBand1_2m();
+    } else if((freq_khz >= 400000) && (freq_khz <= 520000)) { 
+      setTxBand70cm();
+    } else {
+      return false;
+    }
+    
+    // convert from float to int
+    uint32_t freq_raw = (uint32_t) (freq_khz * 16); // radio_frequency is accurate to 1/16 kHz
+    radio_frequency = ((float) freq_raw) / 16; // radio_frequency is accurate to 1/16 kHz
+    
+    // turn off tx/rx
+    HSwriteBitsW(devAddr, A1846S_CTL_REG, 6, 2, 0);
+    
+    // if we're using a 12MHz crystal and the frequency is
+    // 136.5M,409.5M and 455M, then we have to do special stuff
+    if (radio_frequency == 136500 ||
+        radio_frequency == 490500 ||
+        radio_frequency == 455000) {
+        
+        // set up AU1846 for funky freq
+        HSwriteWord(devAddr, 0x05, 0x86D3);
+
+    } else {
+        // set up AU1846 for normal freq
+        HSwriteWord(devAddr, 0x05, 0x8763);
+    }
+    
+    // send top 16 bits to A1846S_FREQ_HI_REG    
+    uint16_t freq_half = (uint16_t) (0x3FFF & (freq_raw >> 16));
+    HSwriteWord(devAddr, A1846S_FREQ_HI_REG, freq_half);
+    //  send bottom 16 bits to A1846S_FREQ_LO_REG
+    freq_half = (uint16_t) (freq_raw & 0xFFFF);
+    HSwriteWord(devAddr, A1846S_FREQ_LO_REG, freq_half);
+    
+     if (rx_active) {
+        setRX(true);
+    } else if (tx_active) {
+        setTX(true);
+    }
+}
+
 
 /* FRS Lookup Table */
 
@@ -1434,25 +1515,25 @@ bool HamShield::waitForChannel(long timeout = 0, long breakwindow = 0, int setRS
 // Get current morse code tone frequency (in Hz)
 
 unsigned int HamShield::getMorseFreq() {
-	return morse_freq;
+    return morse_freq;
 }
 
 // Set current morse code tone frequency (in Hz)
 
 void HamShield::setMorseFreq(unsigned int morse_freq_hz) {
-	morse_freq = morse_freq_hz;
+    morse_freq = morse_freq_hz;
 }
 
 // Get current duration of a morse dot (shorter is more WPM)
 
 unsigned int HamShield::getMorseDotMillis() {
-	return morse_dot_millis;
+    return morse_dot_millis;
 }
 
 // Set current duration of a morse dot (shorter is more WPM)
 
 void HamShield::setMorseDotMillis(unsigned int morse_dot_dur_millis) {
-	morse_dot_millis = morse_dot_dur_millis;
+    morse_dot_millis = morse_dot_dur_millis;
 }
 
 /* Morse code out, blocking */
@@ -1485,7 +1566,7 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
           tone(HAMSHIELD_PWM_PIN, morse_freq, morse_dot_millis);
           delay(morse_dot_millis);
         }
-	tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis);
+    tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis);
         delay(morse_dot_millis);
         bits >>= 1; // Shift into the next symbol
       } while(bits != 1); // Wait for 1 termination to be all we have left
@@ -1520,29 +1601,29 @@ SSTV VIS Digital Header
 
 Reference: http://www.barberdsp.com/files/Dayton%20Paper.pdf
 
-Millis	Freq	Description
+Millis    Freq    Description
 -----------------------------------------------
-300 	1900 	Leader tone
-10 	1200 	break
-300 	1900 	Leader tone
-30 	1200 	VIS start bit
-30 	bit 0	1100hz = “1”, 1300hz = “0”
-30 	bit 1	“”
-30 	bit 2 	“”
-30	bit 3 	“”
-30 	bit 4 	“”
-30 	bit 5 	“”
-30 	bit 6 	“”
-30	PARITY	Even=1300hz,Odd=1100hz
-30	1200	VIS stop bit
+300     1900     Leader tone
+10     1200     break
+300     1900     Leader tone
+30     1200     VIS start bit
+30     bit 0    1100hz = “1”, 1300hz = “0”
+30     bit 1    “”
+30     bit 2     “”
+30    bit 3     “”
+30     bit 4     “”
+30     bit 5     “”
+30     bit 6     “”
+30    PARITY    Even=1300hz,Odd=1100hz
+30    1200    VIS stop bit
 
 */
 
 void HamShield::SSTVVISCode(int code) { 
-	toneWait(1900,300);
-	toneWait(1200,10);
-	toneWait(1900,300);
-	toneWait(1200,30);
+    toneWait(1900,300);
+    toneWait(1200,10);
+    toneWait(1900,300);
+    toneWait(1200,30);
         for(int x = 0; x < 7; x++) { 
            if(bitRead(code,x)) { toneWait(1100,30); } else { toneWait(1300,30); } 
         } 

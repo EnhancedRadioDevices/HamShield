@@ -45,7 +45,6 @@ void setup() {
   Serial.println(result);
   radio.initialize();
   radio.frequency(446000);
-  radio.bypassPreDeEmph();
   radio.setModeReceive();
 }
 

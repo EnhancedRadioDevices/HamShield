@@ -91,7 +91,7 @@
 //#define A1846S_BAND_SEL_BIT        7  // band_sel<1:0>
 //#define A1846S_BAND_SEL_LENGTH     2
 
-// Bitfields for RDA1864_GPIO_MODE_REG
+// Bitfields for A1846_GPIO_MODE_REG
 #define RDA1864_GPIO7_MODE_BIT     15  // <1:0> 00=hi-z,01=vox,10=low,11=hi
 #define RDA1864_GPIO7_MODE_LENGTH   2
 #define RDA1864_GPIO6_MODE_BIT     13  // <1:0> 00=hi-z,01=sq or =sq&ctcss/cdcss when sq_out_sel=1,10=low,11=hi
@@ -283,11 +283,11 @@ class HamShield {
 		
 		// Subaudio settings
 		
-                // Recommended user function for setting and receiving CTCSS does
+        // Recommended user function for setting and receiving CTCSS does
 		// TODO: set others to private and/or deprecate 
 
-                void setCtcssEncoder(float freq);   // generate sub audio tone on channel when transmitting
-                void setCtcssDecoder(float freq);   // unmute audio on tone present when receiving channel
+        void setCtcssEncoder(float freq);   // generate sub audio tone on channel when transmitting
+        void setCtcssDecoder(float freq);   // unmute audio on tone present when receiving channel
 
 
 

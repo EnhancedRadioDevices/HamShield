@@ -681,25 +681,24 @@ uint16_t HamShield::getPABiasVoltage(){
 // Subaudio settings
 
 
-// recommended function for placing CTCSS tone on channel -- schedule remainder for deprecation
-
+// recommended function for placing CTCSS tone on channel
 
 // ctcss freq encoder
 void HamShield::setCtcssEncoder(float freq) {
-       int dfreq = freq * 100;   // Convert float into whole number (ctcss freq * 100)
-        setCtcssFreq(dfreq);     // program CTCSS frequency buffer  
-        HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 10, 1);    // program CTCSS frequency buffer into CTCSS encoder (step 1)
-        HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 9, 1);     // program CTCSS frequency buffer into CTCSS encoder (step 2) 
+    int dfreq = freq * 100;   // Convert float into whole number (ctcss freq * 100)
+    setCtcssFreq(dfreq);     // program CTCSS frequency buffer  
+    HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 10, 1);    // program CTCSS frequency buffer into CTCSS encoder (step 1)
+    HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 9, 1);     // program CTCSS frequency buffer into CTCSS encoder (step 2) 
 }
 
 // recommended function for detecting (and requiring) CTCSS to be on channel before audio is unmuted -- schedule remainder for deprecation
 
 // ctcss freq decoder
 void HamShield::setCtcssDecoder(float freq) {
-       int dfreq = freq * 100;   // Convert float into whole number (ctcss freq * 100)
-        setCtcssFreq(dfreq);     // program CTCSS frequency buffer  
-        HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 10, 1);    // program CTCSS frequency buffer into CTCSS encoder (step 1)
-        HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 9, 1);     // program CTCSS frequency buffer into CTCSS encoder (step 2) 
+    int dfreq = freq * 100;   // Convert float into whole number (ctcss freq * 100)
+    setCtcssFreq(dfreq);     // program CTCSS frequency buffer  
+    HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 10, 1);    // program CTCSS frequency buffer into CTCSS encoder (step 1)
+    HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 9, 1);     // program CTCSS frequency buffer into CTCSS encoder (step 2) 
 }
 
 

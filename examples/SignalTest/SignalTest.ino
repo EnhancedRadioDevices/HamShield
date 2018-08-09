@@ -1,6 +1,6 @@
 /* Hamshield
  * Example: Signal Test
- * Plays back the current signal strength level and morses out 
+ * Transmits current signal strength level and Morses out 
  * it's call sign at the end. You will need a HandyTalkie (HT)
  * to test the output of this example. You will also need to 
  * download the PCM library from 

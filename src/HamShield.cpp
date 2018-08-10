@@ -31,6 +31,7 @@ unsigned int morse_dot_millis = 100;
 /* morse code lookup table */
 // This is the Morse table in reverse binary format.
 // It will occupy 108 bytes of memory (or program memory if defined)
+
 #define MORSE_TABLE_LENGTH 54
 #define MORSE_TABLE_PROGMEM
 #ifndef MORSE_TABLE_PROGMEM
@@ -681,155 +682,124 @@ uint16_t HamShield::getPABiasVoltage(){
 // Subaudio settings
 
 
-// recommended function for placing CTCSS tone on channel
-
-// ctcss freq encoder
-void HamShield::setCtcssEncoder(float freq) {
-    int dfreq = freq * 100;   // Convert float into whole number (ctcss freq * 100)
-    setCtcssFreq(dfreq);     // program CTCSS frequency buffer  
-    HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 10, 1);    // program CTCSS frequency buffer into CTCSS encoder (step 1)
-    HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 9, 1);     // program CTCSS frequency buffer into CTCSS encoder (step 2) 
-}
-
-// recommended function for detecting (and requiring) CTCSS to be on channel before audio is unmuted -- schedule remainder for deprecation
-
-// ctcss freq decoder
-void HamShield::setCtcssDecoder(float freq) {
-    int dfreq = freq * 100;   // Convert float into whole number (ctcss freq * 100)
-    setCtcssFreq(dfreq);     // program CTCSS frequency buffer  
-    HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 10, 1);    // program CTCSS frequency buffer into CTCSS encoder (step 1)
-    HSwriteBitW(devAddr, A1846S_CTCSS_FREQ_PRG, 9, 1);     // program CTCSS frequency buffer into CTCSS encoder (step 2) 
-}
-
-
-
-
-
-
-
 // TX and RX code
-/*
-    Set code mode:
-    Step1: set 58H[1:0]=11 set voice hpf bypass
-    Step2: set 58H[5:3]=111 set voice lpf bypass and pre/de-emph bypass
-    Step3 set 3CH[15:14]=10 set code mode
-    Step4: set 1FH[3:2]=01 set GPIO code in or code out
-
-    TX code mode:
-    Step1: 45H[2:0]=010
-    
-    RX code mode:
-    Step1: set 45H[2:0]=001
-    Step2: set 4dH[15:10]=000001
-*/
 
 //   Ctcss/cdcss mode sel
-//      x00=disable,
-//      001=inner ctcss en,
-//      010= inner cdcss en
-//      101= outer ctcss en,
-//      110=outer cdcss en
-//      others =disable
+//      00000= disable,
+//      00001= det ctcss tone 1
+//      00010= det cdcss 
+//      00100= det inverted ctcss
+//      01000= det ctcss tone 2 (unused in HS right now)
+//      10000= det phase shift
 void HamShield::setCtcssCdcssMode(uint16_t mode){
-    HSwriteBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_C_MODE_BIT, A1846S_C_MODE_LENGTH, mode);
+    HSwriteBitsW(devAddr, A1846S_TX_VOICE_REG, A1846S_CTDCSS_DTEN_BIT, A1846S_CTDCSS_DTEN_LEN, mode);
 }
 uint16_t HamShield::getCtcssCdcssMode(){
-    HSreadBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_C_MODE_BIT, A1846S_C_MODE_LENGTH, radio_i2c_buf);
+    HSreadBitsW(devAddr, A1846S_TX_VOICE_REG, A1846S_CTDCSS_DTEN_BIT, A1846S_CTDCSS_DTEN_BIT, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
-void HamShield::setInnerCtcssMode(){
-    setCtcssCdcssMode(1);
+
+void HamShield::setDetPhaseShift() {
+    setCtcssCdcssMode(0x10);
 }
-void HamShield::setInnerCdcssMode(){
-    setCtcssCdcssMode(2);
+void HamShield::setDetInvertCdcss() {
+    setCtcssCdcssMode(0x4);
 }
-void HamShield::setOuterCtcssMode(){
-    setCtcssCdcssMode(5);
+void HamShield::setDetCdcss() {
+    setCtcssCdcssMode(0x2);
 }
-void HamShield::setOuterCdcssMode(){
-    setCtcssCdcssMode(6);
+void HamShield::setDetCtcss() {
+    setCtcssCdcssMode(0x1);
 }
+		
 void HamShield::disableCtcssCdcss(){
     setCtcssCdcssMode(0);
 }
 
 //   Ctcss_sel
 //      1 = ctcss_cmp/cdcss_cmp out via gpio
-//      0 = ctcss/cdcss sdo out vio gpio
-void HamShield::setCtcssSel(bool cmp_nsdo){
-    HSwriteBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CTCSS_SEL_BIT, cmp_nsdo);
+//      0 = ctcss/cdcss sdo out via gpio
+void HamShield::setCtcssGpioSel(bool cmp_nsdo){
+	setGpioFcn(0);
 }
-bool HamShield::getCtcssSel(){
-    HSreadBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CTCSS_SEL_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+bool HamShield::getCtcssGpioSel(){
+    uint16_t mode = getGpioMode(0);
+	return (mode == 1);
 }
 
 //   Cdcss_sel
 //      1 = long (24 bit) code
 //      0 = short(23 bit) code
 void HamShield::setCdcssSel(bool long_nshort){
-    HSwriteBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CDCSS_SEL_BIT, long_nshort);
+    HSwriteBitW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_CDCSS_SEL_BIT, long_nshort);
 }
 bool HamShield::getCdcssSel(){
-    HSreadBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CDCSS_SEL_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+    HSreadBitW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_CDCSS_SEL_BIT, radio_i2c_buf);
+    return (radio_i2c_buf[0] == 1);
+}
+
+void HamShield::setCdcssInvert(bool invert) {
+	HSwriteBitW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_CDCSS_INVERT_BIT, invert);
+}
+bool HamShield::getCdcssInvert() {
+    HSreadBitW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_CDCSS_INVERT_BIT, radio_i2c_buf);
+    return (radio_i2c_buf[0] == 1);
 }
 
 // Cdcss neg_det_en
-void HamShield::enableCdcssNegDet(){
-    HSwriteBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_NEG_DET_EN_BIT, 1);
-}
-void HamShield::disableCdcssNegDet(){
-    HSwriteBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_NEG_DET_EN_BIT, 0);
-}
 bool HamShield::getCdcssNegDetEnabled(){
-    HSreadBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_NEG_DET_EN_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+	uint16_t css_mode = getCtcssCdcssMode();
+	return (css_mode == 4);
 }
 
 // Cdcss pos_det_en
-void HamShield::enableCdcssPosDet(){
-    HSwriteBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_POS_DET_EN_BIT, 1);
-}
-void HamShield::disableCdcssPosDet(){
-    HSwriteBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_POS_DET_EN_BIT, 0);
-}
 bool HamShield::getCdcssPosDetEnabled(){
-    HSreadBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_POS_DET_EN_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+	uint16_t css_mode = getCtcssCdcssMode();
+	return (css_mode == 2);
 }
 
 // css_det_en
-void HamShield::enableCssDet(){
-    HSwriteBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CSS_DET_EN_BIT, 1);
-}
-void HamShield::disableCssDet(){
-    HSwriteBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CSS_DET_EN_BIT, 0);
-}
-bool HamShield::getCssDetEnabled(){
-    HSreadBitW(devAddr, A1846S_SUBAUDIO_REG, A1846S_CSS_DET_EN_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+bool HamShield::getCtssDetEnabled(){
+	uint16_t css_mode = getCtcssCdcssMode();
+	return (css_mode == 1);
 }
 
 // ctcss freq
-void HamShield::setCtcss(float freq) {
-        int dfreq = freq / 10000;
-        dfreq = dfreq * 65536;
-        setCtcssFreq(dfreq);
+void HamShield::setCtcss(float freq_Hz) {
+    setCtcssFreq((uint16_t) (freq_Hz*100));
 }
 
-void HamShield::setCtcssFreq(uint16_t freq){
-    HSwriteWord(devAddr, A1846S_CTCSS_FREQ_REG, freq);
+void HamShield::setCtcssFreq(uint16_t freq_milliHz){
+    HSwriteWord(devAddr, A1846S_CTCSS_FREQ_REG, freq_milliHz);
 }
-uint16_t HamShield::getCtcssFreq(){
+uint16_t HamShield::getCtcssFreqMilliHz(){
     HSreadWord(devAddr, A1846S_CTCSS_FREQ_REG, radio_i2c_buf);
     
     return radio_i2c_buf[0];
 }
+float HamShield::getCtcssFreqHz() {
+	return ((float)(getCtcssFreqMilliHz()))/100;
+}
+
 void HamShield::setCtcssFreqToStandard(){
     // freq must be 134.4Hz for standard cdcss mode
-    setCtcssFreq(0x2268);
-} 
+    setCtcssFreq(13440);
+}
+
+void HamShield::enableCtcss() {
+	// enable TX
+	HSwriteBitsW(devAddr, A1846S_CTCSS_MODE_REG, 10, 2, 3);
+	
+	// enable RX
+	setCtcssGpioSel(1);
+	HSwriteBitW(devAddr, A1846S_TX_VOICE_REG, A1846S_CTCSS_DET_BIT, 0);
+	HSwriteBitW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_CTCSS_FILTER_BYPASS, 0);
+	setDetCtcss();
+}
+void HamShield::disableCtcss() {
+	HSwriteBitsW(devAddr, A1846S_CTCSS_MODE_REG, 10, 2, 0);
+	disableCtcssCdcss();
+}
 
 // cdcss codes
 void HamShield::setCdcssCode(uint16_t code) {
@@ -966,15 +936,15 @@ bool HamShield::getTailNoiseElimEnabled(){
 
 // tail noise shift select
 //   Select ctcss phase shift when use tail eliminating function when TX
-//     00 = 120 degree shift
-//     01 = 180 degree shift
-//     10 = 240 degree shift
-//     11 = reserved
+//     00 = 0 degree shift
+//     01 = 120 degree shift
+//     10 = 180 degree shift
+//     11 = 240 degree shift
 void HamShield::setShiftSelect(uint16_t shift_sel){
-  HSwriteBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LENGTH, shift_sel);
+  HSwriteBitsW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LEN, shift_sel);
 }
 uint16_t HamShield::getShiftSelect(){
-  HSreadBitsW(devAddr, A1846S_SUBAUDIO_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LENGTH, radio_i2c_buf);
+  HSreadBitsW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LEN, radio_i2c_buf);
   return radio_i2c_buf[0];
 }
 
@@ -1085,6 +1055,37 @@ void HamShield::setDTMFCode(uint16_t code){
   HSwriteWord(devAddr, A1846S_TONE1_FREQ, tone1);
   HSwriteWord(devAddr, A1846S_TONE2_FREQ, tone2);
 
+}
+
+// Tone detection
+void HamShield::lookForTone(uint16_t t_hz) {
+	float tone_hz = (float) t_hz;
+	float Fs = 6400000/1024;
+	float k = floor(tone_hz/Fs*127 + 0.5);
+	uint16_t t = (uint16_t) (round(2.0*cos(2.0*PI*k/127)*1024));
+	
+	float k2 = floor(2*tone_hz/Fs*127+0.5);
+	uint16_t h = (uint16_t) (round(2.0*cos(2.0*PI*k2/127)*1024));
+	// set tone
+	HSwriteWord(devAddr, 0x68, t);
+	
+	// set second harmonic
+	HSwriteWord(devAddr, 0x70, h);
+	// turn on tone detect
+	HSwriteBitW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_TONE_DETECT, 1);
+	HSwriteBitW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 1);
+
+}
+
+uint8_t HamShield::toneDetected() {
+	HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_SAMPLE_BIT, 1, radio_i2c_buf);
+	if (radio_i2c_buf[0] != 0) {
+		HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_CODE_BIT, A1846S_DTMF_CODE_LEN, radio_i2c_buf);
+		if (radio_i2c_buf[0] == 1) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
 // TX FM deviation
@@ -1587,6 +1588,21 @@ uint8_t HamShield::morseLookup(char letter) {
     uint16_t w = pgm_read_word_near(asciiMorseProgmem + i);
     if( (char)((w>>8) & 0xff) == letter )
       return (uint8_t)(w & 0xff);
+#endif // MORSE_TABLE_PROGMEM
+  }
+  return 0;
+}
+
+uint8_t HamShield::morseReverseLookup(uint8_t itu) {
+  uint8_t i;
+  for(i = 0; i < MORSE_TABLE_LENGTH; i++) {
+#ifndef MORSE_TABLE_PROGMEM
+    if(asciiMorse[i].itu == itu)
+      return asciiMorse[i].ascii;
+#else
+    uint16_t w = pgm_read_word_near(asciiMorseProgmem + i);
+    if( (uint8_t)(w & 0xff) == itu )
+      return (char)((w>>8) & 0xff);
 #endif // MORSE_TABLE_PROGMEM
   }
   return 0;

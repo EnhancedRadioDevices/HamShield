@@ -30,6 +30,7 @@
 #define A1846S_CLK_MODE_REG         0x04    // clk_mode
 #define A1846S_PABIAS_REG           0x0A    // control register for bias voltage
 //#define A1846S_BAND_SEL_REG         0x0F    // band_sel register <1:0>
+#define A1846S_FLAG_REG             0x1C
 #define A1846S_GPIO_MODE_REG        0x1F    // GPIO mode select register
 #define A1846S_FREQ_HI_REG          0x29    // freq<29:16>
 #define A1846S_FREQ_LO_REG          0x2A    // freq<15:0>
@@ -41,13 +42,12 @@
 #define A1846S_TH_L_VOX_REG         0x42    // register holds vox low (shut) threshold bits
 #define A1846S_FM_DEV_REG           0x43    // register holds fm deviation settings
 #define A1846S_RX_VOLUME_REG        0x44    // register holds RX volume settings
-#define A1846S_SUBAUDIO_REG         0x45    // sub audio register
 #define A1846S_SQ_OPEN_THRESH_REG   0x48    // see sq
 #define A1846S_SQ_SHUT_THRESH_REG   0x49    // see sq
 #define A1846S_CTCSS_FREQ_REG       0x4A    // ctcss_freq<15:0>
 #define A1846S_CDCSS_CODE_HI_REG    0x4B    // cdcss_code<23:16>
 #define A1846S_CDCSS_CODE_LO_REG    0x4C    // cdccs_code<15:0>
-#define A1846S_CTCSS_FREQ_PRG       0x4e    // copies CTCSS value from A1846S_CTCSS_FREQ_REG into CTCSS encoder
+#define A1846S_CTCSS_MODE_REG       0x4e    // copies CTCSS value from A1846S_CTCSS_FREQ_REG into CTCSS encoder
 #define A1846S_SQ_OUT_SEL_REG       0x54    // see sq
 #define A1846S_EMPH_FILTER_REG      0x58
 #define A1846S_FLAG_REG             0x5C    // holds flags for different statuses
@@ -92,22 +92,22 @@
 //#define A1846S_BAND_SEL_LENGTH     2
 
 // Bitfields for A1846_GPIO_MODE_REG
-#define RDA1864_GPIO7_MODE_BIT     15  // <1:0> 00=hi-z,01=vox,10=low,11=hi
-#define RDA1864_GPIO7_MODE_LENGTH   2
-#define RDA1864_GPIO6_MODE_BIT     13  // <1:0> 00=hi-z,01=sq or =sq&ctcss/cdcss when sq_out_sel=1,10=low,11=hi
-#define RDA1864_GPIO6_MODE_LENGTH   2
-#define RDA1864_GPIO5_MODE_BIT     11  // <1:0> 00=hi-z,01=txon_rf,10=low,11=hi
-#define RDA1864_GPIO5_MODE_LENGTH   2
-#define RDA1864_GPIO4_MODE_BIT      9  // <1:0> 00=hi-z,01=rxon_rf,10=low,11=hi
-#define RDA1864_GPIO4_MODE_LENGTH   2
-#define RDA1864_GPIO3_MODE_BIT      7  // <1:0> 00=hi-z,01=sdo,10=low,11=hi
-#define RDA1864_GPIO3_MODE_LENGTH   2
-#define RDA1864_GPIO2_MODE_BIT      5  // <1:0> 00=hi-z,01=int,10=low,11=hi
-#define RDA1864_GPIO2_MODE_LENGTH   2
-#define RDA1864_GPIO1_MODE_BIT      3  // <1:0> 00=hi-z,01=code_out/code_in,10=low,11=hi
-#define RDA1864_GPIO1_MODE_LENGTH   2
-#define RDA1864_GPIO0_MODE_BIT      1  // <1:0> 00=hi-z,01=css_out/css_in/css_cmp,10=low,11=hi
-#define RDA1864_GPIO0_MODE_LENGTH   2
+#define A1846S_GPIO7_MODE_BIT     15  // <1:0> 00=hi-z,01=vox,10=low,11=hi
+#define A1846S_GPIO7_MODE_LENGTH   2
+#define A1846S_GPIO6_MODE_BIT     13  // <1:0> 00=hi-z,01=sq or =sq&ctcss/cdcss when sq_out_sel=1,10=low,11=hi
+#define A1846S_GPIO6_MODE_LENGTH   2
+#define A1846S_GPIO5_MODE_BIT     11  // <1:0> 00=hi-z,01=txon_rf,10=low,11=hi
+#define A1846S_GPIO5_MODE_LENGTH   2
+#define A1846S_GPIO4_MODE_BIT      9  // <1:0> 00=hi-z,01=rxon_rf,10=low,11=hi
+#define A1846S_GPIO4_MODE_LENGTH   2
+#define A1846S_GPIO3_MODE_BIT      7  // <1:0> 00=hi-z,01=sdo,10=low,11=hi
+#define A1846S_GPIO3_MODE_LENGTH   2
+#define A1846S_GPIO2_MODE_BIT      5  // <1:0> 00=hi-z,01=int,10=low,11=hi
+#define A1846S_GPIO2_MODE_LENGTH   2
+#define A1846S_GPIO1_MODE_BIT      3  // <1:0> 00=hi-z,01=code_out/code_in,10=low,11=hi
+#define A1846S_GPIO1_MODE_LENGTH   2
+#define A1846S_GPIO0_MODE_BIT      1  // <1:0> 00=hi-z,01=css_out/css_in/css_cmp,10=low,11=hi
+#define A1846S_GPIO0_MODE_LENGTH   2
 
 // Bitfields for A1846S_INT_MODE_REG
 #define A1846S_CSS_CMP_INT_BIT          9  // css_cmp_uint16_t enable
@@ -123,6 +123,7 @@
 // Bitfields for A1846S_TX_VOICE_REG
 #define A1846S_VOICE_SEL_BIT      14  //voice_sel<1:0>
 #define A1846S_VOICE_SEL_LENGTH    3
+#define A1846S_CTCSS_DET_BIT       5
 
 // Bitfields for A1846S_TH_H_VOX_REG
 #define A1846S_TH_H_VOX_BIT       14  // th_h_vox<14:0>
@@ -140,16 +141,14 @@
 #define A1846S_RX_VOL_2_BIT        3  // volume 2 <3:0>, (0000)-15dB~(1111)0dB, step 1dB
 #define A1846S_RX_VOL_2_LENGTH     4
 
-// Bitfields for A1846S_SUBAUDIO_REG Sub Audio Register
-#define A1846S_SHIFT_SEL_BIT      15  // shift_sel<1:0> see eliminating tail noise
-#define A1846S_SHIFT_SEL_LENGTH    2
-#define A1846S_POS_DET_EN_BIT     11  // if 1, cdcss code will be detected
-#define A1846S_CSS_DET_EN_BIT     10  // 1 - sq detect will add ctcss/cdcss detect result and control voice output on or off
-#define A1846S_NEG_DET_EN_BIT      7  // if 1, cdcss inverse code will be detected at same time
-#define A1846S_CDCSS_SEL_BIT       4  // cdcss_sel
-#define A1846S_CTCSS_SEL_BIT       3  // ctcss_sel
-#define A1846S_C_MODE_BIT          2  // c_mode<2:0>
-#define A1846S_C_MODE_LENGTH       3
+// Bitfields for Sub Audio Bits
+#define A1846S_CTDCSS_OUT_SEL_BIT  5
+#define A1846S_CTDCSS_DTEN_BIT     4
+#define A1846S_CTDCSS_DTEN_LEN     5
+#define A1846S_CDCSS_SEL_BIT       6  // cdcss_sel
+#define A1846S_CDCSS_INVERT_BIT    6  // cdcss_sel
+#define A1846S_SHIFT_SEL_BIT      15
+#define A1846S_SHIFT_SEL_LEN       2
 
 // Bitfields for A1846S_SQ_THRESH_REG
 #define A1846S_SQ_OPEN_THRESH_BIT     9  // sq open threshold <9:0>
@@ -164,6 +163,7 @@
 
 // Bitfields for A1846S_EMPH_FILTER_REG
 #define A1846S_EMPH_FILTER_EN      7
+#define A1846S_CTCSS_FILTER_BYPASS   3
 
 // Bitfields for A1846S_FLAG_REG
 #define A1846S_RXON_RF_FLAG_BIT   10  // 1 when rxon is enabled
@@ -183,6 +183,7 @@
 
 // Bitfields for A1846S_DTMF_ENABLE_REG
 #define A1846S_DTMF_ENABLE_BIT    15
+#define A1846S_TONE_DETECT        14
 #define A18462_DTMF_DET_TIME_BIT   7
 #define A18462_DTMF_DET_TIME_LEN   8
 
@@ -283,15 +284,6 @@ class HamShield {
 		
 		// Subaudio settings
 		
-        // Recommended user function for setting and receiving CTCSS does
-		// TODO: set others to private and/or deprecate 
-
-        void setCtcssEncoder(float freq);   // generate sub audio tone on channel when transmitting
-        void setCtcssDecoder(float freq);   // unmute audio on tone present when receiving channel
-
-
-
-		
 		//   Ctcss/cdcss mode sel
 		//      x00=disable,
 		//      001=inner ctcss en,
@@ -301,17 +293,29 @@ class HamShield {
 		//      others =disable
 		void setCtcssCdcssMode(uint16_t mode);
 		uint16_t getCtcssCdcssMode();
-		void setInnerCtcssMode();
-		void setInnerCdcssMode();
-		void setOuterCtcssMode();
-		void setOuterCdcssMode();
+		void setDetPhaseShift();
+		void setDetInvertCdcss();
+		void setDetCdcss();
+		void setDetCtcss();
 		void disableCtcssCdcss();
+		
+		// ctcss freq
+		void setCtcss(float freq_Hz);
+		void setCtcssFreq(uint16_t freq_milliHz);
+		uint16_t getCtcssFreqMilliHz();
+		float getCtcssFreqHz();
+		void setCtcssFreqToStandard(); // freq must be 134.4Hz for standard cdcss mode
+		void enableCtcss();
+		void disableCtcss();
 		
 		//   Ctcss_sel
 		//      1 = ctcss_cmp/cdcss_cmp out via gpio
 		//      0 = ctcss/cdcss sdo out vio gpio
-		void setCtcssSel(bool cmp_nsdo);
-		bool getCtcssSel();
+		void setCtcssGpioSel(bool cmp_nsdo);
+		bool getCtcssGpioSel();
+		
+		void setCdcssInvert(bool invert);
+		bool getCdcssInvert();
 		
 		//   Cdcss_sel
 		//      1 = long (24 bit) code
@@ -319,30 +323,18 @@ class HamShield {
 		void setCdcssSel(bool long_nshort);
 		bool getCdcssSel();
 		// Cdcss neg_det_en
-		void enableCdcssNegDet();
-		void disableCdcssNegDet();
 		bool getCdcssNegDetEnabled();
 		
 		// Cdcss pos_det_en
-		void enableCdcssPosDet();
-		void disableCdcssPosDet();
 		bool getCdcssPosDetEnabled();
 
-		// css_det_en
-		void enableCssDet();
-		void disableCssDet();
-		bool getCssDetEnabled();
-		
-		// ctcss freq
-		void setCtcss(float freq);
-		void setCtcssFreq(uint16_t freq);
-		uint16_t getCtcssFreq();
-		void setCtcssFreqToStandard(); // freq must be 134.4Hz for standard cdcss mode
+		// ctss_det_en
+		bool getCtssDetEnabled();
 		
 		// cdcss codes
 		void setCdcssCode(uint16_t code);
 		uint16_t getCdcssCode();
-				
+		
 		// SQ
 		void setSQOn();
 		void setSQOff();
@@ -405,6 +397,10 @@ class HamShield {
 		uint16_t getDTMFCode();
         uint16_t getDTMFTxActive();
         void setDTMFCode(uint16_t code);
+		
+		// Tone
+		void lookForTone(uint16_t tone_hz);
+		uint8_t toneDetected();
         
 
 		// TX FM deviation
@@ -474,6 +470,7 @@ class HamShield {
 		void setMorseDotMillis(unsigned int morse_dot_dur_millis);
 		void morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]);
 		uint8_t morseLookup(char letter);
+		uint8_t morseReverseLookup(uint8_t itu);
         bool waitForChannel(long timeout, long breakwindow, int setRSSI);
         void SSTVVISCode(int code);
         void SSTVTestPattern(int code);

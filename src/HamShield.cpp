@@ -771,6 +771,14 @@ void HamShield::setCtcss(float freq_Hz) {
 
 void HamShield::setCtcssFreq(uint16_t freq_milliHz){
     HSwriteWord(devAddr, A1846S_CTCSS_FREQ_REG, freq_milliHz);
+	
+	// set RX Ctcss match thresholds (based on frequency)
+	// calculate thresh based on freq
+	float f = ((float) freq_milliHz)/100;
+	uint8_t thresh = (uint8_t)(-0.1*f + 25);
+	setCtcssDetThreshIn(thresh);
+	setCtcssDetThreshOut(thresh);
+
 }
 uint16_t HamShield::getCtcssFreqMilliHz(){
     HSreadWord(devAddr, A1846S_CTCSS_FREQ_REG, radio_i2c_buf);
@@ -786,20 +794,40 @@ void HamShield::setCtcssFreqToStandard(){
     setCtcssFreq(13440);
 }
 
-void HamShield::enableCtcss() {
+void HamShield::enableCtcss() {	
 	// enable TX
 	HSwriteBitsW(devAddr, A1846S_CTCSS_MODE_REG, 10, 2, 3);
 	
 	// enable RX
 	setCtcssGpioSel(1);
 	HSwriteBitW(devAddr, A1846S_TX_VOICE_REG, A1846S_CTCSS_DET_BIT, 0);
-	HSwriteBitW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_CTCSS_FILTER_BYPASS, 0);
+	HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_CTCSS_FILTER_BYPASS, 0);
 	setDetCtcss();
 }
 void HamShield::disableCtcss() {
 	HSwriteBitsW(devAddr, A1846S_CTCSS_MODE_REG, 10, 2, 0);
 	disableCtcssCdcss();
 }
+
+// match threshold
+void HamShield::setCtcssDetThreshIn(uint8_t thresh) {
+	HSwriteBitsW(devAddr, A1846S_CTCSS_THRESH_REG, 15, 8, thresh);
+}
+uint8_t HamShield::getCtcssDetThreshIn() {
+	HSreadBitsW(devAddr, A1846S_CTCSS_THRESH_REG, 15, 8, radio_i2c_buf);
+	return (uint8_t) radio_i2c_buf[0];
+}
+
+// unmatch threshold
+void HamShield::setCtcssDetThreshOut(uint8_t thresh) {
+	HSwriteBitsW(devAddr, A1846S_CTCSS_THRESH_REG, 7, 8, thresh);
+}
+uint8_t HamShield::getCtcssDetThreshOut() {
+	HSreadBitsW(devAddr, A1846S_CTCSS_THRESH_REG, 7, 8, radio_i2c_buf);
+	return (uint8_t) radio_i2c_buf[0];
+}
+
+
 
 // cdcss codes
 void HamShield::setCdcssCode(uint16_t code) {
@@ -822,10 +850,10 @@ void HamShield::setCdcssCode(uint16_t code) {
     // TODO: CRC
     
     // set registers
-        uint16_t temp_code = (uint16_t) cdcss_code;
-    HSwriteWord(devAddr, A1846S_CDCSS_CODE_HI_REG, temp_code);
-        temp_code = (uint16_t) (cdcss_code >> 16);    
-    HSwriteWord(devAddr, A1846S_CDCSS_CODE_LO_REG, temp_code);    
+    uint16_t temp_code = (uint16_t) cdcss_code;
+    HSwriteWord(devAddr, A1846S_CDCSS_CODE_LO_REG, temp_code);
+    temp_code = ((uint16_t) (cdcss_code >> 16))&0x00FF;    
+    HSwriteWord(devAddr, A1846S_CDCSS_CODE_HI_REG, temp_code);    
 }
 uint16_t HamShield::getCdcssCode() {
     uint32_t oct_code;
@@ -964,7 +992,7 @@ void HamShield::enableDTMFReceive(){
   //HSwriteBitsW(devAddr, 0x57, 0, 1, 1); // send dtmf to speaker out
   
   // bypass pre/de-emphasis
-  HSwriteBitsW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_EMPH_FILTER_EN, 1, 1);
+  HSwriteBitsW(devAddr, A1846S_FILTER_REG, A1846S_EMPH_FILTER_EN, 1, 1);
   
 }
 
@@ -1188,15 +1216,64 @@ setStMode(0);
 
 // Pre-emphasis, De-emphasis filter
 void HamShield::bypassPreDeEmph(){
-    HSwriteBitW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_EMPH_FILTER_EN, 1);
+    HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_EMPH_FILTER_EN, 1);
 }
 void HamShield::usePreDeEmph(){
-    HSwriteBitW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_EMPH_FILTER_EN, 0);
+    HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_EMPH_FILTER_EN, 0);
 }
 bool HamShield::getPreDeEmphEnabled(){
-    HSreadBitW(devAddr, A1846S_EMPH_FILTER_REG, A1846S_EMPH_FILTER_EN, radio_i2c_buf);
+    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_EMPH_FILTER_EN, radio_i2c_buf);
     return (radio_i2c_buf[0] == 0);
 }
+
+// Voice Filters
+void HamShield::bypassVoiceHpf(){
+    HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VHPF_FILTER_EN, 1);
+}
+void HamShield::useVoiceHpf(){
+    HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VHPF_FILTER_EN, 0);
+}
+bool HamShield::getVoiceHpfEnabled(){
+    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VHPF_FILTER_EN, radio_i2c_buf);
+    return (radio_i2c_buf[0] == 0);
+}
+
+void HamShield::bypassVoiceLpf(){
+    HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VLPF_FILTER_EN, 1);
+}
+void HamShield::useVoiceLpf(){
+    HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VLPF_FILTER_EN, 0);
+}
+bool HamShield::getVoiceLpfEnabled(){
+    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VLPF_FILTER_EN, radio_i2c_buf);
+    return (radio_i2c_buf[0] == 0);
+}
+
+// Vox filters
+
+void HamShield::bypassVoxHpf(){
+    HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VXHPF_FILTER_EN, 1);
+}
+void HamShield::useVoxHpf(){
+    HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VXHPF_FILTER_EN, 0);
+}
+bool HamShield::getVoxHpfEnabled(){
+    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VXHPF_FILTER_EN, radio_i2c_buf);
+    return (radio_i2c_buf[0] == 0);
+}
+
+void HamShield::bypassVoxLpf(){
+    HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VXLPF_FILTER_EN, 1);
+}
+void HamShield::useVoxLpf(){
+    HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VXLPF_FILTER_EN, 0);
+}
+bool HamShield::getVoxLpfEnabled(){
+    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VXLPF_FILTER_EN, radio_i2c_buf);
+    return (radio_i2c_buf[0] == 0);
+}
+
+
 
 // Read Only Status Registers
 int16_t HamShield::readRSSI(){
@@ -1545,11 +1622,13 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
       // We delay by 4 here, if we previously sent a symbol. Otherwise 7.
       // This could probably just be always 7 and go relatively unnoticed.
       if(prev == 0 || prev == ' '){
-        tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 7);
-        delay(morse_dot_millis*7);
+        //tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 7);
+        noTone(HAMSHIELD_PWM_PIN);
+		delay(morse_dot_millis*7);
       } else {
-        tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 4);
-        delay(morse_dot_millis*4);
+        //tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 4);
+        noTone(HAMSHIELD_PWM_PIN);
+		delay(morse_dot_millis*4);
       }
       continue;
     }
@@ -1564,14 +1643,16 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
           tone(HAMSHIELD_PWM_PIN, morse_freq, morse_dot_millis);
           delay(morse_dot_millis);
         }
-    tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis);
-        delay(morse_dot_millis);
+        //tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis);
+        noTone(HAMSHIELD_PWM_PIN);
+		delay(morse_dot_millis);
         bits >>= 1; // Shift into the next symbol
       } while(bits != 1); // Wait for 1 termination to be all we have left
     }
     // End of character
-    tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 3);
-    delay(morse_dot_millis * 3);
+    //tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 3);
+    noTone(HAMSHIELD_PWM_PIN);
+	delay(morse_dot_millis * 3);
   }
   return;
 }

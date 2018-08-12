@@ -49,7 +49,8 @@
 #define A1846S_CDCSS_CODE_LO_REG    0x4C    // cdccs_code<15:0>
 #define A1846S_CTCSS_MODE_REG       0x4e    // copies CTCSS value from A1846S_CTCSS_FREQ_REG into CTCSS encoder
 #define A1846S_SQ_OUT_SEL_REG       0x54    // see sq
-#define A1846S_EMPH_FILTER_REG      0x58
+#define A1846S_FILTER_REG      0x58
+#define A1846S_CTCSS_THRESH_REG     0x5B
 #define A1846S_FLAG_REG             0x5C    // holds flags for different statuses
 #define A1846S_RSSI_REG             0x1B    // holds RSSI (unit 1dB)
 #define A1846S_VSSI_REG             0x1A    // holds VSSI (unit mV)
@@ -161,8 +162,12 @@
 // Bitfields for A1846S_SQ_OUT_SEL_REG
 #define A1846S_SQ_OUT_SEL_BIT      7  // sq_out_sel
 
-// Bitfields for A1846S_EMPH_FILTER_REG
+// Bitfields for A1846S_FILTER_REG
+#define A1846S_VXHPF_FILTER_EN     11
+#define A1846S_VXLPF_FILTER_EN     12
 #define A1846S_EMPH_FILTER_EN      7
+#define A1846S_VHPF_FILTER_EN      6
+#define A1846S_VLPF_FILTER_EN      5
 #define A1846S_CTCSS_FILTER_BYPASS   3
 
 // Bitfields for A1846S_FLAG_REG
@@ -285,12 +290,6 @@ class HamShield {
 		// Subaudio settings
 		
 		//   Ctcss/cdcss mode sel
-		//      x00=disable,
-		//      001=inner ctcss en,
-		//      010= inner cdcss en
-		//      101= outer ctcss en,
-		//      110=outer cdcss en
-		//      others =disable
 		void setCtcssCdcssMode(uint16_t mode);
 		uint16_t getCtcssCdcssMode();
 		void setDetPhaseShift();
@@ -299,7 +298,7 @@ class HamShield {
 		void setDetCtcss();
 		void disableCtcssCdcss();
 		
-		// ctcss freq
+		// ctcss settings
 		void setCtcss(float freq_Hz);
 		void setCtcssFreq(uint16_t freq_milliHz);
 		uint16_t getCtcssFreqMilliHz();
@@ -307,7 +306,11 @@ class HamShield {
 		void setCtcssFreqToStandard(); // freq must be 134.4Hz for standard cdcss mode
 		void enableCtcss();
 		void disableCtcss();
-		
+		void setCtcssDetThreshIn(uint8_t thresh);
+		uint8_t getCtcssDetThreshIn();
+		void setCtcssDetThreshOut(uint8_t thresh);
+		uint8_t getCtcssDetThreshOut();
+
 		//   Ctcss_sel
 		//      1 = ctcss_cmp/cdcss_cmp out via gpio
 		//      0 = ctcss/cdcss sdo out vio gpio
@@ -441,6 +444,22 @@ class HamShield {
 		void bypassPreDeEmph();
 		void usePreDeEmph();
 		bool getPreDeEmphEnabled();
+
+		// Voice filters
+		void bypassVoiceHpf();
+		void useVoiceHpf();
+		bool getVoiceHpfEnabled();
+		void bypassVoiceLpf();
+		void useVoiceLpf();
+		bool getVoiceLpfEnabled();
+
+		// Vox filters
+		void bypassVoxHpf();
+		void useVoxHpf();
+		bool getVoxHpfEnabled();
+		void bypassVoxLpf();
+		void useVoxLpf();
+		bool getVoxLpfEnabled();
 		
 		// Read Only Status Registers
 		int16_t readRSSI();

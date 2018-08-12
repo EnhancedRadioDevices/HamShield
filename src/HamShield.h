@@ -51,7 +51,6 @@
 #define A1846S_SQ_OUT_SEL_REG       0x54    // see sq
 #define A1846S_FILTER_REG      0x58
 #define A1846S_CTCSS_THRESH_REG     0x5B
-#define A1846S_FLAG_REG             0x5C    // holds flags for different statuses
 #define A1846S_RSSI_REG             0x1B    // holds RSSI (unit 1dB)
 #define A1846S_VSSI_REG             0x1A    // holds VSSI (unit mV)
 
@@ -171,8 +170,8 @@
 #define A1846S_CTCSS_FILTER_BYPASS   3
 
 // Bitfields for A1846S_FLAG_REG
-#define A1846S_RXON_RF_FLAG_BIT   10  // 1 when rxon is enabled
-#define A1846S_TXON_RF_FLAG_BIT    9  // 1 when txon is enabled
+#define A1846S_CTCSS1_FLAG_BIT     9  // 1 when rxon is enabled
+#define A1846S_CTCSS2_FLAG_BIT     8  // 1 when txon is enabled
 #define A1846S_INVERT_DET_FLAG_BIT 7  // ctcss phase shift detect
 #define A1846S_CSS_CMP_FLAG_BIT    2  // ctcss/cdcss compared
 #define A1846S_SQ_FLAG_BIT         1  // sq final signal out from dsp
@@ -310,6 +309,7 @@ class HamShield {
 		uint8_t getCtcssDetThreshIn();
 		void setCtcssDetThreshOut(uint8_t thresh);
 		uint8_t getCtcssDetThreshOut();
+		bool getCtcssToneDetected();
 
 		//   Ctcss_sel
 		//      1 = ctcss_cmp/cdcss_cmp out via gpio
@@ -413,6 +413,8 @@ class HamShield {
 		uint16_t getFMCssDeviation();
 		
 		// RX voice range
+		void setMute();
+		void setUnmute();
 		void setVolume1(uint16_t volume);
 		uint16_t getVolume1();
 		void setVolume2(uint16_t volume);

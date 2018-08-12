@@ -827,7 +827,10 @@ uint8_t HamShield::getCtcssDetThreshOut() {
 	return (uint8_t) radio_i2c_buf[0];
 }
 
-
+bool HamShield::getCtcssToneDetected() {
+	HSreadBitW(devAddr, A1846S_FLAG_REG, A1846S_CTCSS1_FLAG_BIT, radio_i2c_buf);
+	return (radio_i2c_buf[0] != 0);
+}
 
 // cdcss codes
 void HamShield::setCdcssCode(uint16_t code) {
@@ -1133,6 +1136,13 @@ uint16_t HamShield::getFMCssDeviation(){
 }
 
 // RX voice range
+void HamShield::setMute() {
+	HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_MUTE_BIT, 1);
+}
+void HamShield::setUnmute() {
+	HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_MUTE_BIT, 0);
+}
+
 void HamShield::setVolume1(uint16_t volume){
     HSwriteBitsW(devAddr, A1846S_RX_VOLUME_REG, A1846S_RX_VOL_1_BIT, A1846S_RX_VOL_1_LENGTH, volume);
 }

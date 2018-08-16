@@ -1,7 +1,7 @@
 /* Hamshield
  * Example: Morse Code Transceiver
  * 
- * Serail to Morse transceiver. Sends characters from the Serial
+ * Serial to Morse transceiver. Sends characters from the Serial
  * port over the air, and vice versa.
  * Connect the HamShield to your Arduino. Screw the antenna 
  * into the HamShield RF jack. Connect the Arduino to wall 

@@ -95,12 +95,13 @@ void setup() {
   radio.setRfPower(0);
 
   // CTCSS Setup code
-  ctcss_tone = 103.5;
+  ctcss_tone = 134.4;
   radio.setCtcss(ctcss_tone);
   radio.enableCtcss();
-
+  Serial.print("ctcss tone: ");
+  Serial.println(radio.getCtcssFreqHz());
   // mute audio until we get a CTCSS tone
-  radio.setMute();
+//  radio.setMute();
   muted = true;
     
   // configure Arduino LED for
@@ -116,13 +117,13 @@ void loop() {
     if (radio.getCtcssToneDetected()) {
       if (muted) {
         muted = false;
-        radio.setUnmute();
+  //      radio.setUnmute();
         Serial.println("tone");
       }
     } else {
       if (!muted) {
         muted = true;
-        radio.setMute();
+  //      radio.setMute();
         Serial.println("no tone");
       }
     }

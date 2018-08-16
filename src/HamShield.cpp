@@ -770,23 +770,25 @@ void HamShield::setCtcss(float freq_Hz) {
 }
 
 void HamShield::setCtcssFreq(uint16_t freq_milliHz){
-    HSwriteWord(devAddr, A1846S_CTCSS_FREQ_REG, freq_milliHz);
-	
 	// set RX Ctcss match thresholds (based on frequency)
 	// calculate thresh based on freq
 	float f = ((float) freq_milliHz)/100;
 	uint8_t thresh = (uint8_t)(-0.1*f + 25);
 	setCtcssDetThreshIn(thresh);
 	setCtcssDetThreshOut(thresh);
-
+	
+	HSwriteWord(devAddr, A1846S_CTCSS_FREQ_REG, freq_milliHz);
 }
 uint16_t HamShield::getCtcssFreqMilliHz(){
-    HSreadWord(devAddr, A1846S_CTCSS_FREQ_REG, radio_i2c_buf);
-    
-    return radio_i2c_buf[0];
+    return getCtcssFreqHz()*100;
 }
 float HamShield::getCtcssFreqHz() {
-	return ((float)(getCtcssFreqMilliHz()))/100;
+	//y = mx + b
+	float m = 1.678;
+	float b = -3.3;
+    HSreadWord(devAddr, A1846S_CTCSS_FREQ_REG, radio_i2c_buf);
+	float f = (float) radio_i2c_buf[0];
+	return (f/m-b)/100; 
 }
 
 void HamShield::setCtcssFreqToStandard(){

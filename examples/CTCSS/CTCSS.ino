@@ -101,7 +101,7 @@ void setup() {
   Serial.print("ctcss tone: ");
   Serial.println(radio.getCtcssFreqHz());
   // mute audio until we get a CTCSS tone
-//  radio.setMute();
+  radio.setMute();
   muted = true;
     
   // configure Arduino LED for
@@ -117,13 +117,13 @@ void loop() {
     if (radio.getCtcssToneDetected()) {
       if (muted) {
         muted = false;
-  //      radio.setUnmute();
+        radio.setUnmute();
         Serial.println("tone");
       }
     } else {
       if (!muted) {
         muted = true;
-  //      radio.setMute();
+        radio.setMute();
         Serial.println("no tone");
       }
     }
@@ -139,13 +139,17 @@ void loop() {
       // set to transmit
       radio.setModeTransmit();
       Serial.println("Tx");
-      //radio.setTxSourceMic();
-      //radio.setRfPower(1);
+
+      radio.setUnmute(); // can't mute during transmit
+      muted = false;
     }
   } else if (currently_tx) {
     radio.setModeReceive();
     currently_tx = false;
     Serial.println("Rx");
+
+    radio.setMute(); // default to mute during rx
+    muted = true;
   }
   
   // handle serial commands

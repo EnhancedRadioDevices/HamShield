@@ -22,7 +22,17 @@
 #define MORSE_FREQ 600
 #define MORSE_DOT 100 // ms
 // Note that all timing is defined in terms of MORSE_DOT relative durations
-// You may want to tweak those timings in the receiver below
+// You may want to tweak those timings below
+
+#define SYMBOL_END_TIME 5 //millis
+#define CHAR_END_TIME (MORSE_DOT*2.3)
+#define MESSAGE_END_TIME (MORSE_DOT*15)
+
+#define MIN_DOT_TIME (MORSE_DOT*0.7)
+#define MAX_DOT_TIME (MORSE_DOT*1.3)
+#define MIN_DASH_TIME (MORSE_DOT*2.7)
+#define MAX_DASH_TIME (MORSE_DOT*3.3)
+
 
 HamShield radio;
 
@@ -98,7 +108,7 @@ void loop() {
 
     // we wait for a bit of silence before ending the last
     // symbol in order to smooth out the detector
-    if ((millis() - space_in_progress) > 5) //MORSE_DOT*0.05) 
+    if ((millis() - space_in_progress) > SYMBOL_END_TIME)
     {
       if (tone_in_progress != 0) {
         // end the last tone
@@ -109,7 +119,7 @@ void loop() {
     } 
 
     // we might be done with a character if the space is long enough
-    if ((millis() - space_in_progress) > MORSE_DOT*2.3) {
+    if ((millis() - space_in_progress) > CHAR_END_TIME) {
       char m = parseMorse();
       if (m != 0) {
         rx_msg[rx_idx++] = m;
@@ -117,7 +127,7 @@ void loop() {
     }
 
     // we might be done with a message if the space is long enough
-    if ((millis() - space_in_progress) > MORSE_DOT*15) {
+    if ((millis() - space_in_progress) > MESSAGE_END_TIME) {
       if (rx_idx > 0) {
         // we got a message, print it now
         rx_msg[rx_idx] = '\0'; // null terminate
@@ -163,16 +173,17 @@ void loop() {
 
 void handleTone(uint16_t tone_time) {
   //Serial.println(tone_time);
-  if (tone_time > (MORSE_DOT*0.7) && tone_time < (MORSE_DOT*1.3)) {
+  if (tone_time > MIN_DOT_TIME && tone_time < MAX_DOT_TIME) {
     // add a dot
     //Serial.print(".");
     //nothing to do for this bit position, since . = 0
-  } else if (tone_time > (MORSE_DOT*2.7) && tone_time < (MORSE_DOT*3.3)) {
+  } else if (tone_time > MIN_DASH_TIME && tone_time < MAX_DASH_TIME) {
     // add a dash
     //Serial.print("-");
     rx_morse_char += rx_morse_bit;
   }
 
+  // prep for the next bit
   rx_morse_bit = rx_morse_bit << 1;
 }
 

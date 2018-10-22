@@ -95,7 +95,7 @@ void setup() {
   radio.setRfPower(0);
 
   // CTCSS Setup code
-  ctcss_tone = 134.4;
+  ctcss_tone = 131.8;
   radio.setCtcss(ctcss_tone);
   radio.enableCtcss();
   Serial.print("ctcss tone: ");

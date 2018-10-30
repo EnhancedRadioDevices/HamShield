@@ -1343,7 +1343,7 @@ bool HamShield::frequency(uint32_t freq_khz) {
   return false;
 }
 
-bool HamShield::frequency(float freq_khz) {
+bool HamShield::frequency_float(float freq_khz) {
     
     if((freq_khz >= 134000) && (freq_khz <= 174000)) { 
       setTxBand2m();

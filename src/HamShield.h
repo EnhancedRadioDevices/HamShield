@@ -245,7 +245,7 @@ class HamShield {
         void safeMode();
 		
 		bool frequency(uint32_t freq_khz);
-        bool frequency(float freq_khz);
+        bool frequency_float(float freq_khz);
 		uint32_t getFrequency();
 		float getFrequency_float();
 			

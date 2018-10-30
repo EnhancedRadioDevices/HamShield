@@ -101,7 +101,7 @@ void program_pl_tx() {
   long pl_tx = atof(pl_tx_buffer);
   Serial.print(" Which is FLOAT of ");
   Serial.println(pl_tx,DEC);
-  radio.setCtcssEncoder(pl_tx);
+  radio.setCtcss(pl_tx);
 }
 
 void pl_tone_rx() { 
@@ -128,7 +128,7 @@ void program_pl_rx() {
   long pl_rx = atof(pl_rx_buffer);
   Serial.print(" Which is FLOAT of ");
   Serial.println(pl_rx,DEC);
-  radio.setCtcssDecoder(pl_rx);
+  radio.setCtcss(pl_rx);
 }
 
 

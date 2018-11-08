@@ -7,6 +7,11 @@
  * into the HamShield RF jack. Connect the Arduino to wall 
  * power and then to your computer via USB. Issue commands 
  * via the KISS equipment.
+ * 
+ * You can also just use the serial terminal to send and receive
+ * APRS packets, but keep in mind that several fields in the packet
+ * are bit-shifted from standard ASCII (so if you're receiving,
+ * you won't get human readable callsigns or paths).
  *
  * To use the KISS example with YAAC:
  * 1. open the configure YAAC wizard
@@ -55,9 +60,9 @@ void setup() {
   radio.setVolume2(0xFF);
   radio.setSQHiThresh(-100);
   radio.setSQLoThresh(-100);
-  radio.setSQOn();
+  //radio.setSQOn();
   radio.frequency(144390);
-  //radio.bypassPreDeEmph();
+  radio.bypassPreDeEmph();
 
   dds.start();
   afsk.start(&dds);

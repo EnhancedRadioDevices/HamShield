@@ -1,12 +1,12 @@
 /* Hamshield
  * Example: DTMF
- * This is a simple example to demonstrate how to ues DTMF.
+ * This is a simple example to demonstrate how to use DTMF.
  *
  * Connect the HamShield to your Arduino. Screw the antenna 
  * into the HamShield RF jack. 
  * Connect the Arduino to wall power and then to your computer
  * via USB. After uploading this program to your Arduino, open
- * the Serial Monitor. Press the button on the HamShield to 
+ * the Serial Monitor. Press the switch on the HamShield to 
  * begin setup. After setup is complete, type in a DTMF value
  * (0-9, A, B, C, D, *, #) and hit enter. The corresponding
  * DTMF tones will be transmitted. The sketch will also print
@@ -45,7 +45,7 @@ void setup() {
   
   while (digitalRead(SWITCH_PIN));
   
-  // let the AU ot of reset
+  // now we let the AU ot of reset
   digitalWrite(RESET_PIN, HIGH);
   delay(5); // wait for device to come up
   
@@ -56,7 +56,7 @@ void setup() {
   Serial.println(radio.testConnection() ? "HamShield connection successful" : "HamShield connection failed");
 
   // initialize device
-  radio.initialize(); // initializes automatically for UHF 12.5kHz channel
+  radio.initialize();
 
   Serial.println("setting default Radio configuration");
 
@@ -71,11 +71,11 @@ void setup() {
   radio.setSQOn();
   //radio.setSQOff();
 
-  Serial.println("changing frequency");
+  Serial.println("setting frequency to: ");
   freq = 420000;
   radio.frequency(freq);
-  Serial.print("new frequency: ");
-  Serial.println(radio.getFrequency());
+  Serial.print(radio.getFrequency());
+  Serial.println("kHz");
   
   // set RX volume to minimum to reduce false positives on DTMF rx
   radio.setVolume1(6);

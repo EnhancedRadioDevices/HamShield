@@ -38,8 +38,8 @@
 //#define A1846S_ADCLK_FREQ_REG       0x2C    // adclk_freq<15:0>
 #define A1846S_INT_MODE_REG         0x2D    // interrupt enables
 #define A1846S_TX_VOICE_REG         0x3A    // tx voice control reg
-#define A1846S_TH_H_VOX_REG         0x41    // register holds vox high (open) threshold bits
-#define A1846S_TH_L_VOX_REG         0x42    // register holds vox low (shut) threshold bits
+#define A1846S_TH_H_VOX_REG         0x64    // register holds vox high (open) threshold bits
+#define A1846S_TH_L_VOX_REG         0x64    // register holds vox low (shut) threshold bits
 #define A1846S_FM_DEV_REG           0x43    // register holds fm deviation settings
 #define A1846S_RX_VOLUME_REG        0x44    // register holds RX volume settings
 #define A1846S_SQ_OPEN_THRESH_REG   0x48    // see sq
@@ -115,7 +115,7 @@
 #define A1846S_TXON_RF_INT_BIT          7  // txon_rf_uint16_t enable
 #define A1846S_CTCSS_PHASE_INT_BIT      5  // ctcss phase shift detect uint16_t enable
 #define A1846S_IDLE_TIMEOUT_INT_BIT     4  // idle state time out uint16_t enable
-#define A1846S_RXON_RF_TIMeOUT_INT_BIT  3  // rxon_rf timerout uint16_t enable
+#define A1846S_RXON_RF_TIMEOUT_INT_BIT  3  // rxon_rf timerout uint16_t enable
 #define A1846S_SQ_INT_BIT               2  // sq uint16_t enable
 #define A1846S_TXON_RF_TIMEOUT_INT_BIT  1  // txon_rf time out uint16_t enable
 #define A1846S_VOX_INT_BIT              0  // vox uint16_t enable
@@ -126,8 +126,12 @@
 #define A1846S_CTCSS_DET_BIT       5
 
 // Bitfields for A1846S_TH_H_VOX_REG
-#define A1846S_TH_H_VOX_BIT       14  // th_h_vox<14:0>
-#define A1846S_TH_H_VOX_LENGTH    15
+#define A1846S_TH_H_VOX_BIT       13  // th_h_vox<13:7>
+#define A1846S_TH_H_VOX_LEN       7
+
+// Bitfields for A1846S_TH_L_VOX_REG
+#define A1846S_TH_L_VOX_BIT       6  // th_l_vox<6:0>
+#define A1846S_TH_L_VOX_LEN       7
 
 // Bitfields for A1846S_FM_DEV_REG
 #define A1846S_FM_DEV_VOICE_BIT   12  // CTCSS/CDCSS and voice deviation <6:0>
@@ -182,8 +186,10 @@
 #define A1846S_RSSI_LENGTH         8
 
 // Bitfields for A1846S_VSSI_REG
-#define A1846S_VSSI_BIT           14  // voice signal strength indicator <14:0> (unit mV)
-#define A1846S_VSSI_LENGTH        15
+#define A1846S_VSSI_BIT           15  // voice signal strength indicator <7:0> (unit 0.5dB)
+#define A1846S_VSSI_LENGTH        8
+#define A1846S_MSSI_BIT           7  // mic signal strength <7:0> (unit 0.5 dB)
+#define A1846S_MSSI_LENGTH        8
 
 // Bitfields for A1846S_DTMF_ENABLE_REG
 #define A1846S_DTMF_ENABLE_BIT    15
@@ -466,6 +472,7 @@ class HamShield {
 		// Read Only Status Registers
 		int16_t readRSSI();
 		uint16_t readVSSI();
+        uint16_t readMSSI();
 
         // set output power of radio
         void setRfPower(uint8_t pwr);

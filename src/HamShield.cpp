@@ -938,20 +938,19 @@ bool HamShield::getVoxOn(){
 // Vox Threshold
 void HamShield::setVoxOpenThresh(uint16_t vox_open_thresh){
     // When vssi > th_h_vox, then vox will be 1(unit mV )
-    HSwriteWord(devAddr, A1846S_TH_H_VOX_REG, vox_open_thresh);    
+    HSwriteBitsW(devAddr, A1846S_TH_H_VOX_REG, A1846S_TH_H_VOX_BIT, A1846S_TH_H_VOX_LEN, vox_open_thresh);
+
 } 
 uint16_t HamShield::getVoxOpenThresh(){
-    HSreadWord(devAddr, A1846S_TH_H_VOX_REG, radio_i2c_buf);
-    
+    HSreadBitsW(devAddr, A1846S_TH_H_VOX_REG, A1846S_TH_H_VOX_BIT, A1846S_TH_H_VOX_LEN, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
 void HamShield::setVoxShutThresh(uint16_t vox_shut_thresh){
     // When vssi < th_l_vox && time delay meet, then vox will be 0 (unit mV )
-    HSwriteWord(devAddr, A1846S_TH_L_VOX_REG, vox_shut_thresh);    
+    HSwriteBitsW(devAddr, A1846S_TH_L_VOX_REG, A1846S_TH_L_VOX_BIT, A1846S_TH_L_VOX_LEN, vox_shut_thresh);
 } 
 uint16_t HamShield::getVoxShutThresh(){
-    HSreadWord(devAddr, A1846S_TH_L_VOX_REG, radio_i2c_buf);
-    
+    HSreadBitsW(devAddr, A1846S_TH_L_VOX_REG, A1846S_TH_L_VOX_BIT, A1846S_TH_L_VOX_LEN, radio_i2c_buf);
     return radio_i2c_buf[0];
 }
 
@@ -1295,9 +1294,14 @@ int16_t HamShield::readRSSI(){
     return rssi;
 }
 uint16_t HamShield::readVSSI(){
-    HSreadWord(devAddr, A1846S_VSSI_REG, radio_i2c_buf);
+    HSreadBitsW(devAddr, A1846S_VSSI_REG, A1846S_VSSI_BIT, A1846S_VSSI_LENGTH, radio_i2c_buf);
     
-    return radio_i2c_buf[0] & 0x7FF; // only need lowest 10 bits
+    return radio_i2c_buf[0];
+}
+uint16_t HamShield::readMSSI(){
+    HSreadBitsW(devAddr, A1846S_VSSI_REG, A1846S_MSSI_BIT, A1846S_MSSI_LENGTH, radio_i2c_buf);
+    
+    return radio_i2c_buf[0];
 }
 
 

@@ -5,14 +5,12 @@
 
 #include "Arduino.h"
 #include "HamShield.h"
-#include <avr/wdt.h>
 #include <avr/pgmspace.h>
 // #include <PCM.h>
 
 /* don't change this regulatory value, use dangerMode() and safeMode() instead */
 
 bool restrictions = true; 
-HamShield *HamShield::sHamShield = NULL;
 
 /* channel lookup tables */
 
@@ -114,11 +112,6 @@ const unsigned char AFSK_mark[] PROGMEM = { 154, 249, 91, 11, 205, 216, 25, 68, 
 
 const unsigned char AFSK_space[] PROGMEM = { 140, 228, 250, 166, 53, 0, 53, 166, 249, 230, 128, 24, 7, 88, 203, 255, 203, 88, 7, 24, 128, 230, 249, 167, 53, 0, 53, 167, 249, 230, 128, 24, 6, 88, 202, 255, 202, 88, 6, 24, 127, 231, 249, 167, 52, 0, 52, 167, 248, 231, 127, 25, 6, 89, 202, 255, 202, 89, 6, 25, 127, 231, 248, 167, 53, 0, 54, 165, 251, 227, 133, 14}; 
 
-
-/* Aux button variables */
-
-volatile int ptt = false;
-volatile long bouncer = 0;
 
 /** Specific address constructor.
  * @param chip select pin for HamShield
@@ -1520,39 +1513,6 @@ uint32_t HamShield::findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, u
 }
 
 
-/* Setup the auxiliary button input mode and register the ISR */
-void HamShield::buttonMode(uint8_t mode) { 
-   pinMode(HAMSHIELD_AUX_BUTTON,INPUT);       // set the pin mode to input
-   digitalWrite(HAMSHIELD_AUX_BUTTON,HIGH);   // turn on internal pull up
-   if(mode == PTT_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, HamShield::isr_ptt, CHANGE); } 
-   if(mode == RESET_MODE) { attachInterrupt(HAMSHIELD_AUX_BUTTON, HamShield::isr_reset, CHANGE); }
-}
-
-/* Interrupt routines */
-
-/* handle aux button to reset condition */
-
-void HamShield::isr_reset() { 
-  wdt_enable(WDTO_15MS);
-  while(1) { } 
-}
-
-/* Transmit on press, receive on release. We need debouncing !! */
-
-void HamShield::isr_ptt() { 
-   if((bouncer + 200) > millis()) { 
-   if(ptt == false) { 
-      ptt = true;
-      sHamShield->setModeTransmit();
-      bouncer = millis();
-   }
-   if(ptt == true) { 
-      ptt = false;
-      sHamShield->setModeReceive();
-      bouncer = millis();
-   } }
-}
-
 /* 
 
  Radio etiquette function: Wait for empty channel.
@@ -1805,21 +1765,3 @@ bool HamShield::parityCalc(int code) {
 
     return parity;
 }
-/*
-void HamShield::AFSKOut(char buffer[80]) { 
-  for(int x = 0; x < 65536; x++) { 
-  startPlayback(AFSK_mark, sizeof(AFSK_mark));  delay(8); 
-  startPlayback(AFSK_space, sizeof(AFSK_space));  delay(8); }
-
-}
-*/
-
-// This is the ADC timer handler. When enabled, we'll see what we're supposed
-// to be reading/handling, and trigger those on the main object.
-/*ISR(ADC_vect) {
-  TIFR1 = _BV(ICF1); // Clear the timer flag
-
-  if(HamShield::sHamShield->afsk.enabled()) {
-    HamShield::sHamShield->afsk.timer();
-  }
-}*/

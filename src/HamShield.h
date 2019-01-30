@@ -232,9 +232,8 @@ class HamShield {
     public:
 	    // public singleton for ISRs to reference
         static HamShield *sHamShield; // HamShield singleton, used for ISRs mostly
-		
-        HamShield();
-        HamShield(uint8_t cs_pin);
+
+		HamShield(uint8_t cs_pin = nSEN, uint8_t clk_pin = CLK, uint8_t dat_pin = DAT);
 
         void initialize();  // defaults to 12.5kHz
 		void initialize(bool narrowBand); // select 12.5kHz if true or 25kHz if false

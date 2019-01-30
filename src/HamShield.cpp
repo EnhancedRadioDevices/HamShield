@@ -120,38 +120,17 @@ const unsigned char AFSK_space[] PROGMEM = { 140, 228, 250, 166, 53, 0, 53, 166,
 volatile int ptt = false;
 volatile long bouncer = 0;
 
-/** Default constructor, uses default I2C address.
- * @see A1846S_DEFAULT_ADDRESS
- */
-HamShield::HamShield() {
-    devAddr = A1; // devAddr is the chip select pin used by the HamShield
-    sHamShield = this;
-    
-    pinMode(devAddr, OUTPUT);
-    digitalWrite(devAddr, HIGH);
-    pinMode(CLK, OUTPUT);
-    digitalWrite(CLK, HIGH);
-    pinMode(DAT, OUTPUT);
-    digitalWrite(DAT, HIGH);
-}
-
 /** Specific address constructor.
  * @param chip select pin for HamShield
  * @see A1846S_DEFAULT_ADDRESS
  * @see A1846S_ADDRESS_AD0_LOW
  * @see A1846S_ADDRESS_AD0_HIGH
  */
-HamShield::HamShield(uint8_t cs_pin) {
+HamShield::HamShield(uint8_t cs_pin = nSEN, uint8_t clk_pin = CLK, uint8_t dat_pin = DAT) {
     devAddr = cs_pin;
     
-    pinMode(devAddr, OUTPUT);
-    digitalWrite(devAddr, HIGH);
-    pinMode(CLK, OUTPUT);
-    digitalWrite(CLK, HIGH);
-    pinMode(DAT, OUTPUT);
-    digitalWrite(DAT, HIGH);
+    HSsetPins(cs_pin, clk_pin, dat_pin);
 }
-
 
 
 /** Power on and prepare for general usage.

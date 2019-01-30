@@ -20,6 +20,8 @@
 
 // create object for radio
 HamShield radio;
+// To use non-standard pins, use the following initialization
+//HamShield radio(ncs_pin, clk_pin, dat_pin);
 
 #define LED_PIN 13
 #define RSSI_REPORT_RATE_MS 5000
@@ -50,9 +52,10 @@ void setup() {
   
   // initialize serial communication
   Serial.begin(9600);
-  Serial.println("press the switch to begin...");
+  Serial.println("press the switch or send any character to begin...");
   
-  while (digitalRead(SWITCH_PIN));
+  while (digitalRead(SWITCH_PIN) && !Serial.available());
+  Serial.read(); // flush
   
   // let the AU ot of reset
   digitalWrite(RESET_PIN, HIGH);

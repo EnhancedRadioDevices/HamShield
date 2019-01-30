@@ -4,6 +4,26 @@
 
 #include "HamShield_comms.h"
 
+
+
+uint8_t ncs_pin = nSEN;
+uint8_t clk_pin = CLK;
+uint8_t dat_pin = DAT;
+
+void HSsetPins(uint8_t ncs, uint8_t clk, uint8_t dat) {
+    ncs_pin = ncs;
+    clk_pin = clk;
+    dat_pin = dat;
+    
+    pinMode(ncs_pin, OUTPUT);
+    digitalWrite(ncs_pin, HIGH);
+    pinMode(clk_pin, OUTPUT);
+    digitalWrite(clk_pin, HIGH);
+    pinMode(dat_pin, OUTPUT);
+    digitalWrite(dat_pin, HIGH);
+
+}
+
 int8_t HSreadBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t *data)
 {
     uint16_t b;
@@ -33,22 +53,22 @@ int8_t HSreadWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data)
 	uint16_t temp_dat;
 	// bitbang for great justice!
 	*data = 0;
-	pinMode(DAT, OUTPUT);
+	pinMode(dat_pin, OUTPUT);
 	regAddr = regAddr | (1 << 7);
 	
 	digitalWrite(devAddr, 0); //PORTC &= ~(1<<1); //devAddr used as chip select
 	for (int i = 0; i < 8; i++) {
 		temp = ((regAddr & (0x80 >> i)) != 0);
-		digitalWrite(CLK, 0); //PORTC &= ~(1<<5); //
-		digitalWrite(DAT, temp);
-		digitalWrite(CLK, 1); //PORTC |= (1<<5); //
+		digitalWrite(clk_pin, 0); //PORTC &= ~(1<<5); //
+		digitalWrite(dat_pin, temp);
+		digitalWrite(clk_pin, 1); //PORTC |= (1<<5); //
 	}
-	// change direction of DAT
-	pinMode(DAT, INPUT); //	DDRC &= ~(1<<4); //
+	// change direction of dat_pin
+	pinMode(dat_pin, INPUT); //	DDRC &= ~(1<<4); //
 	for (int i = 15; i >= 0; i--) {
-		digitalWrite(CLK, 0); //PORTC &= ~(1<<5); //
-		digitalWrite(CLK, 1); //PORTC |= (1<<5); //
-		temp_dat = digitalRead(DAT); //((PINC & (1<<4)) != 0);
+		digitalWrite(clk_pin, 0); //PORTC &= ~(1<<5); //
+		digitalWrite(clk_pin, 1); //PORTC |= (1<<5); //
+		temp_dat = digitalRead(dat_pin); //((PINC & (1<<4)) != 0);
 		temp_dat = temp_dat << i;
 		*data |= temp_dat;
 	}
@@ -91,21 +111,21 @@ bool HSwriteWord(uint8_t devAddr, uint8_t regAddr, uint16_t data)
 	//digitalWrite(13, HIGH);
 	
 	// bitbang for great justice!
-	pinMode(DAT, OUTPUT);
+	pinMode(dat_pin, OUTPUT);
 	regAddr = regAddr & ~(1 << 7);
 	
 	digitalWrite(devAddr, 0); // PORTC &= ~(1<<1); //CS
 	for (int i = 0; i < 8; i++) {
 		temp_reg = ((regAddr & (0x80 >> i)) != 0);
-		digitalWrite(CLK, 0); //PORTC &= ~(1<<5); //
-		digitalWrite(DAT, regAddr & (0x80 >> i));
-		digitalWrite(CLK, 1); // PORTC |= (1<<5); //
+		digitalWrite(clk_pin, 0); //PORTC &= ~(1<<5); //
+		digitalWrite(dat_pin, regAddr & (0x80 >> i));
+		digitalWrite(clk_pin, 1); // PORTC |= (1<<5); //
 	}
 	for (int i = 0; i < 16; i++) {
 		temp_dat = ((data & (0x8000 >> i)) != 0);
-		digitalWrite(CLK, 0); //PORTC &= ~(1<<5); //
-		digitalWrite(DAT, temp_dat);
-		digitalWrite(CLK, 1); // PORTC |= (1<<5); //
+		digitalWrite(clk_pin, 0); //PORTC &= ~(1<<5); //
+		digitalWrite(dat_pin, temp_dat);
+		digitalWrite(clk_pin, 1); // PORTC |= (1<<5); //
 	}
 	
 	digitalWrite(devAddr, 1); //PORTC |= (1<<1); //CS

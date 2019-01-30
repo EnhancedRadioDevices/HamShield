@@ -11,6 +11,8 @@
 #define CLK A5
 #define DAT A4
 
+void HSsetPins(uint8_t ncs, uint8_t clk, uint8_t dat);
+
 int8_t HSreadBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t *data);
 int8_t HSreadBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t *data);
 int8_t HSreadWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data);

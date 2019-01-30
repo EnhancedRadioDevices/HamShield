@@ -3,13 +3,20 @@
 // 11/22/2013 by Morgan Redfield <redfieldm@gmail.com>
 // 04/26/2015 various changes Casey Halverson <spaceneedle@gmail.com>
 
-#include "Arduino.h"
 #include "HamShield.h"
+#include "stdint.h"
+#include "math.h"
+
+#if defined(__AVR__)
 #include <avr/pgmspace.h>
-// #include <PCM.h>
+#define MORSE_TABLE_PROGMEM
+#else
+    // get rid of progmem for now and just put these tables in flash/program space
+   #define PROGMEM
+#endif
+
 
 /* don't change this regulatory value, use dangerMode() and safeMode() instead */
-
 bool restrictions = true; 
 
 /* channel lookup tables */
@@ -31,7 +38,6 @@ unsigned int morse_dot_millis = 100;
 // It will occupy 108 bytes of memory (or program memory if defined)
 
 #define MORSE_TABLE_LENGTH 54
-#define MORSE_TABLE_PROGMEM
 #ifndef MORSE_TABLE_PROGMEM
 const struct asciiMorse {
     char ascii;
@@ -119,8 +125,9 @@ const unsigned char AFSK_space[] PROGMEM = { 140, 228, 250, 166, 53, 0, 53, 166,
  * @see A1846S_ADDRESS_AD0_LOW
  * @see A1846S_ADDRESS_AD0_HIGH
  */
-HamShield::HamShield(uint8_t cs_pin = nSEN, uint8_t clk_pin = CLK, uint8_t dat_pin = DAT) {
+HamShield::HamShield(uint8_t cs_pin = nSEN, uint8_t clk_pin = CLK, uint8_t dat_pin = DAT, uint8_t pwm_pin = HAMSHIELD_PWM_PIN) {
     devAddr = cs_pin;
+    hs_pwm_pin = pwm_pin;
     
     HSsetPins(cs_pin, clk_pin, dat_pin);
 }
@@ -193,13 +200,13 @@ void HamShield::initialize(bool narrowBand) {
     // calibration
     tx_data = 0x00A4;
     HSwriteWord(devAddr, 0x30, tx_data);
-    delay(100);
+    HSdelay(100);
     tx_data = 0x00A6;
     HSwriteWord(devAddr, 0x30, tx_data);
-    delay(100);
+    HSdelay(100);
     tx_data = 0x0006;
     HSwriteWord(devAddr, 0x30, tx_data);
-    delay(100);
+    HSdelay(100);
 
 
     // set band width
@@ -209,7 +216,7 @@ void HamShield::initialize(bool narrowBand) {
         setupWideBand();
     }
     
-    delay(100);
+    HSdelay(100);
     
     /*
     // setup default values
@@ -397,15 +404,9 @@ bool HamShield::testConnection() {
  * to 7FH, and then write value to the address subtracted by 
  * 80H. Finally write 0x0000 to 7FH 
  * Example: writing 85H register address is 0x001F .
- *   Move 7FH 0x0001{
-
-}
- *   Move 05H 0x001F{
-
-} 05H=85H-80H
- *   Move 7FH 0x0000{
-
-}
+ *   Move 7FH 0x0001{}
+ *   Move 05H 0x001F{} 05H=85H-80H
+ *   Move 7FH 0x0000{}
  */
 
 uint16_t HamShield::readCtlReg() {
@@ -416,7 +417,7 @@ uint16_t HamShield::readCtlReg() {
 void HamShield::softReset() {
    uint16_t tx_data = 0x1;
    HSwriteWord(devAddr, A1846S_CTL_REG, tx_data);
-   delay(100); // Note: see A1846S setup info for timing guidelines
+   HSdelay(100); // Note: see A1846S setup info for timing guidelines
    tx_data = 0x4;
    HSwriteWord(devAddr, A1846S_CTL_REG, tx_data);
 }
@@ -540,7 +541,7 @@ void HamShield::setTX(bool on_noff){
         //setGpioHi(4); // V1
 
         
-        delay(50); // delay required by AU1846
+        HSdelay(50); // delay required by AU1846
     }
 
     HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, on_noff);
@@ -562,7 +563,7 @@ void HamShield::setRX(bool on_noff){
         setGpioLow(4); // V1
         setGpioLow(5); // V2
         
-        delay(50); // delay required by AU1846
+        HSdelay(50); // delay required by AU1846
     }
   
     HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, on_noff);
@@ -1066,10 +1067,10 @@ void HamShield::lookForTone(uint16_t t_hz) {
 	float tone_hz = (float) t_hz;
 	float Fs = 6400000/1024;
 	float k = floor(tone_hz/Fs*127 + 0.5);
-	uint16_t t = (uint16_t) (round(2.0*cos(2.0*PI*k/127)*1024));
+	uint16_t t = (uint16_t) (round(2.0*cos(2.0*M_PI*k/127)*1024));
 	
 	float k2 = floor(2*tone_hz/Fs*127+0.5);
-	uint16_t h = (uint16_t) (round(2.0*cos(2.0*PI*k2/127)*1024));
+	uint16_t h = (uint16_t) (round(2.0*cos(2.0*M_PI*k2/127)*1024));
 	// set tone
 	HSwriteWord(devAddr, 0x68, t);
 	
@@ -1370,8 +1371,12 @@ bool HamShield::frequency_float(float freq_khz) {
 /* FRS Lookup Table */
 
 bool HamShield::setFRSChannel(uint8_t channel) { 
-  if(channel < 15) { 
+  if(channel < 15) {
+#if defined(__AVR__)
     setFrequency(pgm_read_dword_near(FRS + channel));
+#else
+    setFrequency(FRS[channel]); 
+#endif
     return true;
   }
   return false;
@@ -1382,11 +1387,19 @@ bool HamShield::setFRSChannel(uint8_t channel) {
 bool HamShield::setGMRSChannel(uint8_t channel) { 
   if((channel > 8) & (channel < 16)) { 
      channel = channel - 7;           // we start with 0, to try to avoid channel 8 being nothing
-     setFrequency(pgm_read_dword_near(FRS + channel));
+#if defined(__AVR__)
+    setFrequency(pgm_read_dword_near(FRS + channel));
+#else
+    setFrequency(FRS[channel]); 
+#endif
      return true; 
   }
   if(channel < 9) { 
-     setFrequency(pgm_read_dword_near(GMRS + channel));
+#if defined(__AVR__)
+    setFrequency(pgm_read_dword_near(GMRS + channel));
+#else
+    setFrequency(GMRS[channel]); 
+#endif
      return true;
   }
   return false;
@@ -1396,7 +1409,11 @@ bool HamShield::setGMRSChannel(uint8_t channel) {
 
 bool HamShield::setMURSChannel(uint8_t channel) { 
   if(channel < 6) { 
-     setFrequency(pgm_read_dword_near(MURS + channel)); 
+#if defined(__AVR__)
+    setFrequency(pgm_read_dword_near(MURS + channel));
+#else
+    setFrequency(MURS[channel]); 
+#endif     
      return true;
   }
 }
@@ -1405,7 +1422,11 @@ bool HamShield::setMURSChannel(uint8_t channel) {
 
 bool HamShield::setWXChannel(uint8_t channel) { 
   if(channel < 8) { 
-     setFrequency(pgm_read_dword_near(WX + channel));
+#if defined(__AVR__)
+    setFrequency(pgm_read_dword_near(WX + channel));
+#else
+    setFrequency(WX[channel]); 
+#endif
      setModeReceive();
      // turn off squelch?
      // channel bandwidth? 
@@ -1421,7 +1442,7 @@ uint8_t HamShield::scanWXChannel() {
   int16_t toprssi = 0;
   for(int x = 0; x < 8; x++) { 
      setWXChannel(x);
-     delay(100);
+     HSdelay(100);
      int16_t rssi = readRSSI();
      if(rssi > toprssi) { toprssi = rssi; channel = x; }
   }
@@ -1527,13 +1548,13 @@ Does not take in account the millis() overflow
 bool HamShield::waitForChannel(long timeout = 0, long breakwindow = 0, int setRSSI = HAMSHIELD_EMPTY_CHANNEL_RSSI) { 
     int16_t rssi = 0;                                                              // Set RSSI to max received signal
     for(int x = 0; x < 20; x++) { rssi = readRSSI(); }                            // "warm up" to get past RSSI hysteresis 
-    long timer = millis() + timeout;                                              // Setup the timeout value
+    long timer = HSmillis() + timeout;                                              // Setup the timeout value
     if(timeout == 0) { timer = 4294967295; }                                      // If we want to wait forever, set it to the max millis()
-    while(timer > millis()) {                                                     // while our timer is not timed out.
+    while(timer > HSmillis()) {                                                     // while our timer is not timed out.
         rssi = readRSSI();                                                        // Read signal strength
         if(rssi < setRSSI) {                                 // If the channel is empty, lets see if anyone breaks in.
-             timer = millis() + breakwindow;
-             while(timer > millis()) {
+             timer = HSmillis() + breakwindow;
+             while(timer > HSmillis()) {
                  rssi = readRSSI();
                  if(rssi > setRSSI) { return false; }        // Someone broke into the channel, abort.
              } return true;                                                       // It passed the test...channel is open.
@@ -1577,13 +1598,13 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
       // We delay by 4 here, if we previously sent a symbol. Otherwise 7.
       // This could probably just be always 7 and go relatively unnoticed.
       if(prev == 0 || prev == ' '){
-        //tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 7);
-        noTone(HAMSHIELD_PWM_PIN);
-		delay(morse_dot_millis*7);
+        //tone(hs_pwm_pin, 6000, morse_dot_millis * 7);
+        HSnoTone(hs_pwm_pin);
+		HSdelay(morse_dot_millis*7);
       } else {
-        //tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 4);
-        noTone(HAMSHIELD_PWM_PIN);
-		delay(morse_dot_millis*4);
+        //tone(hs_pwm_pin, 6000, morse_dot_millis * 4);
+        HSnoTone(hs_pwm_pin);
+		HSdelay(morse_dot_millis*4);
       }
       continue;
     }
@@ -1592,22 +1613,22 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
     if(bits) { // If it is a valid character...
       do {
         if(bits & 1) {
-          tone(HAMSHIELD_PWM_PIN, morse_freq, morse_dot_millis * 3);
-          delay(morse_dot_millis*3);
+          HStone(hs_pwm_pin, morse_freq, morse_dot_millis * 3);
+          HSdelay(morse_dot_millis*3);
         } else {
-          tone(HAMSHIELD_PWM_PIN, morse_freq, morse_dot_millis);
-          delay(morse_dot_millis);
+          HStone(hs_pwm_pin, morse_freq, morse_dot_millis);
+          HSdelay(morse_dot_millis);
         }
-        //tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis);
-        noTone(HAMSHIELD_PWM_PIN);
-		delay(morse_dot_millis);
+        //tone(hs_pwm_pin, 6000, morse_dot_millis);
+        HSnoTone(hs_pwm_pin);
+		HSdelay(morse_dot_millis);
         bits >>= 1; // Shift into the next symbol
       } while(bits != 1); // Wait for 1 termination to be all we have left
     }
     // End of character
-    //tone(HAMSHIELD_PWM_PIN, 6000, morse_dot_millis * 3);
-    noTone(HAMSHIELD_PWM_PIN);
-	delay(morse_dot_millis * 3);
+    //tone(hs_pwm_pin, 6000, morse_dot_millis * 3);
+    HSnoTone(hs_pwm_pin);
+	HSdelay(morse_dot_millis * 3);
   }
   return;
 }
@@ -1674,7 +1695,7 @@ void HamShield::SSTVVISCode(int code) {
     toneWait(1900,300);
     toneWait(1200,30);
         for(int x = 0; x < 7; x++) { 
-           if(bitRead(code,x)) { toneWait(1100,30); } else { toneWait(1300,30); } 
+           if(code&(1<<x)) { toneWait(1100,30); } else { toneWait(1300,30); } 
         } 
         if(parityCalc(code)) { toneWait(1300,30); } else { toneWait(1100,30); } 
         toneWait(1200,30);
@@ -1737,19 +1758,19 @@ void HamShield::SSTVTestPattern(int code) {
 /* wait for tone to complete */
 
 void HamShield::toneWait(uint16_t freq, long timer) { 
-    tone(HAMSHIELD_PWM_PIN,freq,timer);
-    delay(timer);
+    HStone(hs_pwm_pin,freq,timer);
+    HSdelay(timer);
 }
 
 /* wait microseconds for tone to complete */
 
 void HamShield::toneWaitU(uint16_t freq, long timer) { 
     if(freq < 16383) { 
-    tone(HAMSHIELD_PWM_PIN,freq);
-    delayMicroseconds(timer); noTone(HAMSHIELD_PWM_PIN); return;
+    HStone(hs_pwm_pin,freq);
+    HSdelayMicroseconds(timer); HSnoTone(hs_pwm_pin); return;
     }
-    tone(HAMSHIELD_PWM_PIN,freq);
-    delay(timer / 1000); noTone(HAMSHIELD_PWM_PIN); return;
+    HStone(hs_pwm_pin,freq);
+    HSdelay(timer / 1000); HSnoTone(hs_pwm_pin); return;
 }
 
 

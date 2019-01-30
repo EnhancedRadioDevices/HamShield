@@ -5,6 +5,8 @@
 #include "HamShield_comms.h"
 
 
+#include "Arduino.h"
+//#include "I2Cdev.h"
 
 uint8_t ncs_pin = nSEN;
 uint8_t clk_pin = CLK;
@@ -131,4 +133,25 @@ bool HSwriteWord(uint8_t devAddr, uint8_t regAddr, uint16_t data)
 	digitalWrite(devAddr, 1); //PORTC |= (1<<1); //CS
 	
 	return true;
+}
+
+// Hardware abstraction
+unsigned long HSmillis(){
+    return millis();
+}
+void HSdelay(unsigned long ms) {
+    delay(ms);
+}
+void HSdelayMicroseconds(unsigned int us) {
+    delayMicroseconds(us);
+}
+
+void HStone(uint8_t pin, unsigned int frequency) {
+    tone(pin, frequency);
+}
+void HStone(uint8_t pin, unsigned int frequency, unsigned long duration) {
+    tone(pin, frequency, duration);
+}
+void HSnoTone(uint8_t pin) {
+    noTone(pin);
 }

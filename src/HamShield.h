@@ -9,21 +9,11 @@
 #define _HAMSHIELD_H_
 
 #include "HamShield_comms.h"
-//#include "SimpleFIFO.h"
-//#include "AFSK.h"
-//#include "DDS.h"
-#include <avr/pgmspace.h>
 
 // HamShield constants
 
 #define HAMSHIELD_MORSE_BUFFER_SIZE      80    // Char buffer size for morse code text
-#define HAMSHIELD_AUX_BUTTON              2    // Pin assignment for AUX button
-#define HAMSHIELD_PWM_PIN                 3    // Pin assignment for PWM output
 #define HAMSHIELD_EMPTY_CHANNEL_RSSI   -110    // Default threshold where channel is considered "clear"
-
-// button modes
-#define PTT_MODE 1
-#define RESET_MODE 2
 
 // Device Registers
 #define A1846S_CTL_REG              0x30    // control register
@@ -230,10 +220,7 @@
 
 class HamShield {
     public:
-	    // public singleton for ISRs to reference
-        static HamShield *sHamShield; // HamShield singleton, used for ISRs mostly
-
-		HamShield(uint8_t cs_pin = nSEN, uint8_t clk_pin = CLK, uint8_t dat_pin = DAT);
+		HamShield(uint8_t cs_pin = nSEN, uint8_t clk_pin = CLK, uint8_t dat_pin = DAT, uint8_t pwm_pin = HAMSHIELD_PWM_PIN);
 
         void initialize();  // defaults to 12.5kHz
 		void initialize(bool narrowBand); // select 12.5kHz if true or 25kHz if false
@@ -509,6 +496,7 @@ class HamShield {
 		
     private:
         uint8_t devAddr;
+        uint8_t hs_pwm_pin;
         uint16_t radio_i2c_buf[4];
 		bool tx_active;
 		bool rx_active;

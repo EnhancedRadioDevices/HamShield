@@ -4,13 +4,24 @@
 #ifndef _HAMSHIELD_COMMS_H_
 #define _HAMSHIELD_COMMS_H_
 
-#include "stdint.h"
 
+#if defined(ARDUINO)
 #include "Arduino.h"
+
 #define nSEN A1 //15 //
 #define CLK A5 //19 //
 #define DAT A4 //18 //
-#define HAMSHIELD_PWM_PIN                 3    // Pin assignment for PWM output
+#define HAMSHIELD_PWM_PIN 3
+#else // assume Raspberry Pi
+#include "stdint.h"
+#include <wiringPi.h>
+#include <softTone.h>
+
+#define nSEN 17 //
+#define CLK 22 //
+#define DAT 27 //
+#define HAMSHIELD_PWM_PIN 18
+#endif
 
 
 void HSsetPins(uint8_t ncs, uint8_t clk, uint8_t dat);

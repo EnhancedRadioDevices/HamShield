@@ -125,7 +125,7 @@ const unsigned char AFSK_space[] PROGMEM = { 140, 228, 250, 166, 53, 0, 53, 166,
  * @see A1846S_ADDRESS_AD0_LOW
  * @see A1846S_ADDRESS_AD0_HIGH
  */
-HamShield::HamShield(uint8_t cs_pin = nSEN, uint8_t clk_pin = CLK, uint8_t dat_pin = DAT, uint8_t pwm_pin = HAMSHIELD_PWM_PIN) {
+HamShield::HamShield(uint8_t cs_pin, uint8_t clk_pin, uint8_t dat_pin, uint8_t pwm_pin) {
     devAddr = cs_pin;
     hs_pwm_pin = pwm_pin;
     

@@ -42,7 +42,6 @@ void HSdelay(unsigned long ms);
 void HSdelayMicroseconds(unsigned int us);
 
 void HStone(uint8_t pin, unsigned int frequency);
-void HStone(uint8_t pin, unsigned int frequency, unsigned long duration);
 void HSnoTone(uint8_t pin);
 
 

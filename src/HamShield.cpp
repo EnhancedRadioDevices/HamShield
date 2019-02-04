@@ -1613,11 +1613,13 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
     if(bits) { // If it is a valid character...
       do {
         if(bits & 1) {
-          HStone(hs_pwm_pin, morse_freq, morse_dot_millis * 3);
+          HStone(hs_pwm_pin, morse_freq);//, morse_dot_millis * 3);
           HSdelay(morse_dot_millis*3);
+          HSnoTone();
         } else {
-          HStone(hs_pwm_pin, morse_freq, morse_dot_millis);
+          HStone(hs_pwm_pin, morse_freq);//, morse_dot_millis);
           HSdelay(morse_dot_millis);
+          HSnoTone();
         }
         //tone(hs_pwm_pin, 6000, morse_dot_millis);
         HSnoTone(hs_pwm_pin);
@@ -1758,8 +1760,9 @@ void HamShield::SSTVTestPattern(int code) {
 /* wait for tone to complete */
 
 void HamShield::toneWait(uint16_t freq, long timer) { 
-    HStone(hs_pwm_pin,freq,timer);
+    HStone(hs_pwm_pin,freq);//,timer);
     HSdelay(timer);
+    HSnoTone();
 }
 
 /* wait microseconds for tone to complete */

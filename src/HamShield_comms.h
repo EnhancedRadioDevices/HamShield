@@ -17,10 +17,10 @@
 #include <wiringPi.h>
 #include <softTone.h>
 
-#define nSEN 17 //
-#define CLK 22 //
-#define DAT 27 //
-#define HAMSHIELD_PWM_PIN 18
+#define nSEN 0 //BCM17, HW pin 11 
+#define CLK 3 //BCM22, HW pin 15 
+#define DAT 2 //BCM27, HW pin 13 
+#define HAMSHIELD_PWM_PIN 1 //BCM18, HW pin 12
 #endif
 
 

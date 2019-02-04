@@ -240,14 +240,16 @@ class HamShield {
         bool frequency_float(float freq_khz);
 		uint32_t getFrequency();
 		float getFrequency_float();
-			
+		
+                /* ToDo	
 		// channel mode
 		// 11 - 25kHz channel
 		// 00 - 12.5kHz channel
 		// 10,01 - reserved
 		void setChanMode(uint16_t mode);
 		uint16_t getChanMode();
-		
+		*/
+	
 		void setModeTransmit(); // turn off rx, turn on tx
 		void setModeReceive(); // turn on rx, turn off tx
 		void setModeOff(); // turn off rx, turn off tx, set pwr_dwn bit
@@ -265,6 +267,7 @@ class HamShield {
 		void setTxSourceNone();
 		uint16_t getTxSource();
 		
+		/*
 		// PA bias voltage is unused (maybe remove this)
 		// set PA_bias voltage
 		//    000000: 1.01V
@@ -277,6 +280,7 @@ class HamShield {
 		//    1111111:3.13V
 		void setPABiasVoltage(uint16_t voltage);
 		uint16_t getPABiasVoltage();
+		*/
 		
 		// Subaudio settings
 		
@@ -475,9 +479,7 @@ class HamShield {
         uint32_t findWhitespace(uint32_t start,uint32_t stop, uint8_t dwell, uint16_t step, uint16_t threshold);
         uint32_t scanChannels(uint32_t buffer[],uint8_t buffsize, uint8_t speed, uint16_t threshold);
         uint32_t findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, uint8_t dwell, uint16_t threshold);
-        void buttonMode(uint8_t mode);
-        static void isr_ptt();
-        static void isr_reset();
+
 		unsigned int getMorseFreq();
 		void setMorseFreq(unsigned int morse_freq_hz);
 		unsigned int getMorseDotMillis();

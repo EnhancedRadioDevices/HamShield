@@ -58,8 +58,8 @@ void setup() {
   radio.setVolume2(0xFF);
   radio.setSQHiThresh(-100);
   radio.setSQLoThresh(-100);
-  radio.setSQOn();
-  //radio.bypassPreDeEmph();
+  //radio.setSQOn();
+  radio.bypassPreDeEmph();
   dds.start();
   afsk.start(&dds);
   delay(100);

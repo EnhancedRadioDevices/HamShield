@@ -15,7 +15,7 @@
 #define DDS_REFCLK_DEFAULT 9600
 #include <HamShield.h>
 
-#define PWM_PIN 3
+#define MIC_PIN 3
 #define RESET_PIN A3
 #define SWITCH_PIN 2
 
@@ -48,8 +48,8 @@ uint8_t rx_idx;
 // Run our start up things here
 void setup() { 
   // NOTE: if not using PWM out, it should be held low to avoid tx noise
-  pinMode(PWM_PIN, OUTPUT);
-  digitalWrite(PWM_PIN, LOW);
+  pinMode(MIC_PIN, OUTPUT);
+  digitalWrite(MIC_PIN, LOW);
   
   // prep the switch
   pinMode(SWITCH_PIN, INPUT_PULLUP);

@@ -8,7 +8,7 @@
 #include "Arduino.h"
 //#include "I2Cdev.h"
 
-uint8_t ncs_pin = nSEN;
+uint8_t ncs_pin = nCS;
 uint8_t clk_pin = CLK;
 uint8_t dat_pin = DAT;
 

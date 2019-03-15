@@ -7,10 +7,10 @@
 #include "stdint.h"
 
 #include "Arduino.h"
-#define nSEN A1 //15 //
+#define nCS A1 //15 //
 #define CLK A5 //19 //
 #define DAT A4 //18 //
-#define HAMSHIELD_PWM_PIN                 3    // Pin assignment for PWM output
+#define MIC 3    // Pin assignment for PWM output
 
 
 void HSsetPins(uint8_t ncs, uint8_t clk, uint8_t dat);

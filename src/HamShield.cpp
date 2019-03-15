@@ -125,11 +125,11 @@ const unsigned char AFSK_space[] PROGMEM = { 140, 228, 250, 166, 53, 0, 53, 166,
  * @see A1846S_ADDRESS_AD0_LOW
  * @see A1846S_ADDRESS_AD0_HIGH
  */
-HamShield::HamShield(uint8_t cs_pin = nSEN, uint8_t clk_pin = CLK, uint8_t dat_pin = DAT, uint8_t pwm_pin = HAMSHIELD_PWM_PIN) {
-    devAddr = cs_pin;
-    hs_pwm_pin = pwm_pin;
+HamShield::HamShield(uint8_t ncs_pin = nSEN, uint8_t clk_pin = CLK, uint8_t dat_pin = DAT, uint8_t mic_pin = MIC) {
+    devAddr = ncs_pin;
+    hs_mic_pin = mic_pin;
     
-    HSsetPins(cs_pin, clk_pin, dat_pin);
+    HSsetPins(ncs_pin, clk_pin, dat_pin);
 }
 
 
@@ -1598,12 +1598,12 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
       // We delay by 4 here, if we previously sent a symbol. Otherwise 7.
       // This could probably just be always 7 and go relatively unnoticed.
       if(prev == 0 || prev == ' '){
-        //tone(hs_pwm_pin, 6000, morse_dot_millis * 7);
-        HSnoTone(hs_pwm_pin);
+        //tone(hs_mic_pin, 6000, morse_dot_millis * 7);
+        HSnoTone(hs_mic_pin);
 		HSdelay(morse_dot_millis*7);
       } else {
-        //tone(hs_pwm_pin, 6000, morse_dot_millis * 4);
-        HSnoTone(hs_pwm_pin);
+        //tone(hs_mic_pin, 6000, morse_dot_millis * 4);
+        HSnoTone(hs_mic_pin);
 		HSdelay(morse_dot_millis*4);
       }
       continue;
@@ -1613,23 +1613,23 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
     if(bits) { // If it is a valid character...
       do {
         if(bits & 1) {
-          HStone(hs_pwm_pin, morse_freq);//, morse_dot_millis * 3);
+          HStone(hs_mic_pin, morse_freq);//, morse_dot_millis * 3);
           HSdelay(morse_dot_millis*3);
-          HSnoTone(hs_pwm_pin);
+          HSnoTone(hs_mic_pin);
         } else {
-          HStone(hs_pwm_pin, morse_freq);//, morse_dot_millis);
+          HStone(hs_mic_pin, morse_freq);//, morse_dot_millis);
           HSdelay(morse_dot_millis);
-          HSnoTone(hs_pwm_pin);
+          HSnoTone(hs_mic_pin);
         }
-        //tone(hs_pwm_pin, 6000, morse_dot_millis);
-        HSnoTone(hs_pwm_pin);
+        //tone(hs_mic_pin, 6000, morse_dot_millis);
+        HSnoTone(hs_mic_pin);
 		HSdelay(morse_dot_millis);
         bits >>= 1; // Shift into the next symbol
       } while(bits != 1); // Wait for 1 termination to be all we have left
     }
     // End of character
-    //tone(hs_pwm_pin, 6000, morse_dot_millis * 3);
-    HSnoTone(hs_pwm_pin);
+    //tone(hs_mic_pin, 6000, morse_dot_millis * 3);
+    HSnoTone(hs_mic_pin);
 	HSdelay(morse_dot_millis * 3);
   }
   return;
@@ -1760,20 +1760,20 @@ void HamShield::SSTVTestPattern(int code) {
 /* wait for tone to complete */
 
 void HamShield::toneWait(uint16_t freq, long timer) { 
-    HStone(hs_pwm_pin,freq);//,timer);
+    HStone(hs_mic_pin,freq);//,timer);
     HSdelay(timer);
-    HSnoTone(hs_pwm_pin);
+    HSnoTone(hs_mic_pin);
 }
 
 /* wait microseconds for tone to complete */
 
 void HamShield::toneWaitU(uint16_t freq, long timer) { 
     if(freq < 16383) { 
-    HStone(hs_pwm_pin,freq);
-    HSdelayMicroseconds(timer); HSnoTone(hs_pwm_pin); return;
+    HStone(hs_mic_pin,freq);
+    HSdelayMicroseconds(timer); HSnoTone(hs_mic_pin); return;
     }
-    HStone(hs_pwm_pin,freq);
-    HSdelay(timer / 1000); HSnoTone(hs_pwm_pin); return;
+    HStone(hs_mic_pin,freq);
+    HSdelay(timer / 1000); HSnoTone(hs_mic_pin); return;
 }
 
 

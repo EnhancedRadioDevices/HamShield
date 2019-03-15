@@ -220,7 +220,7 @@
 
 class HamShield {
     public:
-		HamShield(uint8_t cs_pin = nSEN, uint8_t clk_pin = CLK, uint8_t dat_pin = DAT, uint8_t pwm_pin = HAMSHIELD_PWM_PIN);
+		HamShield(uint8_t ncs_pin = nCS, uint8_t clk_pin = CLK, uint8_t dat_pin = DAT, uint8_t mic_pin = MIC);
 
         void initialize();  // defaults to 12.5kHz
 		void initialize(bool narrowBand); // select 12.5kHz if true or 25kHz if false
@@ -496,7 +496,7 @@ class HamShield {
 		
     private:
         uint8_t devAddr;
-        uint8_t hs_pwm_pin;
+        uint8_t hs_mic_pin;
         uint16_t radio_i2c_buf[4];
 		bool tx_active;
 		bool rx_active;

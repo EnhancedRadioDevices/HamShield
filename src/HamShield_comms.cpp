@@ -4,10 +4,6 @@
 
 #include "HamShield_comms.h"
 
-
-#include "Arduino.h"
-//#include "I2Cdev.h"
-
 uint8_t ncs_pin = nCS;
 uint8_t clk_pin = CLK;
 uint8_t dat_pin = DAT;
@@ -16,6 +12,10 @@ void HSsetPins(uint8_t ncs, uint8_t clk, uint8_t dat) {
     ncs_pin = ncs;
     clk_pin = clk;
     dat_pin = dat;
+
+#if !defined(ARDUINO)    
+    wiringPiSetup();
+#endif
     
     pinMode(ncs_pin, OUTPUT);
     digitalWrite(ncs_pin, HIGH);
@@ -147,11 +147,21 @@ void HSdelayMicroseconds(unsigned int us) {
 }
 
 void HStone(uint8_t pin, unsigned int frequency) {
+#if defined(ARDUINO_ARCH_NRF52)
+//TODO
+#elif defined(ARDUINO)
     tone(pin, frequency);
-}
-void HStone(uint8_t pin, unsigned int frequency, unsigned long duration) {
-    tone(pin, frequency, duration);
+#else
+    softToneCreate(pin);
+    softToneWrite(pin, frequency);
+#endif
 }
 void HSnoTone(uint8_t pin) {
+#if defined(ARDUINO_ARCH_NRF52)
+//TODO
+#elif defined(ARDUINO)
     noTone(pin);
+#else
+    softToneWrite(pin, 0);
+#endif
 }

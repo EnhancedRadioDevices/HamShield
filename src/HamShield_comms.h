@@ -4,13 +4,24 @@
 #ifndef _HAMSHIELD_COMMS_H_
 #define _HAMSHIELD_COMMS_H_
 
-#include "stdint.h"
 
+#if defined(ARDUINO)
 #include "Arduino.h"
+
 #define nCS A1 //15 //
 #define CLK A5 //19 //
 #define DAT A4 //18 //
-#define MIC 3    // Pin assignment for PWM output
+#define MIC 3
+#else // assume Raspberry Pi
+#include "stdint.h"
+#include <wiringPi.h>
+#include <softTone.h>
+
+#define nCS 0 //BCM17, HW pin 11 
+#define CLK 3 //BCM22, HW pin 15 
+#define DAT 2 //BCM27, HW pin 13 
+#define MIC 1 //BCM18, HW pin 12
+#endif
 
 
 void HSsetPins(uint8_t ncs, uint8_t clk, uint8_t dat);
@@ -31,7 +42,6 @@ void HSdelay(unsigned long ms);
 void HSdelayMicroseconds(unsigned int us);
 
 void HStone(uint8_t pin, unsigned int frequency);
-void HStone(uint8_t pin, unsigned int frequency, unsigned long duration);
 void HSnoTone(uint8_t pin);
 
 

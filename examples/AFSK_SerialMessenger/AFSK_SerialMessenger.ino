@@ -12,7 +12,7 @@
  * To send a message: connect to the Arduino over a Serial link.
  * Send the following over the serial link:
  * `from,to,:message
- * example: * `KG7OGM,KG7OGM,:Hi there
+ * example: * KG7OGM,KG7OGM,:Hi there`
  */
 
 
@@ -140,6 +140,7 @@ void prepMessage() {
   }
   Serial.println("Done sending");
   radio.setModeReceive();
+  messagebuff = "";
 } 
  
 

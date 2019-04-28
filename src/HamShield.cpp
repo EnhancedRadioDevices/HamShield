@@ -1062,6 +1062,24 @@ void HamShield::setDTMFCode(uint16_t code){
 
 }
 
+// Tone Transmission
+
+
+void HamShield::HStone(uint8_t pin, unsigned int frequency) {
+  HSwriteBitsW(devAddr, 0x79, 15, 2, 0x3); // transmit single tone (not dtmf)
+  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, 15, 2, 0x1); // transmit single tone (not dtmf)
+  
+  // bypass pre/de-emphasis
+  HSwriteBitsW(devAddr, A1846S_FILTER_REG, A1846S_EMPH_FILTER_EN, 1, 1);
+
+  HSwriteWord(devAddr, A1846S_TONE1_FREQ, frequency*10);
+  setTxSourceTone1();
+}
+void HamShield::HSnoTone(uint8_t pin) {
+  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, 15, 2, 0x0); // disable tone and dtmf
+  setTxSourceMic();
+}
+
 // Tone detection
 void HamShield::lookForTone(uint16_t t_hz) {
 	float tone_hz = (float) t_hz;

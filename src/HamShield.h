@@ -398,6 +398,8 @@ class HamShield {
         void setDTMFCode(uint16_t code);
 		
 		// Tone
+        void HStone(uint8_t pin, unsigned int frequency);
+        void HSnoTone(uint8_t pin);
 		void lookForTone(uint16_t tone_hz);
 		uint8_t toneDetected();
         

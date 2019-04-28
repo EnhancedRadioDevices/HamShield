@@ -145,23 +145,3 @@ void HSdelay(unsigned long ms) {
 void HSdelayMicroseconds(unsigned int us) {
     delayMicroseconds(us);
 }
-
-void HStone(uint8_t pin, unsigned int frequency) {
-#if defined(ARDUINO_ARCH_NRF52)
-//TODO
-#elif defined(ARDUINO)
-    tone(pin, frequency);
-#else
-    softToneCreate(pin);
-    softToneWrite(pin, frequency);
-#endif
-}
-void HSnoTone(uint8_t pin) {
-#if defined(ARDUINO_ARCH_NRF52)
-//TODO
-#elif defined(ARDUINO)
-    noTone(pin);
-#else
-    softToneWrite(pin, 0);
-#endif
-}

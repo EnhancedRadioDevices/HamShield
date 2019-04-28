@@ -41,8 +41,5 @@ unsigned long HSmillis();
 void HSdelay(unsigned long ms);
 void HSdelayMicroseconds(unsigned int us);
 
-void HStone(uint8_t pin, unsigned int frequency);
-void HSnoTone(uint8_t pin);
-
 
 #endif /* _HAMSHIELD_COMMS_H_ */

@@ -74,6 +74,7 @@ void loop() {
        //Serial.println(messagebuff);
        prepMessage(); 
        msgptr = 0; 
+       messagebuff = "";
        Serial.print("!!");
       } 
       else { 
@@ -140,7 +141,6 @@ void prepMessage() {
   }
   Serial.println("Done sending");
   radio.setModeReceive();
-  messagebuff = "";
 } 
  
 

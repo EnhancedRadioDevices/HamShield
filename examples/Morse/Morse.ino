@@ -20,13 +20,13 @@
 #define SWITCH_PIN 2
 
 #define MORSE_FREQ 600
-#define MORSE_DOT 100 // ms
+#define MORSE_DOT 150 // ms
 // Note that all timing is defined in terms of MORSE_DOT relative durations
 // You may want to tweak those timings below
 
 #define SYMBOL_END_TIME 5 //millis
-#define CHAR_END_TIME (MORSE_DOT*2.3)
-#define MESSAGE_END_TIME (MORSE_DOT*15)
+#define CHAR_END_TIME (MORSE_DOT*2.7)
+#define MESSAGE_END_TIME (MORSE_DOT*8)
 
 #define MIN_DOT_TIME (MORSE_DOT*0.7)
 #define MAX_DOT_TIME (MORSE_DOT*1.3)
@@ -41,6 +41,7 @@ uint32_t tone_in_progress; // track how long the current tone lasts
 uint32_t space_in_progress; // track how long since the last tone
 uint8_t rx_morse_char;
 uint8_t rx_morse_bit;
+bool bits_to_process;
 
 char rx_msg[128];
 uint8_t rx_idx;
@@ -92,6 +93,9 @@ void setup() {
   rx_morse_char = 0; // haven't found any tones yet
   rx_idx = 0;
   rx_morse_bit = 1;
+  bits_to_process = false;
+
+  radio.bypassPreDeEmph();
 }
 
 void loop() {
@@ -101,6 +105,7 @@ void loop() {
     if (tone_in_progress == 0) {
       // start a new tone
       tone_in_progress = millis();
+      //Serial.print('t');
     }
   } else {
     // keep track of how long the silence is
@@ -119,8 +124,9 @@ void loop() {
     } 
 
     // we might be done with a character if the space is long enough
-    if ((millis() - space_in_progress) > CHAR_END_TIME) {
+    if (((millis() - space_in_progress) > CHAR_END_TIME) && bits_to_process) {
       char m = parseMorse();
+      bits_to_process = false;
       if (m != 0) {
         rx_msg[rx_idx++] = m;
       }
@@ -162,6 +168,7 @@ void loop() {
 
       // We're done sending the message, set the radio back into recieve mode.
       radio.setModeReceive();
+      radio.lookForTone(MORSE_FREQ);
       Serial.println("sent");
     } else {
       // If we get here, the channel is busy. Let's also print out the RSSI.
@@ -176,10 +183,12 @@ void handleTone(uint16_t tone_time) {
   if (tone_time > MIN_DOT_TIME && tone_time < MAX_DOT_TIME) {
     // add a dot
     //Serial.print(".");
+    bits_to_process = true;
     //nothing to do for this bit position, since . = 0
   } else if (tone_time > MIN_DASH_TIME && tone_time < MAX_DASH_TIME) {
     // add a dash
     //Serial.print("-");
+    bits_to_process = true;
     rx_morse_char += rx_morse_bit;
   }
 
@@ -200,4 +209,3 @@ char parseMorse() {
   rx_morse_bit = 1;
   return c;
 }
-

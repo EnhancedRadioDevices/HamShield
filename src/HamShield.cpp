@@ -18,6 +18,7 @@
 
 /* don't change this regulatory value, use dangerMode() and safeMode() instead */
 bool restrictions = true; 
+uint16_t old_dtmf_reg;
 
 /* channel lookup tables */
 
@@ -232,6 +233,9 @@ void HamShield::initialize(bool narrowBand) {
     setDTMFIdleTime(50);
     setDTMFTxTime(60);
     setDTMFDetectTime(24);
+    
+    HSreadWord(devAddr, A1846S_DTMF_ENABLE_REG, radio_i2c_buf);
+    old_dtmf_reg = radio_i2c_buf[0];
 }
 
 
@@ -1066,18 +1070,24 @@ void HamShield::setDTMFCode(uint16_t code){
 
 
 void HamShield::HStone(uint8_t pin, unsigned int frequency) {
+  HSreadWord(devAddr, A1846S_DTMF_ENABLE_REG, radio_i2c_buf);
+  old_dtmf_reg = radio_i2c_buf[0];   
+    
   HSwriteBitsW(devAddr, 0x79, 15, 2, 0x3); // transmit single tone (not dtmf)
-  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, 15, 2, 0x1); // transmit single tone (not dtmf)
+  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 2, 0x2); // transmit single tone (not dtmf)
   
   // bypass pre/de-emphasis
   HSwriteBitsW(devAddr, A1846S_FILTER_REG, A1846S_EMPH_FILTER_EN, 1, 1);
 
   HSwriteWord(devAddr, A1846S_TONE1_FREQ, frequency*10);
   setTxSourceTone1();
+  
+  //tone(pin, frequency);
 }
 void HamShield::HSnoTone(uint8_t pin) {
-  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, 15, 2, 0x0); // disable tone and dtmf
+  HSwriteWord(devAddr, A1846S_DTMF_ENABLE_REG, old_dtmf_reg); // disable tone and dtmf
   setTxSourceMic();
+//  noTone(pin);
 }
 
 // Tone detection
@@ -1611,6 +1621,7 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
   int i;
   char prev = 0;
   for(i = 0; buffer[i] != '\0' && i < HAMSHIELD_MORSE_BUFFER_SIZE; prev = buffer[i], i++) {
+    
     // On a space, delay 7 dots
     if(buffer[i] == ' ') {
       // We delay by 4 here, if we previously sent a symbol. Otherwise 7.
@@ -1618,11 +1629,13 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
       if(prev == 0 || prev == ' '){
         //tone(hs_mic_pin, 6000, morse_dot_millis * 7);
         HSnoTone(hs_mic_pin);
-		HSdelay(morse_dot_millis*7);
+        HSdelay(morse_dot_millis*7);
+        //Serial.print("  ");
       } else {
         //tone(hs_mic_pin, 6000, morse_dot_millis * 4);
         HSnoTone(hs_mic_pin);
-		HSdelay(morse_dot_millis*4);
+        HSdelay(morse_dot_millis*4);
+        //Serial.print(" ");
       }
       continue;
     }
@@ -1634,14 +1647,16 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
           HStone(hs_mic_pin, morse_freq);//, morse_dot_millis * 3);
           HSdelay(morse_dot_millis*3);
           HSnoTone(hs_mic_pin);
+          //Serial.print('-');
         } else {
           HStone(hs_mic_pin, morse_freq);//, morse_dot_millis);
           HSdelay(morse_dot_millis);
           HSnoTone(hs_mic_pin);
+          //Serial.print('.');
         }
         //tone(hs_mic_pin, 6000, morse_dot_millis);
         HSnoTone(hs_mic_pin);
-		HSdelay(morse_dot_millis);
+		HSdelay(morse_dot_millis); // delay between elements
         bits >>= 1; // Shift into the next symbol
       } while(bits != 1); // Wait for 1 termination to be all we have left
     }

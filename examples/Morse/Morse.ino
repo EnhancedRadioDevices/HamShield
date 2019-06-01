@@ -10,6 +10,18 @@
  * monitor the status of the beacon. To test, set a HandyTalkie 
  * to 438MHz. You should hear the message " CALLSIGN HAMSHIELD" 
  * in morse code.
+ * 
+ * 
+ * Note: only upper case letters, numbers, and a few symbols
+ * are supported.
+ * Supported symbols: &/+(=:?";@`-._),!$
+ * 
+ * If you're having trouble accurately decoding, you may want to
+ * tweak the min/max . and - times. You can also uncomment
+ * the Serial.print debug statements that can tell you when tones
+ * are being detected, how long they're detected for, and whether
+ * the tones are decoded as a . or -.
+ * 
 */
 
 #define DDS_REFCLK_DEFAULT 9600
@@ -28,10 +40,10 @@
 #define CHAR_END_TIME (MORSE_DOT*2.7)
 #define MESSAGE_END_TIME (MORSE_DOT*8)
 
-#define MIN_DOT_TIME (MORSE_DOT*0.7)
-#define MAX_DOT_TIME (MORSE_DOT*1.3)
-#define MIN_DASH_TIME (MORSE_DOT*2.7)
-#define MAX_DASH_TIME (MORSE_DOT*3.3)
+#define MIN_DOT_TIME (MORSE_DOT-30)
+#define MAX_DOT_TIME (MORSE_DOT+55)
+#define MIN_DASH_TIME (MORSE_DOT*3-30)
+#define MAX_DASH_TIME (MORSE_DOT*3+55)
 
 
 HamShield radio;
@@ -83,7 +95,7 @@ void setup() {
   radio.lookForTone(MORSE_FREQ);
 
   // Configure the HamShield to operate on 438.000MHz
-  radio.frequency((uint32_t) 438000);
+  radio.frequency(432000);
   radio.setModeReceive();
   
   Serial.println("Radio Configured.");
@@ -95,7 +107,6 @@ void setup() {
   rx_morse_bit = 1;
   bits_to_process = false;
 
-  radio.bypassPreDeEmph();
 }
 
 void loop() {
@@ -119,6 +130,7 @@ void loop() {
         // end the last tone
         uint16_t tone_time = millis() - tone_in_progress;
         tone_in_progress = 0;
+        //Serial.println(tone_time);
         handleTone(tone_time);
       } 
     } 
@@ -151,9 +163,11 @@ void loop() {
     // We'll wait up to 30 seconds for a clear channel, requiring that the channel is clear for 2 seconds before we transmit
     if (radio.waitForChannel(30000,2000,-5)) {
       // If we get here, the channel is clear. 
+      Serial.println("sending");
 
       // Start transmitting by putting the radio into transmit mode.
       radio.setModeTransmit();
+      Serial.println("tx");
       unsigned int MORSE_BUF_SIZE = 128;
       char morse_buf[MORSE_BUF_SIZE];
       unsigned int morse_idx;

@@ -1070,29 +1070,40 @@ void HamShield::setDTMFCode(uint16_t code){
 
 
 void HamShield::HStone(uint8_t pin, unsigned int frequency) {
-  HSreadWord(devAddr, A1846S_DTMF_ENABLE_REG, radio_i2c_buf);
-  old_dtmf_reg = radio_i2c_buf[0];   
-    
+  // store old dtmf reg for noTone
+//  HSreadWord(devAddr, A1846S_DTMF_ENABLE_REG, radio_i2c_buf);
+//  old_dtmf_reg = radio_i2c_buf[0];   
+  
+  // set frequency
+  HSwriteWord(devAddr, A1846S_TONE1_FREQ, frequency*10);
+  
+  // set 0x79 dtmf control
   HSwriteBitsW(devAddr, 0x79, 15, 2, 0x3); // transmit single tone (not dtmf)
-  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 2, 0x2); // transmit single tone (not dtmf)
+//  HSwriteBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 2, 0x2); // transmit single tone (not dtmf)
   
   // bypass pre/de-emphasis
   HSwriteBitsW(devAddr, A1846S_FILTER_REG, A1846S_EMPH_FILTER_EN, 1, 1);
 
-  HSwriteWord(devAddr, A1846S_TONE1_FREQ, frequency*10);
-  setTxSourceTone1();
-  
+  // set source for tx
+  setTxSourceTone1(); // writes to 3A
+
   //tone(pin, frequency);
 }
 void HamShield::HSnoTone(uint8_t pin) {
-  HSwriteWord(devAddr, A1846S_DTMF_ENABLE_REG, old_dtmf_reg); // disable tone and dtmf
   setTxSourceMic();
+  //HSwriteWord(devAddr, A1846S_DTMF_ENABLE_REG, old_dtmf_reg); // disable tone and dtmf
 //  noTone(pin);
 }
 
 // Tone detection
 void HamShield::lookForTone(uint16_t t_hz) {
-	float tone_hz = (float) t_hz;
+    // set 0x79 dtmf control
+    HSwriteBitsW(devAddr, 0x79, 15, 2, 0x3); // transmit single tone (not dtmf)
+  
+    // bypass pre/de-emphasis
+    HSwriteBitsW(devAddr, A1846S_FILTER_REG, A1846S_EMPH_FILTER_EN, 1, 1);
+
+    float tone_hz = (float) t_hz;
 	float Fs = 6400000/1024;
 	float k = floor(tone_hz/Fs*127 + 0.5);
 	uint16_t t = (uint16_t) (round(2.0*cos(2.0*M_PI*k/127)*1024));
@@ -1100,24 +1111,38 @@ void HamShield::lookForTone(uint16_t t_hz) {
 	float k2 = floor(2*tone_hz/Fs*127+0.5);
 	uint16_t h = (uint16_t) (round(2.0*cos(2.0*M_PI*k2/127)*1024));
 	// set tone
-	HSwriteWord(devAddr, 0x68, t);
+	HSwriteWord(devAddr, 0x67, t); // looking for tone 1
 	
 	// set second harmonic
-	HSwriteWord(devAddr, 0x70, h);
+	HSwriteWord(devAddr, 0x6F, h); // looking for tone 
+    
 	// turn on tone detect
 	HSwriteBitW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_TONE_DETECT, 1);
 	HSwriteBitW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 1);
 
 }
 
+bool redetect = false;
+uint8_t last_tone_detected = 0;
 uint8_t HamShield::toneDetected() {
 	HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_SAMPLE_BIT, 1, radio_i2c_buf);
 	if (radio_i2c_buf[0] != 0) {
+      if (!redetect) {
+        redetect = true;
 		HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_CODE_BIT, A1846S_DTMF_CODE_LEN, radio_i2c_buf);
-		if (radio_i2c_buf[0] == 1) {
-			return 1;
-		}
-	}
+		last_tone_detected = radio_i2c_buf[0];
+        //Serial.print("t: ");
+        //Serial.println(last_tone_detected);
+      }
+      if (last_tone_detected == 0) {
+        return 1;
+      }
+	} else if (redetect) {
+      // re-enable detect
+      redetect = false;
+      HSwriteBitW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_TONE_DETECT, 1);
+      HSwriteBitW(devAddr, A1846S_DTMF_ENABLE_REG, A1846S_DTMF_ENABLE_BIT, 1);
+    }
 	return 0;
 }
 
@@ -1656,7 +1681,7 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
         }
         //tone(hs_mic_pin, 6000, morse_dot_millis);
         HSnoTone(hs_mic_pin);
-		HSdelay(morse_dot_millis); // delay between elements
+		HSdelay(morse_dot_millis);
         bits >>= 1; // Shift into the next symbol
       } while(bits != 1); // Wait for 1 termination to be all we have left
     }

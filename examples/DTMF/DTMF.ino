@@ -72,7 +72,7 @@ void setup() {
   //radio.setSQOff();
 
   Serial.println("setting frequency to: ");
-  freq = 420000;
+  freq = 432250;
   radio.frequency(freq);
   Serial.print(radio.getFrequency());
   Serial.println("kHz");
@@ -119,9 +119,13 @@ void loop() {
     while (j < 4) {
       if (radio.getDTMFSample() == 0) {
         j++;
+      } else {
+        j = 1;
       }
       delay(10);
     }
+    // reset read
+    //radio.enableDTMFReceive();
   } else if (rx_dtmf_idx > 0) {
     rx_dtmf_buf[rx_dtmf_idx] = '\0'; // NULL terminate the string
     Serial.println(rx_dtmf_buf);
@@ -130,6 +134,7 @@ void loop() {
   
   // Is it time to send tone?
   if (Serial.available()) {
+    // get first code
     uint8_t code = char2code(Serial.read());
     
     // start transmitting
@@ -137,7 +142,7 @@ void loop() {
     radio.setTxSourceTones();
     radio.setModeTransmit();
     delay(300); // wait for TX to come to full power
-
+    
     bool dtmf_to_tx = true;
     while (dtmf_to_tx) {
       // wait until ready
@@ -145,18 +150,20 @@ void loop() {
         // wait until we're ready for a new code
         delay(10);
       }
-      while (radio.getDTMFTxActive() != 0) {
-        // wait until this code is done
-        delay(10);
-      }
-
       if (Serial.available()) {
         code = char2code(Serial.read());
         if (code == 255) code = 0xE; // throw a * in there so we don't break things with an invalid code
         radio.setDTMFCode(code); // set first
       } else {
         dtmf_to_tx = false;
+        break;
       }
+
+      while (radio.getDTMFTxActive() != 0) {
+        // wait until this code is done
+        delay(10);
+      }
+
     }
     // done with tone
     radio.setModeReceive();

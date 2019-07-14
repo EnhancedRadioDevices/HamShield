@@ -36,7 +36,7 @@ void setup() {
   Serial.println("Setting radio to its defaults..");
   radio.initialize();
   radio.setRfPower(0);
-  radio.frequency(146520);
+  radio.frequency(432100); // 70cm calling frequency
   radio.setModeReceive();
 }
 

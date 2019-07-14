@@ -72,7 +72,7 @@ void setup() {
   //radio.setSQOff();
 
   Serial.println("setting frequency to: ");
-  freq = 432250;
+  freq = 432100; // 70cm calling frequency
   radio.frequency(freq);
   Serial.print(radio.getFrequency());
   Serial.println("kHz");
@@ -104,38 +104,18 @@ void setup() {
   Serial.println("ready");
 }
 
-char rx_dtmf_buf[255];
-int  rx_dtmf_idx = 0;
 void loop() {
   
   // look for tone
-  if (radio.getDTMFSample() != 0) {
-    uint16_t code = radio.getDTMFCode();
-
-    rx_dtmf_buf[rx_dtmf_idx++] = code2char(code);
-
-    // reset after this tone
-    int j = 0;
-    while (j < 4) {
-      if (radio.getDTMFSample() == 0) {
-        j++;
-      } else {
-        j = 1;
-      }
-      delay(10);
-    }
-    // reset read
-    //radio.enableDTMFReceive();
-  } else if (rx_dtmf_idx > 0) {
-    rx_dtmf_buf[rx_dtmf_idx] = '\0'; // NULL terminate the string
-    Serial.println(rx_dtmf_buf);
-    rx_dtmf_idx = 0;
+  char m = radio.DTMFRxLoop();
+  if (m != 0) {
+    Serial.print(m);
   }
   
   // Is it time to send tone?
   if (Serial.available()) {
     // get first code
-    uint8_t code = char2code(Serial.read());
+    uint8_t code = radio.DTMFchar2code(Serial.read());
     
     // start transmitting
     radio.setDTMFCode(code); // set first
@@ -151,7 +131,7 @@ void loop() {
         delay(10);
       }
       if (Serial.available()) {
-        code = char2code(Serial.read());
+        code = radio.DTMFchar2code(Serial.read());
         if (code == 255) code = 0xE; // throw a * in there so we don't break things with an invalid code
         radio.setDTMFCode(code); // set first
       } else {
@@ -169,39 +149,4 @@ void loop() {
     radio.setModeReceive();
     radio.setTxSourceMic();
   }
-}
-
-uint8_t char2code(char c) {
-    uint8_t code;
-    if (c == '#') {
-      code = 0xF;
-    } else if (c=='*') {
-      code = 0xE;
-    } else if (c >= 'A' && c <= 'D') {
-      code = c - 'A' + 0xA;
-    } else if (c >= '0' && c <= '9') {
-      code = c - '0';
-    } else {
-      // invalid code, skip it
-      code = 255;
-    }
-
-    return code;
-}
-
-char code2char(uint16_t code) {
-  char c;
-  if (code < 10) {
-    c = '0' + code;
-  } else if (code < 0xE) {
-    c = 'A' + code - 10;
-  } else if (code == 0xE) {
-    c = '*';
-  } else if (code == 0xF) {
-    c = '#';
-  } else {
-    c = '?'; // invalid code
-  }
- 
-  return c;
 }

@@ -126,7 +126,7 @@ void setup() {
   Serial.println("changing frequency");
   
   radio.setSQOff();
-  freq = 446000;
+  freq = 432100; // 70cm calling frequency
   radio.frequency(freq);
   
   // set to receive

@@ -36,27 +36,8 @@
 // Note that all timing is defined in terms of MORSE_DOT relative durations
 // You may want to tweak those timings below
 
-#define SYMBOL_END_TIME 5 //millis
-#define CHAR_END_TIME (MORSE_DOT*2.7)
-#define MESSAGE_END_TIME (MORSE_DOT*8)
-
-#define MIN_DOT_TIME (MORSE_DOT-30)
-#define MAX_DOT_TIME (MORSE_DOT+55)
-#define MIN_DASH_TIME (MORSE_DOT*3-30)
-#define MAX_DASH_TIME (MORSE_DOT*3+55)
-
 
 HamShield radio;
-
-uint32_t last_tone_check; // track how often we check for morse tones
-uint32_t tone_in_progress; // track how long the current tone lasts
-uint32_t space_in_progress; // track how long since the last tone
-uint8_t rx_morse_char;
-uint8_t rx_morse_bit;
-bool bits_to_process;
-
-char rx_msg[128];
-uint8_t rx_idx;
 
 // Run our start up things here
 void setup() { 
@@ -93,68 +74,19 @@ void setup() {
   radio.setMorseDotMillis(MORSE_DOT);
   
   radio.lookForTone(MORSE_FREQ);
-
-  // Configure the HamShield to operate on 438.000MHz
-  radio.frequency(432000);
+  radio.setupMorseRx();
+  
+  // Configure the HamShield frequency
+  radio.frequency(432100); // 70cm calling frequency
   radio.setModeReceive();
   
   Serial.println("Radio Configured.");
-  last_tone_check = millis();
-  space_in_progress = 0; // haven't checked yet
-  tone_in_progress = 0; // not currently listening to a tone
-  rx_morse_char = 0; // haven't found any tones yet
-  rx_idx = 0;
-  rx_morse_bit = 1;
-  bits_to_process = false;
-
 }
 
 void loop() {
-  // are we receiving anything
-  if (radio.toneDetected()) {
-    space_in_progress = 0;
-    if (tone_in_progress == 0) {
-      // start a new tone
-      tone_in_progress = millis();
-      //Serial.print('t');
-    }
-  } else {
-    // keep track of how long the silence is
-    if (space_in_progress == 0) space_in_progress = millis();
-
-    // we wait for a bit of silence before ending the last
-    // symbol in order to smooth out the detector
-    if ((millis() - space_in_progress) > SYMBOL_END_TIME)
-    {
-      if (tone_in_progress != 0) {
-        // end the last tone
-        uint16_t tone_time = millis() - tone_in_progress;
-        tone_in_progress = 0;
-        //Serial.println(tone_time);
-        handleTone(tone_time);
-      } 
-    } 
-
-    // we might be done with a character if the space is long enough
-    if (((millis() - space_in_progress) > CHAR_END_TIME) && bits_to_process) {
-      char m = parseMorse();
-      bits_to_process = false;
-      if (m != 0) {
-        rx_msg[rx_idx++] = m;
-      }
-    }
-
-    // we might be done with a message if the space is long enough
-    if ((millis() - space_in_progress) > MESSAGE_END_TIME) {
-      if (rx_idx > 0) {
-        // we got a message, print it now
-        rx_msg[rx_idx] = '\0'; // null terminate
-        Serial.println(rx_msg);
-        rx_idx = 0; // reset message buffer
-      }
-      rx_morse_char = 0;
-      rx_morse_bit = 1;
-    }
+  char rx_char = radio.morseRxLoop();
+  if (rx_char != 0) {
+      Serial.print(rx_char);
   }
      
   // should we send anything
@@ -181,9 +113,9 @@ void loop() {
       radio.morseOut(morse_buf);
 
       // We're done sending the message, set the radio back into recieve mode.
+      Serial.println("sent");
       radio.setModeReceive();
       radio.lookForTone(MORSE_FREQ);
-      Serial.println("sent");
     } else {
       // If we get here, the channel is busy. Let's also print out the RSSI.
       Serial.print("The channel was busy. RSSI: ");
@@ -192,34 +124,4 @@ void loop() {
   }
 }
 
-void handleTone(uint16_t tone_time) {
-  //Serial.println(tone_time);
-  if (tone_time > MIN_DOT_TIME && tone_time < MAX_DOT_TIME) {
-    // add a dot
-    //Serial.print(".");
-    bits_to_process = true;
-    //nothing to do for this bit position, since . = 0
-  } else if (tone_time > MIN_DASH_TIME && tone_time < MAX_DASH_TIME) {
-    // add a dash
-    //Serial.print("-");
-    bits_to_process = true;
-    rx_morse_char += rx_morse_bit;
-  }
 
-  // prep for the next bit
-  rx_morse_bit = rx_morse_bit << 1;
-}
-
-char parseMorse() {
-  // if morse_char is a valid morse character, return the character
-  // if morse_char is an invalid (incomplete) morse character, return 0
-
-
-  //if (rx_morse_bit != 1) Serial.println(rx_morse_char, BIN);
-  rx_morse_char += rx_morse_bit; // add the terminator bit
-  // if we got a char, then print it
-  char c = radio.morseReverseLookup(rx_morse_char);
-  rx_morse_char = 0;
-  rx_morse_bit = 1;
-  return c;
-}

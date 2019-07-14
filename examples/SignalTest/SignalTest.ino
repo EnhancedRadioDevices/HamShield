@@ -106,7 +106,7 @@ void setup() {
   int result = radio.testConnection();
   Serial.println(result);
   radio.initialize();
-  radio.frequency(446000);
+  radio.frequency(432400);
   radio.setVolume1(0xF);
   radio.setVolume2(0xF);
   radio.setModeReceive();

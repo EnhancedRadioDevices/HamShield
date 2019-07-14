@@ -249,7 +249,7 @@ void setup() {
   Serial.println("Setting radio to its defaults..");
   radio.initialize();
   radio.setRfPower(0);
-  radio.frequency(144025);
+  radio.frequency(145010);
 
   radio.setModeTransmit();
   voice.say(spKILO); // to change these to the words you would like to say, or a ham radio call sign - uncomment above encoded words

@@ -32,7 +32,7 @@
 #define A1846S_TH_L_VOX_REG         0x64    // register holds vox low (shut) threshold bits
 #define A1846S_FM_DEV_REG           0x43    // register holds fm deviation settings
 #define A1846S_RX_VOLUME_REG        0x44    // register holds RX volume settings
-#define A1846S_SQ_OPEN_THRESH_REG   0x48    // see sq
+#define A1846S_SQ_OPEN_THRESH_REG   0x49    // see sq
 #define A1846S_SQ_SHUT_THRESH_REG   0x49    // see sq
 #define A1846S_CTCSS_FREQ_REG       0x4A    // ctcss_freq<15:0>
 #define A1846S_CDCSS_CODE_HI_REG    0x4B    // cdcss_code<23:16>
@@ -145,12 +145,12 @@
 #define A1846S_SHIFT_SEL_LEN       2
 
 // Bitfields for A1846S_SQ_THRESH_REG
-#define A1846S_SQ_OPEN_THRESH_BIT     9  // sq open threshold <9:0>
-#define A1846S_SQ_OPEN_THRESH_LENGTH 10
+#define A1846S_SQ_OPEN_THRESH_BIT    13  // sq open threshold <6:0>
+#define A1846S_SQ_OPEN_THRESH_LENGTH  7
 
 // Bitfields for A1846S_SQ_SHUT_THRESH_REG
-#define A1846S_SQ_SHUT_THRESH_BIT     9  // sq shut threshold <9:0>
-#define A1846S_SQ_SHUT_THRESH_LENGTH 10
+#define A1846S_SQ_SHUT_THRESH_BIT     6  // sq shut threshold <6:0>
+#define A1846S_SQ_SHUT_THRESH_LENGTH  7
 
 // Bitfields for A1846S_SQ_OUT_SEL_REG
 #define A1846S_SQ_OUT_SEL_BIT      7  // sq_out_sel
@@ -168,8 +168,8 @@
 #define A1846S_CTCSS2_FLAG_BIT     8  // 1 when txon is enabled
 #define A1846S_INVERT_DET_FLAG_BIT 7  // ctcss phase shift detect
 #define A1846S_CSS_CMP_FLAG_BIT    2  // ctcss/cdcss compared
-#define A1846S_SQ_FLAG_BIT         1  // sq final signal out from dsp
-#define A1846S_VOX_FLAG_BIT        0  // vox out from dsp
+#define A1846S_SQ_FLAG_BIT         0  // sq final signal out from dsp
+#define A1846S_VOX_FLAG_BIT        1  // vox out from dsp
 
 // Bitfields for A1846S_RSSI_REG
 #define A1846S_RSSI_BIT            15  // RSSI readings <7:0>
@@ -216,6 +216,20 @@
 
 #define HAMSHIELD_PSK31_FREQ 1000
 
+
+// Morse Configuration
+
+#define MORSE_FREQ 600
+#define MORSE_DOT 150 // ms
+
+#define SYMBOL_END_TIME 5 //millis
+#define CHAR_END_TIME (MORSE_DOT*2.7)
+#define MESSAGE_END_TIME (MORSE_DOT*8)
+
+#define MIN_DOT_TIME (MORSE_DOT-30)
+#define MAX_DOT_TIME (MORSE_DOT+55)
+#define MIN_DASH_TIME (MORSE_DOT*3-30)
+#define MAX_DASH_TIME (MORSE_DOT*3+55)
 
 
 class HamShield {
@@ -299,7 +313,11 @@ class HamShield {
 		uint16_t getCtcssFreqMilliHz();
 		float getCtcssFreqHz();
 		void setCtcssFreqToStandard(); // freq must be 134.4Hz for standard cdcss mode
+        void enableCtcssTx();
+        void enableCtcssRx();
 		void enableCtcss();
+        void disableCtcssTx();
+        void disableCtcssRx();
 		void disableCtcss();
 		void setCtcssDetThreshIn(uint8_t thresh);
 		uint8_t getCtcssDetThreshIn();
@@ -344,6 +362,7 @@ class HamShield {
 		int16_t getSQHiThresh();
 		void setSQLoThresh(int16_t sq_lo_threshold); // Sq detect low th, rssi_cmp will be 0 when rssi<th_l_sq && time delay meet, unit 1dB
 		int16_t getSQLoThresh();
+        bool getSquelching();
 		
 		// SQ out select
 		void setSQOutSel();
@@ -389,6 +408,9 @@ class HamShield {
         uint16_t getDTMFDetectTime();
         void setDTMFIdleTime(uint16_t idle_time); // idle time is time between DTMF Tone
         uint16_t getDTMFIdleTime();
+        char DTMFRxLoop();
+        char DTMFcode2char(uint16_t code);
+        uint8_t DTMFchar2code(char c);
         void setDTMFTxTime(uint16_t tx_time); // tx time is duration of DTMF Tone
         uint16_t getDTMFTxTime();
 		uint16_t disableDTMF();
@@ -482,11 +504,15 @@ class HamShield {
         uint32_t scanChannels(uint32_t buffer[],uint8_t buffsize, uint8_t speed, uint16_t threshold);
         uint32_t findWhitespaceChannels(uint32_t buffer[],uint8_t buffsize, uint8_t dwell, uint16_t threshold);
 
+        void setupMorseRx();
 		unsigned int getMorseFreq();
 		void setMorseFreq(unsigned int morse_freq_hz);
 		unsigned int getMorseDotMillis();
 		void setMorseDotMillis(unsigned int morse_dot_dur_millis);
 		void morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]);
+        char morseRxLoop();
+        bool handleMorseTone(uint16_t tone_time, bool bits_to_process, uint8_t * rx_morse_char, uint8_t * rx_morse_bit);
+        char parseMorse(uint8_t rx_morse_char, uint8_t rx_morse_bit);
 		uint8_t morseLookup(char letter);
 		uint8_t morseReverseLookup(uint8_t itu);
         bool waitForChannel(long timeout, long breakwindow, int setRSSI);

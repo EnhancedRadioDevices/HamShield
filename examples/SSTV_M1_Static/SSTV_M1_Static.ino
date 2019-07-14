@@ -54,7 +54,7 @@ void setup() {
   // Tell the HamShield to start up
   radio.initialize();
   radio.setRfPower(0);
-  radio.frequency(145500);
+  radio.frequency(446000);
   // put your setup code here, to run once:
   //dds.setReferenceClock(34965/4);
   dds.start();

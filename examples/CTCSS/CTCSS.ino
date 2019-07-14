@@ -75,13 +75,11 @@ void setup() {
   radio.initialize(); // initializes automatically for UHF 12.5kHz channel
 
   Serial.println("setting default Radio configuration");
-  radio.dangerMode();
 
   // set frequency
   Serial.println("changing frequency");
   
-  radio.setSQOff();
-  freq = 446000;
+  freq = 432100; // 70cm calling frequency
   radio.frequency(freq);
   
   // set to receive
@@ -91,6 +89,11 @@ void setup() {
   Serial.print("config register is: ");
   Serial.println(radio.readCtlReg());
   Serial.println(radio.readRSSI());
+   
+  // set up squelch
+  radio.setSQLoThresh(-80);
+  radio.setSQHiThresh(-70);
+  radio.setSQOn();
    
   radio.setRfPower(0);
 

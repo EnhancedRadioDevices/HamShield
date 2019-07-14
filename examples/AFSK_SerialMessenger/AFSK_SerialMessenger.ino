@@ -52,7 +52,7 @@ void setup() {
   Serial.begin(9600);
 
   radio.initialize();
-  radio.frequency(145570);
+  radio.frequency(144390); // default aprs frequency in North America
   radio.setRfPower(0);
   radio.setVolume1(0xFF);
   radio.setVolume2(0xFF);

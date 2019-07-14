@@ -61,8 +61,8 @@ void setup() {
   radio.setMorseFreq(600);
   radio.setMorseDotMillis(100);
 
-  // Configure the HamShield to operate on 438.000Mhz
-  radio.frequency(438000);
+  // Configure the HamShield frequency
+  radio.frequency(432400);
 
   Serial.println("Radio configured.");
 }

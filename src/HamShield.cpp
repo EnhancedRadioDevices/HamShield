@@ -193,7 +193,7 @@ void HamShield::initialize(bool narrowBand) {
     HSwriteWord(devAddr, 0x57, tx_data);
     tx_data = 0x800D;
     HSwriteWord(devAddr, 0x58, tx_data); 
-    tx_data = 0x0EDD;
+    tx_data = 0x0EDB;
     HSwriteWord(devAddr, 0x5A, tx_data); // sq and noise detect times
     tx_data = 0x3FFF;
     HSwriteWord(devAddr, 0x63, tx_data); // pre-emphasis bypass
@@ -227,7 +227,7 @@ void HamShield::initialize(bool narrowBand) {
     setModeReceive();
     setTxSourceMic();
     setRfPower(0);
-    setSQLoThresh(80);
+    setSQLoThresh(-80);
     setSQOn();
     */
     setDTMFIdleTime(50);
@@ -256,11 +256,11 @@ void HamShield::setupNarrowBand() {
     HSwriteWord(devAddr, 0x34, tx_data);
     tx_data = 0x40C3;
     HSwriteWord(devAddr, 0x3A, tx_data); // modu_det_sel sq setting
-    tx_data = 0x0407;
+    tx_data = 0x0F1E;
     HSwriteWord(devAddr, 0x3C, tx_data); // pk_det_th sq setting [8:7]
     tx_data = 0x28D0;
     HSwriteWord(devAddr, 0x3F, tx_data); // rssi3_th sq setting
-    tx_data = 0x203E;
+    tx_data = 0x20BE;
     HSwriteWord(devAddr, 0x48, tx_data);
     tx_data = 0x1BB7;
     HSwriteWord(devAddr, 0x60, tx_data);
@@ -773,19 +773,36 @@ void HamShield::setCtcssFreqToStandard(){
     setCtcssFreq(13440);
 }
 
-void HamShield::enableCtcss() {	
-	// enable TX
-	HSwriteBitsW(devAddr, A1846S_CTCSS_MODE_REG, 10, 2, 3);
-	
-	// enable RX
-	setCtcssGpioSel(1);
+void HamShield::enableCtcssTx() {
+    HSwriteBitsW(devAddr, A1846S_CTCSS_MODE_REG, 10, 2, 3);
+}
+
+void HamShield::enableCtcssRx() {
+    setCtcssGpioSel(1);
 	HSwriteBitW(devAddr, A1846S_TX_VOICE_REG, A1846S_CTCSS_DET_BIT, 0);
 	HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_CTCSS_FILTER_BYPASS, 0);
 	setDetCtcss();
 }
-void HamShield::disableCtcss() {
-	HSwriteBitsW(devAddr, A1846S_CTCSS_MODE_REG, 10, 2, 0);
+
+void HamShield::enableCtcss() {	
+	// enable TX
+	enableCtcssTx();
+    
+	// enable RX
+	enableCtcssRx();
+}
+
+void HamShield::disableCtcssTx() {
+    HSwriteBitsW(devAddr, A1846S_CTCSS_MODE_REG, 10, 2, 0);
+}
+
+void HamShield::disableCtcssRx() {
+    setCtcssGpioSel(0);
 	disableCtcssCdcss();
+}
+void HamShield::disableCtcss() {
+	disableCtcssTx();
+    disableCtcssRx();
 }
 
 // match threshold
@@ -870,23 +887,29 @@ bool HamShield::getSQState(){
 void HamShield::setSQHiThresh(int16_t sq_hi_threshold){
     // Sq detect high th, rssi_cmp will be 1 when rssi>th_h_sq, unit 1dB
     uint16_t sq = 137 + sq_hi_threshold;
-    HSwriteWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, sq);
+    HSwriteBitsW(devAddr, A1846S_SQ_OPEN_THRESH_REG, A1846S_SQ_OPEN_THRESH_BIT, A1846S_SQ_OPEN_THRESH_LENGTH, sq);
 } 
 int16_t HamShield::getSQHiThresh(){
-    HSreadWord(devAddr, A1846S_SQ_OPEN_THRESH_REG, radio_i2c_buf);
-    
+    HSreadBitsW(devAddr, A1846S_SQ_OPEN_THRESH_REG, A1846S_SQ_OPEN_THRESH_BIT, A1846S_SQ_OPEN_THRESH_LENGTH, radio_i2c_buf);
+
     return radio_i2c_buf[0] - 137;
 }
 void HamShield::setSQLoThresh(int16_t sq_lo_threshold){
     // Sq detect low th, rssi_cmp will be 0 when rssi<th_l_sq && time delay meet, unit 1 dB
     uint16_t sq = 137 + sq_lo_threshold;
-    HSwriteWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, sq);
+    HSwriteBitsW(devAddr, A1846S_SQ_SHUT_THRESH_REG, A1846S_SQ_SHUT_THRESH_BIT, A1846S_SQ_SHUT_THRESH_LENGTH, sq);
 }
 int16_t HamShield::getSQLoThresh(){
-    HSreadWord(devAddr, A1846S_SQ_SHUT_THRESH_REG, radio_i2c_buf);
-    
+    HSreadBitsW(devAddr, A1846S_SQ_SHUT_THRESH_REG, A1846S_SQ_SHUT_THRESH_BIT, A1846S_SQ_SHUT_THRESH_LENGTH, radio_i2c_buf);
+
     return radio_i2c_buf[0] - 137;
 }
+
+bool HamShield::getSquelching() {
+    HSreadBitW(devAddr, A1846S_FLAG_REG, A1846S_SQ_FLAG_BIT, radio_i2c_buf);
+    return (radio_i2c_buf[0] != 0);
+}
+
 
 // SQ out select
 void HamShield::setSQOutSel(){
@@ -997,6 +1020,67 @@ uint16_t HamShield::getDTMFIdleTime() {
   HSreadBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DTMF_IDLE_TIME_BIT, A1846S_DTMF_IDLE_TIME_LEN, radio_i2c_buf);
   return radio_i2c_buf[0];  
 }
+
+char HamShield::DTMFRxLoop() {
+  char m = 0;
+  if (getDTMFSample() != 0) {
+    uint16_t code = getDTMFCode();
+
+    m = DTMFcode2char(code);
+
+    // reset after this tone
+    int j = 0;
+    while (j < 4) {
+      if (getDTMFSample() == 0) {
+        j++;
+      } else {
+        j = 1;
+      }
+      delay(10);
+    }
+    // reset read
+    //enableDTMFReceive();
+  }
+  
+  return m;
+}
+
+
+char HamShield::DTMFcode2char(uint16_t code) {
+  char c;
+  if (code < 10) {
+    c = '0' + code;
+  } else if (code < 0xE) {
+    c = 'A' + code - 10;
+  } else if (code == 0xE) {
+    c = '*';
+  } else if (code == 0xF) {
+    c = '#';
+  } else {
+    c = '?'; // invalid code
+  }
+ 
+  return c;
+}
+
+uint8_t HamShield::DTMFchar2code(char c) {
+    uint8_t code;
+    if (c == '#') {
+      code = 0xF;
+    } else if (c=='*') {
+      code = 0xE;
+    } else if (c >= 'A' && c <= 'D') {
+      code = c - 'A' + 0xA;
+    } else if (c >= '0' && c <= '9') {
+      code = c - '0';
+    } else {
+      // invalid code, skip it
+      code = 255;
+    }
+
+    return code;
+}
+
 
 void HamShield::setDTMFTxTime(uint16_t tx_time) {
   if (tx_time > 63) {tx_time = 63;} // maxed out
@@ -1616,6 +1700,10 @@ bool HamShield::waitForChannel(long timeout = 0, long breakwindow = 0, int setRS
     return false;
 }
 
+void HamShield::setupMorseRx() {
+  // TODO: morse timing config (e.g. dot time, dash time, etc)
+}
+
 // Get current morse code tone frequency (in Hz)
 
 unsigned int HamShield::getMorseFreq() {
@@ -1692,6 +1780,104 @@ void HamShield::morseOut(char buffer[HAMSHIELD_MORSE_BUFFER_SIZE]) {
   }
   return;
 }
+
+// returns '\0' if no valid morse char found yet
+char HamShield::morseRxLoop() {
+  static uint32_t last_tone_check = 0; // track how often we check for morse tones
+  static uint32_t tone_in_progress; // track how long the current tone lasts
+  static uint32_t space_in_progress; // track how long since the last tone
+  static uint8_t rx_morse_char;
+  static uint8_t rx_morse_bit;
+  static bool bits_to_process;
+    
+  if (last_tone_check == 0) {  
+    last_tone_check = millis();
+    space_in_progress = 0; // haven't checked yet
+    tone_in_progress = 0; // not currently listening to a tone
+    rx_morse_char = 0; // haven't found any tones yet
+    rx_morse_bit = 1;
+    bits_to_process = false;
+  }
+  
+  char m = 0;
+  
+  // are we receiving anything
+  if (toneDetected()) {
+    space_in_progress = 0;
+    if (tone_in_progress == 0) {
+      // start a new tone
+      tone_in_progress = millis();
+      //Serial.print('t');
+    }
+  } else {
+    // keep track of how long the silence is
+    if (space_in_progress == 0) space_in_progress = millis();
+
+    // we wait for a bit of silence before ending the last
+    // symbol in order to smooth out the detector
+    if ((millis() - space_in_progress) > SYMBOL_END_TIME)
+    {
+      if (tone_in_progress != 0) {
+        // end the last tone
+        uint16_t tone_time = millis() - tone_in_progress;
+        tone_in_progress = 0;
+        //Serial.println(tone_time);
+        bits_to_process = handleMorseTone(tone_time, bits_to_process, &rx_morse_char, &rx_morse_bit);
+      } 
+    } 
+
+    // we might be done with a character if the space is long enough
+    if (((millis() - space_in_progress) > CHAR_END_TIME) && bits_to_process) {
+      m = parseMorse(rx_morse_char, rx_morse_bit);
+      bits_to_process = false;
+      rx_morse_char = 0;
+      rx_morse_bit = 1;
+    }
+
+    // we might be done with a message if the space is long enough
+    if ((millis() - space_in_progress) > MESSAGE_END_TIME) {
+      rx_morse_char = 0;
+      rx_morse_bit = 1;
+    }
+  }
+  
+  return m;
+}
+
+bool HamShield::handleMorseTone(uint16_t tone_time, bool bits_to_process, 
+                                uint8_t * rx_morse_char, uint8_t * rx_morse_bit) {  
+  //Serial.println(tone_time);
+  if (tone_time > MIN_DOT_TIME && tone_time < MAX_DOT_TIME) {
+    // add a dot
+    //Serial.print(".");
+    bits_to_process = true;
+    //nothing to do for this bit position, since . = 0
+  } else if (tone_time > MIN_DASH_TIME && tone_time < MAX_DASH_TIME) {
+    // add a dash
+    //Serial.print("-");
+    bits_to_process = true;
+    *rx_morse_char += *rx_morse_bit;
+  }
+
+  // prep for the next bit
+  *rx_morse_bit = *rx_morse_bit << 1;
+  
+  return bits_to_process;
+}
+
+char HamShield::parseMorse(uint8_t rx_morse_char, uint8_t rx_morse_bit) {
+  // if morse_char is a valid morse character, return the character
+  // if morse_char is an invalid (incomplete) morse character, return 0
+
+
+  //if (rx_morse_bit != 1) Serial.println(rx_morse_char, BIN);
+  rx_morse_char += rx_morse_bit; // add the terminator bit
+  // if we got a char, then print it
+  char c = morseReverseLookup(rx_morse_char);
+
+  return c;
+}
+
 
 /* Morse code lookup table */
 

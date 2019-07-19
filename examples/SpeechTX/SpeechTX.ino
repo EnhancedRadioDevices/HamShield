@@ -254,6 +254,10 @@ void setup() {
   radio.initialize();
   radio.setRfPower(0);
   radio.frequency(145010);
+}
+
+void loop() {
+
 
   radio.waitForChannel(); // wait for the channel to be empty
   
@@ -275,7 +279,5 @@ void setup() {
   voice.say(spFIRE);
 
   radio.setModeReceive();  
-}
-
-void loop() {
+  delay(10000);
 }

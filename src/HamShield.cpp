@@ -1682,7 +1682,7 @@ Does not take in account the millis() overflow
    
 */
 
-bool HamShield::waitForChannel(long timeout = 0, long breakwindow = 0, int setRSSI = HAMSHIELD_EMPTY_CHANNEL_RSSI) { 
+bool HamShield::waitForChannel(long timeout, long breakwindow, int setRSSI) { 
     int16_t rssi = 0;                                                              // Set RSSI to max received signal
     for(int x = 0; x < 20; x++) { rssi = readRSSI(); }                            // "warm up" to get past RSSI hysteresis 
     long timer = HSmillis() + timeout;                                              // Setup the timeout value

@@ -515,7 +515,7 @@ class HamShield {
         char parseMorse(uint8_t rx_morse_char, uint8_t rx_morse_bit);
 		uint8_t morseLookup(char letter);
 		uint8_t morseReverseLookup(uint8_t itu);
-        bool waitForChannel(long timeout, long breakwindow, int setRSSI);
+        bool waitForChannel(long timeout = 0, long breakwindow = 0, int setRSSI = HAMSHIELD_EMPTY_CHANNEL_RSSI);
         void SSTVVISCode(int code);
         void SSTVTestPattern(int code);
         void toneWait(uint16_t freq, long timer);

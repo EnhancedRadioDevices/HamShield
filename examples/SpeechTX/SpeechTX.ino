@@ -2,6 +2,10 @@
  * Example: SpeechTX - This example used the basic JustTransmit example from the above site
  * This example uses the Talkie Arduino speech library. It transmits pre-encoded speech over the air.
  * More info at: https://github.com/going-digital/Talkie
+ * 
+ * Make sure you're using an Arduino Uno or equivalent. The Talkie library doesn't work
+ * with hardware that doesn't use the ATMega328 or ATMega168.
+ *
  * Connect the HamShield to your Arduino. Screw the antenna 
  * into the HamShield RF jack. Connect the Arduino to 
  * wall power and then to your computer via USB. After 
@@ -251,7 +255,10 @@ void setup() {
   radio.setRfPower(0);
   radio.frequency(145010);
 
+  radio.waitForChannel(); // wait for the channel to be empty
+  
   radio.setModeTransmit();
+  delay(100); // wait for PA to come up
   voice.say(spKILO); // to change these to the words you would like to say, or a ham radio call sign - uncomment above encoded words
   voice.say(spSIX);  // more word choices can be found at the talkie github site
   voice.say(spALPHA);
@@ -266,11 +273,9 @@ void setup() {
   voice.say(spIS);
   voice.say(spON);
   voice.say(spFIRE);
-  
+
+  radio.setModeReceive();  
 }
 
 void loop() {
-  radio.frequency(144025);
-  radio.setModeTransmit();
-  for(;;) { }
 }

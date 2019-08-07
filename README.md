@@ -1,5 +1,7 @@
 # HamShield
 
+You can purchase HamShield (as well as smaller variants or LoRa version) at http://www.enhancedradio.com/
+
 The master branch is intended for use with HamShield hardware -09 and above.
 
 WARNING: The dev branch is not guaranteed to work. Please use caution if you choose to use that branch. 

@@ -1,5 +1,11 @@
 /*
  * Based loosely on I2Cdev by Jeff Rowberg, except for all kludgy bit-banging
+ * 
+ * Note that while the Radio IC (AU1846) does have an I2C interface, we've found
+ * it to be a bit buggy. Instead, we are using a secondary interface to communicate
+ * with it. The secondary interface is a bit of a hybrid between I2C and SPI.
+ * uses a Chip-Select pin like SPI, but has bi-directional data like I2C. In order
+ * to deal with this, we bit-bang the interface.
  */
 
 #include "HamShield_comms.h"

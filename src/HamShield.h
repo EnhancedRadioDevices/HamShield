@@ -527,7 +527,7 @@ class HamShield {
     private:
         uint8_t devAddr;
         uint8_t hs_mic_pin;
-        uint16_t radio_i2c_buf[4];
+        uint16_t radio_dat_buf[4];
 		bool tx_active;
 		bool rx_active;
         float radio_frequency;

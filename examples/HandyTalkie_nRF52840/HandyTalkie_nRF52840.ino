@@ -117,7 +117,7 @@ void setup() {
   }
 
   // initialize device
-  Serial.println("Initializing I2C devices...");
+  Serial.println("Initializing radio device...");
   radio.initialize(); // initializes automatically for UHF 12.5kHz channel
 
   Serial.println("setting default Radio configuration");

@@ -234,8 +234,8 @@ void HamShield::initialize(bool narrowBand) {
     setDTMFTxTime(60);
     setDTMFDetectTime(24);
     
-    HSreadWord(devAddr, A1846S_DTMF_ENABLE_REG, radio_i2c_buf);
-    old_dtmf_reg = radio_i2c_buf[0];
+    HSreadWord(devAddr, A1846S_DTMF_ENABLE_REG, radio_dat_buf);
+    old_dtmf_reg = radio_dat_buf[0];
 }
 
 
@@ -388,13 +388,13 @@ void HamShield::setupWideBand() {
     // end AGC table
 }
 
-/** Verify the I2C connection.
+/** Verify the data connection.
  * Make sure the device is connected and responds as expected.
  * @return True if connection is valid, false otherwise
  */
 bool HamShield::testConnection() {
-    HSreadWord(devAddr, 0x00, radio_i2c_buf);
-    return radio_i2c_buf[0] == 0x1846;
+    HSreadWord(devAddr, 0x00, radio_dat_buf);
+    return radio_dat_buf[0] == 0x1846;
 }
 
 
@@ -414,8 +414,8 @@ bool HamShield::testConnection() {
  */
 
 uint16_t HamShield::readCtlReg() {
-  HSreadWord(devAddr, A1846S_CTL_REG, radio_i2c_buf);
-  return radio_i2c_buf[0];
+  HSreadWord(devAddr, A1846S_CTL_REG, radio_dat_buf);
+  return radio_dat_buf[0];
 }
 
 void HamShield::softReset() {
@@ -503,8 +503,8 @@ void HamShield::setClkMode(bool LFClk){
     HSwriteWord(devAddr, A1846S_CLK_MODE_REG, tx_data);
 }
 bool HamShield::getClkMode(){
-    HSreadBitW(devAddr, A1846S_CLK_MODE_REG, A1846S_CLK_MODE_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+    HSreadBitW(devAddr, A1846S_CLK_MODE_REG, A1846S_CLK_MODE_BIT, radio_dat_buf);
+    return (radio_dat_buf[0] != 0);
 }
 
 // TODO: create a 25kHz setup option as well as 12.5kHz (as is implemented now)
@@ -517,8 +517,8 @@ void HamShield::setChanMode(uint16_t mode){
     HSwriteBitsW(devAddr, A1846S_CTL_REG, A1846S_CHAN_MODE_BIT, A1846S_CHAN_MODE_LENGTH, mode);
 }
 uint16_t HamShield::getChanMode(){
-    HSreadBitsW(devAddr, A1846S_CTL_REG, A1846S_CHAN_MODE_BIT, A1846S_CHAN_MODE_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_CTL_REG, A1846S_CHAN_MODE_BIT, A1846S_CHAN_MODE_LENGTH, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 */
 
@@ -551,8 +551,8 @@ void HamShield::setTX(bool on_noff){
     HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, on_noff);
 }
 bool HamShield::getTX(){
-    HSreadBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+    HSreadBitW(devAddr, A1846S_CTL_REG, A1846S_TX_MODE_BIT, radio_dat_buf);
+    return (radio_dat_buf[0] != 0);
 }
 
 void HamShield::setRX(bool on_noff){
@@ -573,8 +573,8 @@ void HamShield::setRX(bool on_noff){
     HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, on_noff);
 }
 bool HamShield::getRX(){
-    HSreadBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+    HSreadBitW(devAddr, A1846S_CTL_REG, A1846S_RX_MODE_BIT, radio_dat_buf);
+    return (radio_dat_buf[0] != 0);
 }
 
 void HamShield::setModeTransmit(){
@@ -634,8 +634,8 @@ void HamShield::setTxSourceNone(){
     setTxSource(0);
 }
 uint16_t HamShield::getTxSource(){
-    HSreadBitsW(devAddr, A1846S_TX_VOICE_REG, A1846S_VOICE_SEL_BIT, A1846S_VOICE_SEL_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_TX_VOICE_REG, A1846S_VOICE_SEL_BIT, A1846S_VOICE_SEL_LENGTH, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 
 /*
@@ -652,8 +652,8 @@ void HamShield::setPABiasVoltage(uint16_t voltage){
     HSwriteBitsW(devAddr, A1846S_PABIAS_REG, A1846S_PABIAS_BIT, A1846S_PABIAS_LENGTH, voltage);
 }
 uint16_t HamShield::getPABiasVoltage(){
-    HSreadBitsW(devAddr, A1846S_PABIAS_REG, A1846S_PABIAS_BIT, A1846S_PABIAS_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_PABIAS_REG, A1846S_PABIAS_BIT, A1846S_PABIAS_LENGTH, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 */
 // Subaudio settings
@@ -672,8 +672,8 @@ void HamShield::setCtcssCdcssMode(uint16_t mode){
     HSwriteBitsW(devAddr, A1846S_TX_VOICE_REG, A1846S_CTDCSS_DTEN_BIT, A1846S_CTDCSS_DTEN_LEN, mode);
 }
 uint16_t HamShield::getCtcssCdcssMode(){
-    HSreadBitsW(devAddr, A1846S_TX_VOICE_REG, A1846S_CTDCSS_DTEN_BIT, A1846S_CTDCSS_DTEN_BIT, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_TX_VOICE_REG, A1846S_CTDCSS_DTEN_BIT, A1846S_CTDCSS_DTEN_BIT, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 
 void HamShield::setDetPhaseShift() {
@@ -711,16 +711,16 @@ void HamShield::setCdcssSel(bool long_nshort){
     HSwriteBitW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_CDCSS_SEL_BIT, long_nshort);
 }
 bool HamShield::getCdcssSel(){
-    HSreadBitW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_CDCSS_SEL_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] == 1);
+    HSreadBitW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_CDCSS_SEL_BIT, radio_dat_buf);
+    return (radio_dat_buf[0] == 1);
 }
 
 void HamShield::setCdcssInvert(bool invert) {
 	HSwriteBitW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_CDCSS_INVERT_BIT, invert);
 }
 bool HamShield::getCdcssInvert() {
-    HSreadBitW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_CDCSS_INVERT_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] == 1);
+    HSreadBitW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_CDCSS_INVERT_BIT, radio_dat_buf);
+    return (radio_dat_buf[0] == 1);
 }
 
 // Cdcss neg_det_en
@@ -763,8 +763,8 @@ float HamShield::getCtcssFreqHz() {
 	//y = mx + b
 	float m = 1.678;
 	float b = -3.3;
-    HSreadWord(devAddr, A1846S_CTCSS_FREQ_REG, radio_i2c_buf);
-	float f = (float) radio_i2c_buf[0];
+    HSreadWord(devAddr, A1846S_CTCSS_FREQ_REG, radio_dat_buf);
+	float f = (float) radio_dat_buf[0];
 	return (f/m-b)/100; 
 }
 
@@ -810,8 +810,8 @@ void HamShield::setCtcssDetThreshIn(uint8_t thresh) {
 	HSwriteBitsW(devAddr, A1846S_CTCSS_THRESH_REG, 15, 8, thresh);
 }
 uint8_t HamShield::getCtcssDetThreshIn() {
-	HSreadBitsW(devAddr, A1846S_CTCSS_THRESH_REG, 15, 8, radio_i2c_buf);
-	return (uint8_t) radio_i2c_buf[0];
+	HSreadBitsW(devAddr, A1846S_CTCSS_THRESH_REG, 15, 8, radio_dat_buf);
+	return (uint8_t) radio_dat_buf[0];
 }
 
 // unmatch threshold
@@ -819,13 +819,13 @@ void HamShield::setCtcssDetThreshOut(uint8_t thresh) {
 	HSwriteBitsW(devAddr, A1846S_CTCSS_THRESH_REG, 7, 8, thresh);
 }
 uint8_t HamShield::getCtcssDetThreshOut() {
-	HSreadBitsW(devAddr, A1846S_CTCSS_THRESH_REG, 7, 8, radio_i2c_buf);
-	return (uint8_t) radio_i2c_buf[0];
+	HSreadBitsW(devAddr, A1846S_CTCSS_THRESH_REG, 7, 8, radio_dat_buf);
+	return (uint8_t) radio_dat_buf[0];
 }
 
 bool HamShield::getCtcssToneDetected() {
-	HSreadBitW(devAddr, A1846S_FLAG_REG, A1846S_CTCSS1_FLAG_BIT, radio_i2c_buf);
-	return (radio_i2c_buf[0] != 0);
+	HSreadBitW(devAddr, A1846S_FLAG_REG, A1846S_CTCSS1_FLAG_BIT, radio_dat_buf);
+	return (radio_dat_buf[0] != 0);
 }
 
 // cdcss codes
@@ -856,10 +856,10 @@ void HamShield::setCdcssCode(uint16_t code) {
 }
 uint16_t HamShield::getCdcssCode() {
     uint32_t oct_code;
-    HSreadWord(devAddr, A1846S_CDCSS_CODE_HI_REG, radio_i2c_buf);
-    oct_code = ((uint32_t)radio_i2c_buf[0] << 16);
-    HSreadWord(devAddr, A1846S_CDCSS_CODE_LO_REG, radio_i2c_buf);
-    oct_code += radio_i2c_buf[0];
+    HSreadWord(devAddr, A1846S_CDCSS_CODE_HI_REG, radio_dat_buf);
+    oct_code = ((uint32_t)radio_dat_buf[0] << 16);
+    HSreadWord(devAddr, A1846S_CDCSS_CODE_LO_REG, radio_dat_buf);
+    oct_code += radio_dat_buf[0];
     
     oct_code = oct_code >> 12;
     uint16_t code = (oct_code & 0x3);
@@ -879,8 +879,8 @@ void HamShield::setSQOff(){
     HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_SQ_ON_BIT, 0);
 }
 bool HamShield::getSQState(){
-    HSreadBitW(devAddr, A1846S_CTL_REG, A1846S_SQ_ON_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+    HSreadBitW(devAddr, A1846S_CTL_REG, A1846S_SQ_ON_BIT, radio_dat_buf);
+    return (radio_dat_buf[0] != 0);
 }
 
 // SQ threshold
@@ -890,9 +890,9 @@ void HamShield::setSQHiThresh(int16_t sq_hi_threshold){
     HSwriteBitsW(devAddr, A1846S_SQ_OPEN_THRESH_REG, A1846S_SQ_OPEN_THRESH_BIT, A1846S_SQ_OPEN_THRESH_LENGTH, sq);
 } 
 int16_t HamShield::getSQHiThresh(){
-    HSreadBitsW(devAddr, A1846S_SQ_OPEN_THRESH_REG, A1846S_SQ_OPEN_THRESH_BIT, A1846S_SQ_OPEN_THRESH_LENGTH, radio_i2c_buf);
+    HSreadBitsW(devAddr, A1846S_SQ_OPEN_THRESH_REG, A1846S_SQ_OPEN_THRESH_BIT, A1846S_SQ_OPEN_THRESH_LENGTH, radio_dat_buf);
 
-    return radio_i2c_buf[0] - 137;
+    return radio_dat_buf[0] - 137;
 }
 void HamShield::setSQLoThresh(int16_t sq_lo_threshold){
     // Sq detect low th, rssi_cmp will be 0 when rssi<th_l_sq && time delay meet, unit 1 dB
@@ -900,14 +900,14 @@ void HamShield::setSQLoThresh(int16_t sq_lo_threshold){
     HSwriteBitsW(devAddr, A1846S_SQ_SHUT_THRESH_REG, A1846S_SQ_SHUT_THRESH_BIT, A1846S_SQ_SHUT_THRESH_LENGTH, sq);
 }
 int16_t HamShield::getSQLoThresh(){
-    HSreadBitsW(devAddr, A1846S_SQ_SHUT_THRESH_REG, A1846S_SQ_SHUT_THRESH_BIT, A1846S_SQ_SHUT_THRESH_LENGTH, radio_i2c_buf);
+    HSreadBitsW(devAddr, A1846S_SQ_SHUT_THRESH_REG, A1846S_SQ_SHUT_THRESH_BIT, A1846S_SQ_SHUT_THRESH_LENGTH, radio_dat_buf);
 
-    return radio_i2c_buf[0] - 137;
+    return radio_dat_buf[0] - 137;
 }
 
 bool HamShield::getSquelching() {
-    HSreadBitW(devAddr, A1846S_FLAG_REG, A1846S_SQ_FLAG_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+    HSreadBitW(devAddr, A1846S_FLAG_REG, A1846S_SQ_FLAG_BIT, radio_dat_buf);
+    return (radio_dat_buf[0] != 0);
 }
 
 
@@ -919,8 +919,8 @@ void HamShield::clearSQOutSel(){
     HSwriteBitW(devAddr, A1846S_SQ_OUT_SEL_REG, A1846S_SQ_OUT_SEL_BIT, 0);
 }
 bool HamShield::getSQOutSel(){
-    HSreadBitW(devAddr, A1846S_SQ_OUT_SEL_REG, A1846S_SQ_OUT_SEL_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+    HSreadBitW(devAddr, A1846S_SQ_OUT_SEL_REG, A1846S_SQ_OUT_SEL_BIT, radio_dat_buf);
+    return (radio_dat_buf[0] != 0);
 }
 
 // VOX
@@ -931,8 +931,8 @@ void HamShield::setVoxOff(){
     HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_VOX_ON_BIT, 0);
 }
 bool HamShield::getVoxOn(){
-    HSreadBitW(devAddr, A1846S_CTL_REG, A1846S_VOX_ON_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+    HSreadBitW(devAddr, A1846S_CTL_REG, A1846S_VOX_ON_BIT, radio_dat_buf);
+    return (radio_dat_buf[0] != 0);
 }
 
 // Vox Threshold
@@ -942,16 +942,16 @@ void HamShield::setVoxOpenThresh(uint16_t vox_open_thresh){
 
 } 
 uint16_t HamShield::getVoxOpenThresh(){
-    HSreadBitsW(devAddr, A1846S_TH_H_VOX_REG, A1846S_TH_H_VOX_BIT, A1846S_TH_H_VOX_LEN, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_TH_H_VOX_REG, A1846S_TH_H_VOX_BIT, A1846S_TH_H_VOX_LEN, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 void HamShield::setVoxShutThresh(uint16_t vox_shut_thresh){
     // When vssi < th_l_vox && time delay meet, then vox will be 0 (unit mV )
     HSwriteBitsW(devAddr, A1846S_TH_L_VOX_REG, A1846S_TH_L_VOX_BIT, A1846S_TH_L_VOX_LEN, vox_shut_thresh);
 } 
 uint16_t HamShield::getVoxShutThresh(){
-    HSreadBitsW(devAddr, A1846S_TH_L_VOX_REG, A1846S_TH_L_VOX_BIT, A1846S_TH_L_VOX_LEN, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_TH_L_VOX_REG, A1846S_TH_L_VOX_BIT, A1846S_TH_L_VOX_LEN, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 
 // Tail Noise
@@ -962,8 +962,8 @@ void HamShield::disableTailNoiseElim(){
     HSwriteBitW(devAddr, A1846S_CTL_REG, A1846S_TAIL_ELIM_EN_BIT, 1);
 }
 bool HamShield::getTailNoiseElimEnabled(){
-    HSreadBitW(devAddr, A1846S_CTL_REG, A1846S_TAIL_ELIM_EN_BIT, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+    HSreadBitW(devAddr, A1846S_CTL_REG, A1846S_TAIL_ELIM_EN_BIT, radio_dat_buf);
+    return (radio_dat_buf[0] != 0);
 }
 
 // tail noise shift select
@@ -976,8 +976,8 @@ void HamShield::setShiftSelect(uint16_t shift_sel){
   HSwriteBitsW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LEN, shift_sel);
 }
 uint16_t HamShield::getShiftSelect(){
-  HSreadBitsW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LEN, radio_i2c_buf);
-  return radio_i2c_buf[0];
+  HSreadBitsW(devAddr, A1846S_CTCSS_MODE_REG, A1846S_SHIFT_SEL_BIT, A1846S_SHIFT_SEL_LEN, radio_dat_buf);
+  return radio_dat_buf[0];
 }
 
 // DTMF
@@ -1006,8 +1006,8 @@ void HamShield::setDTMFDetectTime(uint16_t detect_time) {
 }
 
 uint16_t HamShield::getDTMFDetectTime() {
-  HSreadBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A18462_DTMF_DET_TIME_BIT, A18462_DTMF_DET_TIME_LEN, radio_i2c_buf);
-  return radio_i2c_buf[0]; 
+  HSreadBitsW(devAddr, A1846S_DTMF_ENABLE_REG, A18462_DTMF_DET_TIME_BIT, A18462_DTMF_DET_TIME_LEN, radio_dat_buf);
+  return radio_dat_buf[0]; 
 }
 
 void HamShield::setDTMFIdleTime(uint16_t idle_time) {
@@ -1017,8 +1017,8 @@ void HamShield::setDTMFIdleTime(uint16_t idle_time) {
 }
 
 uint16_t HamShield::getDTMFIdleTime() {
-  HSreadBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DTMF_IDLE_TIME_BIT, A1846S_DTMF_IDLE_TIME_LEN, radio_i2c_buf);
-  return radio_i2c_buf[0];  
+  HSreadBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DTMF_IDLE_TIME_BIT, A1846S_DTMF_IDLE_TIME_LEN, radio_dat_buf);
+  return radio_dat_buf[0];  
 }
 
 char HamShield::DTMFRxLoop() {
@@ -1089,8 +1089,8 @@ void HamShield::setDTMFTxTime(uint16_t tx_time) {
 }
 
 uint16_t HamShield::getDTMFTxTime() {
-  HSreadBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DUALTONE_TX_TIME_BIT, A1846S_DUALTONE_TX_TIME_LEN, radio_i2c_buf);
-  return radio_i2c_buf[0];  
+  HSreadBitsW(devAddr, A1846S_DTMF_TIME_REG, A1846S_DUALTONE_TX_TIME_BIT, A1846S_DUALTONE_TX_TIME_LEN, radio_dat_buf);
+  return radio_dat_buf[0];  
 }
 
 uint16_t HamShield::disableDTMF(){
@@ -1098,18 +1098,18 @@ uint16_t HamShield::disableDTMF(){
 }
 
 uint16_t HamShield::getDTMFSample(){
-  HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_SAMPLE_BIT, 1, radio_i2c_buf);
-  return radio_i2c_buf[0];
+  HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_SAMPLE_BIT, 1, radio_dat_buf);
+  return radio_dat_buf[0];
 }
 
 uint16_t HamShield::getDTMFTxActive(){
-  HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_TX_IDLE_BIT, 1, radio_i2c_buf);
-  return radio_i2c_buf[0];
+  HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_TX_IDLE_BIT, 1, radio_dat_buf);
+  return radio_dat_buf[0];
 }
 
 uint16_t HamShield::getDTMFCode(){
-  HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_CODE_BIT, A1846S_DTMF_CODE_LEN, radio_i2c_buf);
-  return radio_i2c_buf[0];
+  HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_CODE_BIT, A1846S_DTMF_CODE_LEN, radio_dat_buf);
+  return radio_dat_buf[0];
 }
 
 void HamShield::setDTMFCode(uint16_t code){
@@ -1155,8 +1155,8 @@ void HamShield::setDTMFCode(uint16_t code){
 
 void HamShield::HStone(uint8_t pin, unsigned int frequency) {
   // store old dtmf reg for noTone
-//  HSreadWord(devAddr, A1846S_DTMF_ENABLE_REG, radio_i2c_buf);
-//  old_dtmf_reg = radio_i2c_buf[0];   
+//  HSreadWord(devAddr, A1846S_DTMF_ENABLE_REG, radio_dat_buf);
+//  old_dtmf_reg = radio_dat_buf[0];   
   
   // set frequency
   HSwriteWord(devAddr, A1846S_TONE1_FREQ, frequency*10);
@@ -1209,12 +1209,12 @@ void HamShield::lookForTone(uint16_t t_hz) {
 bool redetect = false;
 uint8_t last_tone_detected = 0;
 uint8_t HamShield::toneDetected() {
-	HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_SAMPLE_BIT, 1, radio_i2c_buf);
-	if (radio_i2c_buf[0] != 0) {
+	HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_SAMPLE_BIT, 1, radio_dat_buf);
+	if (radio_dat_buf[0] != 0) {
       if (!redetect) {
         redetect = true;
-		HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_CODE_BIT, A1846S_DTMF_CODE_LEN, radio_i2c_buf);
-		last_tone_detected = radio_i2c_buf[0];
+		HSreadBitsW(devAddr, A1846S_DTMF_CODE_REG, A1846S_DTMF_CODE_BIT, A1846S_DTMF_CODE_LEN, radio_dat_buf);
+		last_tone_detected = radio_dat_buf[0];
         //Serial.print("t: ");
         //Serial.println(last_tone_detected);
       }
@@ -1235,15 +1235,15 @@ void HamShield::setFMVoiceCssDeviation(uint16_t deviation){
     HSwriteBitsW(devAddr, A1846S_FM_DEV_REG, A1846S_FM_DEV_VOICE_BIT, A1846S_FM_DEV_VOICE_LENGTH, deviation);
 }
 uint16_t HamShield::getFMVoiceCssDeviation(){
-    HSreadBitsW(devAddr, A1846S_FM_DEV_REG, A1846S_FM_DEV_VOICE_BIT, A1846S_FM_DEV_VOICE_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_FM_DEV_REG, A1846S_FM_DEV_VOICE_BIT, A1846S_FM_DEV_VOICE_LENGTH, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 void HamShield::setFMCssDeviation(uint16_t deviation){
     HSwriteBitsW(devAddr, A1846S_FM_DEV_REG, A1846S_FM_DEV_CSS_BIT, A1846S_FM_DEV_CSS_LENGTH, deviation);
 }
 uint16_t HamShield::getFMCssDeviation(){
-    HSreadBitsW(devAddr, A1846S_FM_DEV_REG, A1846S_FM_DEV_CSS_BIT, A1846S_FM_DEV_CSS_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_FM_DEV_REG, A1846S_FM_DEV_CSS_BIT, A1846S_FM_DEV_CSS_LENGTH, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 
 // RX voice range
@@ -1258,15 +1258,15 @@ void HamShield::setVolume1(uint16_t volume){
     HSwriteBitsW(devAddr, A1846S_RX_VOLUME_REG, A1846S_RX_VOL_1_BIT, A1846S_RX_VOL_1_LENGTH, volume);
 }
 uint16_t HamShield::getVolume1(){
-    HSreadBitsW(devAddr, A1846S_RX_VOLUME_REG, A1846S_RX_VOL_1_BIT, A1846S_RX_VOL_1_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_RX_VOLUME_REG, A1846S_RX_VOL_1_BIT, A1846S_RX_VOL_1_LENGTH, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 void HamShield::setVolume2(uint16_t volume){
     HSwriteBitsW(devAddr, A1846S_RX_VOLUME_REG, A1846S_RX_VOL_2_BIT, A1846S_RX_VOL_2_LENGTH, volume);
 }
 uint16_t HamShield::getVolume2(){
-    HSreadBitsW(devAddr, A1846S_RX_VOLUME_REG, A1846S_RX_VOL_2_BIT, A1846S_RX_VOL_2_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_RX_VOLUME_REG, A1846S_RX_VOL_2_BIT, A1846S_RX_VOL_2_LENGTH, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 
 // GPIO
@@ -1292,8 +1292,8 @@ uint16_t HamShield::getGpioMode(uint16_t gpio){
     uint16_t mode_len = 2;
     uint16_t bit = gpio*2 + 1;
     
-    HSreadBitsW(devAddr, A1846S_GPIO_MODE_REG, bit, mode_len, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_GPIO_MODE_REG, bit, mode_len, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 
 void HamShield::setGpios(uint16_t mode){
@@ -1301,8 +1301,8 @@ void HamShield::setGpios(uint16_t mode){
 }
 
 uint16_t HamShield::getGpios(){
-    HSreadWord(devAddr, A1846S_GPIO_MODE_REG, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadWord(devAddr, A1846S_GPIO_MODE_REG, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 
 // Int
@@ -1313,8 +1313,8 @@ void HamShield::disableInterrupt(uint16_t interrupt){
     HSwriteBitW(devAddr, A1846S_INT_MODE_REG, interrupt, 0);
 }
 bool HamShield::getInterruptEnabled(uint16_t interrupt){
-    HSreadBitW(devAddr, A1846S_INT_MODE_REG, interrupt, radio_i2c_buf);
-    return (radio_i2c_buf[0] != 0);
+    HSreadBitW(devAddr, A1846S_INT_MODE_REG, interrupt, radio_dat_buf);
+    return (radio_dat_buf[0] != 0);
 }
 
 // ST mode
@@ -1322,8 +1322,8 @@ void HamShield::setStMode(uint16_t mode){
     HSwriteBitsW(devAddr, A1846S_CTL_REG, A1846S_ST_MODE_BIT, A1846S_ST_MODE_LENGTH, mode);
 }
 uint16_t HamShield::getStMode(){
-    HSreadBitsW(devAddr, A1846S_CTL_REG, A1846S_ST_MODE_BIT, A1846S_ST_MODE_LENGTH, radio_i2c_buf);
-    return radio_i2c_buf[0];
+    HSreadBitsW(devAddr, A1846S_CTL_REG, A1846S_ST_MODE_BIT, A1846S_ST_MODE_LENGTH, radio_dat_buf);
+    return radio_dat_buf[0];
 }
 void HamShield::setStFullAuto(){
 setStMode(2);
@@ -1343,8 +1343,8 @@ void HamShield::usePreDeEmph(){
     HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_EMPH_FILTER_EN, 0);
 }
 bool HamShield::getPreDeEmphEnabled(){
-    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_EMPH_FILTER_EN, radio_i2c_buf);
-    return (radio_i2c_buf[0] == 0);
+    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_EMPH_FILTER_EN, radio_dat_buf);
+    return (radio_dat_buf[0] == 0);
 }
 
 // Voice Filters
@@ -1355,8 +1355,8 @@ void HamShield::useVoiceHpf(){
     HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VHPF_FILTER_EN, 0);
 }
 bool HamShield::getVoiceHpfEnabled(){
-    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VHPF_FILTER_EN, radio_i2c_buf);
-    return (radio_i2c_buf[0] == 0);
+    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VHPF_FILTER_EN, radio_dat_buf);
+    return (radio_dat_buf[0] == 0);
 }
 
 void HamShield::bypassVoiceLpf(){
@@ -1366,8 +1366,8 @@ void HamShield::useVoiceLpf(){
     HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VLPF_FILTER_EN, 0);
 }
 bool HamShield::getVoiceLpfEnabled(){
-    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VLPF_FILTER_EN, radio_i2c_buf);
-    return (radio_i2c_buf[0] == 0);
+    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VLPF_FILTER_EN, radio_dat_buf);
+    return (radio_dat_buf[0] == 0);
 }
 
 // Vox filters
@@ -1379,8 +1379,8 @@ void HamShield::useVoxHpf(){
     HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VXHPF_FILTER_EN, 0);
 }
 bool HamShield::getVoxHpfEnabled(){
-    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VXHPF_FILTER_EN, radio_i2c_buf);
-    return (radio_i2c_buf[0] == 0);
+    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VXHPF_FILTER_EN, radio_dat_buf);
+    return (radio_dat_buf[0] == 0);
 }
 
 void HamShield::bypassVoxLpf(){
@@ -1390,28 +1390,28 @@ void HamShield::useVoxLpf(){
     HSwriteBitW(devAddr, A1846S_FILTER_REG, A1846S_VXLPF_FILTER_EN, 0);
 }
 bool HamShield::getVoxLpfEnabled(){
-    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VXLPF_FILTER_EN, radio_i2c_buf);
-    return (radio_i2c_buf[0] == 0);
+    HSreadBitW(devAddr, A1846S_FILTER_REG, A1846S_VXLPF_FILTER_EN, radio_dat_buf);
+    return (radio_dat_buf[0] == 0);
 }
 
 
 
 // Read Only Status Registers
 int16_t HamShield::readRSSI(){
-    HSreadBitsW(devAddr, A1846S_RSSI_REG, A1846S_RSSI_BIT, A1846S_RSSI_LENGTH, radio_i2c_buf);
+    HSreadBitsW(devAddr, A1846S_RSSI_REG, A1846S_RSSI_BIT, A1846S_RSSI_LENGTH, radio_dat_buf);
     
-    int16_t rssi = (radio_i2c_buf[0] & 0xFF) - 137;
+    int16_t rssi = (radio_dat_buf[0] & 0xFF) - 137;
     return rssi;
 }
 uint16_t HamShield::readVSSI(){
-    HSreadBitsW(devAddr, A1846S_VSSI_REG, A1846S_VSSI_BIT, A1846S_VSSI_LENGTH, radio_i2c_buf);
+    HSreadBitsW(devAddr, A1846S_VSSI_REG, A1846S_VSSI_BIT, A1846S_VSSI_LENGTH, radio_dat_buf);
     
-    return radio_i2c_buf[0];
+    return radio_dat_buf[0];
 }
 uint16_t HamShield::readMSSI(){
-    HSreadBitsW(devAddr, A1846S_VSSI_REG, A1846S_MSSI_BIT, A1846S_MSSI_LENGTH, radio_i2c_buf);
+    HSreadBitsW(devAddr, A1846S_VSSI_REG, A1846S_MSSI_BIT, A1846S_MSSI_LENGTH, radio_dat_buf);
     
-    return radio_i2c_buf[0];
+    return radio_dat_buf[0];
 }
 
 

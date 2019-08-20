@@ -65,10 +65,10 @@ void setup() {
 
   // verify connection
   Serial.println("Testing device connections...");
-  Serial.println(radio.testConnection() ? "RDA radio connection successful" : "RDA radio connection failed");
+  Serial.println(radio.testConnection() ? "radio connection successful" : "radio connection failed");
 
   // initialize device
-  Serial.println("Initializing I2C devices...");
+  Serial.println("Initializing radio device...");
   radio.initialize(); // initializes automatically for UHF 12.5kHz channel
 
   Serial.println("setting default Radio configuration");

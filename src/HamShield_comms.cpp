@@ -69,16 +69,20 @@ int8_t HSreadWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data)
 		temp = ((regAddr & (0x80 >> i)) != 0);
 		digitalWrite(clk_pin, 0); //PORTC &= ~(1<<5); //
 		digitalWrite(dat_pin, temp);
+        HSdelayMicroseconds(1);
 		digitalWrite(clk_pin, 1); //PORTC |= (1<<5); //
+        HSdelayMicroseconds(1);
 	}
 	// change direction of dat_pin
 	pinMode(dat_pin, INPUT); //	DDRC &= ~(1<<4); //
 	for (int i = 15; i >= 0; i--) {
 		digitalWrite(clk_pin, 0); //PORTC &= ~(1<<5); //
+        HSdelayMicroseconds(1);
 		digitalWrite(clk_pin, 1); //PORTC |= (1<<5); //
 		temp_dat = digitalRead(dat_pin); //((PINC & (1<<4)) != 0);
 		temp_dat = temp_dat << i;
 		*data |= temp_dat;
+        HSdelayMicroseconds(1);
 	}
 	digitalWrite(devAddr, 1); //PORTC |= (1<<1);// CS
 	
@@ -127,13 +131,17 @@ bool HSwriteWord(uint8_t devAddr, uint8_t regAddr, uint16_t data)
 		temp_reg = ((regAddr & (0x80 >> i)) != 0);
 		digitalWrite(clk_pin, 0); //PORTC &= ~(1<<5); //
 		digitalWrite(dat_pin, regAddr & (0x80 >> i));
+        HSdelayMicroseconds(1);
 		digitalWrite(clk_pin, 1); // PORTC |= (1<<5); //
+        HSdelayMicroseconds(1);
 	}
 	for (int i = 0; i < 16; i++) {
 		temp_dat = ((data & (0x8000 >> i)) != 0);
 		digitalWrite(clk_pin, 0); //PORTC &= ~(1<<5); //
 		digitalWrite(dat_pin, temp_dat);
+        HSdelayMicroseconds(1);
 		digitalWrite(clk_pin, 1); // PORTC |= (1<<5); //
+        HSdelayMicroseconds(1);
 	}
 	
 	digitalWrite(devAddr, 1); //PORTC |= (1<<1); //CS

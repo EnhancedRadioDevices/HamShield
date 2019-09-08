@@ -135,7 +135,7 @@ void loop() {
     } else {
       Serial.setTimeout(40);
       freq = Serial.parseInt();
-      Serial.flush();
+      while (Serial.available()) Serial.read();
       radio.frequency(freq);
       Serial.print("set frequency: ");
       Serial.println(freq);

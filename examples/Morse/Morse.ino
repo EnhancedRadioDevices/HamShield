@@ -49,6 +49,7 @@ void setup() {
   pinMode(SWITCH_PIN, INPUT_PULLUP);
   
   // set up the reset control pin
+  // NOTE: HamShieldMini doesn't have a reset pin, so this has no effect
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, HIGH);
   delay(5); // wait for device to come up

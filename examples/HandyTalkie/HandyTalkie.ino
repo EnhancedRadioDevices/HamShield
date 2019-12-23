@@ -46,6 +46,7 @@ void setup() {
   pinMode(SWITCH_PIN, INPUT_PULLUP);
   
   // set up the reset control pin
+  // NOTE: HamShieldMini doesn't have a reset pin, so this has no effect
   pinMode(RESET_PIN, OUTPUT);
   digitalWrite(RESET_PIN, LOW);
   
@@ -57,7 +58,8 @@ void setup() {
   while (digitalRead(SWITCH_PIN) && !Serial.available());
   Serial.read(); // flush
   
-  // let the AU ot of reset
+  // let the radio out of reset
+  // NOTE: HamShieldMini doesn't have a reset pin, so this has no effect
   digitalWrite(RESET_PIN, HIGH);
   delay(5); // wait for device to come up
   

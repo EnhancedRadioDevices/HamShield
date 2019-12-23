@@ -41,6 +41,7 @@ void setup() {
   digitalWrite(MIC_PIN, LOW);
   
   // prep the switch
+  // NOTE: HamShieldMini doesn't have a reset pin, so this has no effect
   pinMode(SWITCH_PIN, INPUT_PULLUP);
   
   // set up the reset control pin

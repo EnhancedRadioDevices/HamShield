@@ -43,7 +43,7 @@ BLEBas  blebas;  // battery
 
 #include <HamShield.h>
 // create object for radio
-HamShield radio(9,5,6);
+HamShield radio(6,5,9);
 // To use non-standard pins, use the following initialization
 //HamShield radio(ncs_pin, clk_pin, dat_pin);
 
@@ -183,6 +183,7 @@ void startAdv(void)
   Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
 }
 
+// for serial output buffer on both interfaces
 #define TEXT_BUF_LEN 64
 char text_buf[TEXT_BUF_LEN];
 void loop() {  

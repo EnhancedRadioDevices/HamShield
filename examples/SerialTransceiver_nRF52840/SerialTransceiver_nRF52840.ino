@@ -165,7 +165,7 @@ void setup() {
     
   delay(100);  
 
-  SerialWrite(";;;;;;;;;;;;;;;;;;;;;;;;;;");
+  SerialWrite(";;;;;;;;;;;;;;;;;;;;;;;;;;\n");
 
   int result = radio.testConnection();
   SerialWrite("*%d;\n", result);
@@ -507,9 +507,9 @@ void getValue(bool ble_serial) {
   for(;;) {
     if((!ble_serial && Serial.available()) || (ble_serial && bleuart.available())) { 
       if (ble_serial) {
-        temp = Serial.read();
-      } else {
         temp = bleuart.read();
+      } else {
+        temp = Serial.read();
       }
       if(temp == 59) { 
         cmdbuff[p] = 0; 
@@ -669,7 +669,7 @@ char text_buf[TEXT_BUF_LEN];
 void SerialWrite(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);    
-    int str_len = snprintf(text_buf, TEXT_BUF_LEN, fmt, args);
+    int str_len = vsnprintf(text_buf, TEXT_BUF_LEN, fmt, args);
     va_end(args);
 
     bleuart.write(text_buf, str_len);
